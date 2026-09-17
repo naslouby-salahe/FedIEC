@@ -25,8 +25,6 @@ from fediec.workflows import smoke as smoke_workflow
 from fediec.workflows import status as status_workflow
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
-# typer.Argument's overloaded stub is partially-unknown under Pyright strict
-# mode (a third-party stub gap, not a project typing error).
 _EXPERIMENT_ARGUMENT = typer.Argument(  # pyright: ignore[reportUnknownMemberType]
     ..., help="Named experiment to run."
 )

@@ -1,7 +1,3 @@
-"""Verifies CLI -> workflow wiring: every public command exists, maps to
-exactly one workflow call, and every workflow module is actually
-reachable from the CLI."""
-
 from __future__ import annotations
 
 import ast

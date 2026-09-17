@@ -22,9 +22,6 @@ from fediec.types import (
     WallClockTimestamp,
 )
 
-# LOCAL_/LAN_/WAN_ are official-companion-app triggers; ALEXA_/GOOGLE_ are
-# voice-assistant triggers and are excluded — a voice command is not an
-# official Android companion-app interaction.
 _ELIGIBLE_TRIGGER_METHODS = frozenset(
     {CicTriggerMethod.LOCAL, CicTriggerMethod.LAN, CicTriggerMethod.WAN}
 )
@@ -34,10 +31,6 @@ _POLARITY_TOKEN_TO_ACTION: dict[CicPolarityToken, SemanticAction] = {
     CicPolarityToken.OFF: SemanticAction.TURN_OFF,
 }
 
-# Classic (non-pcapng) libpcap global-header magic numbers: little/big
-# endian, microsecond/nanosecond resolution. pcapng is not present in this
-# dataset (verified via `file` on real captures) and is intentionally
-# unsupported here rather than guessed at.
 _PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[StructByteOrder, PcapTimestampScale]] = {
     b"\xd4\xc3\xb2\xa1": (StructByteOrder.LITTLE, 1e-6),
     b"\xa1\xb2\xc3\xd4": (StructByteOrder.BIG, 1e-6),

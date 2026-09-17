@@ -6,13 +6,6 @@ from typing import Annotated, NewType
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# --- Constrained scalar primitives -----------------------------------------
-#
-# These eight names exist only to build the semantic aliases below. They
-# must never be referenced by name anywhere outside this module — every
-# other module uses one of the semantic aliases instead, even when two
-# aliases happen to share the same underlying constraint.
-
 NonNegativeInt = Annotated[int, Field(ge=0)]
 PositiveInt = Annotated[int, Field(gt=0)]
 SignedInt = int
@@ -21,8 +14,6 @@ PositiveFloat = Annotated[float, Field(gt=0.0)]
 FiniteFloat = Annotated[float, Field(allow_inf_nan=False)]
 UnitInterval = Annotated[float, Field(ge=0.0, le=1.0, allow_inf_nan=False)]
 OpenUnitInterval = Annotated[float, Field(gt=0.0, lt=1.0, allow_inf_nan=False)]
-
-# --- Semantic scalar aliases ------------------------------------------------
 
 Seed = NonNegativeInt
 PacketCount = NonNegativeInt
@@ -65,8 +56,6 @@ PcapTimestampScale = PositiveFloat
 MonotonicTimestamp = FiniteFloat
 WallClockTimestamp = NewType("WallClockTimestamp", datetime)
 
-# --- Identifiers and other nominal string/bytes-based types ----------------
-
 DeviceId = NewType("DeviceId", str)
 ManufacturerId = NewType("ManufacturerId", str)
 SessionId = NewType("SessionId", str)
@@ -80,7 +69,6 @@ GitCommit = NewType("GitCommit", str)
 SourceDependencyClusterId = NewType("SourceDependencyClusterId", str)
 CheckDetail = NewType("CheckDetail", str)
 ConfigText = NewType("ConfigText", str)
-FeatureName = NewType("FeatureName", str)
 DirectoryName = NewType("DirectoryName", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)

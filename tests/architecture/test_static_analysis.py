@@ -1,6 +1,3 @@
-"""Requires Ruff, Pyright, and Semgrep checks to pass. Custom Semgrep rules
-are materialized at runtime; no second YAML is committed."""
-
 from __future__ import annotations
 
 import json

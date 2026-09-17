@@ -10,6 +10,7 @@ from fediec.enums import (
     AggregationRule,
     ClientWeighting,
     ModelArchitectureKind,
+    NetworkExecutionFeature,
     Optimizer,
     RepositoryPathKey,
     TensorDType,
@@ -28,7 +29,6 @@ from fediec.types import (
     Duration,
     EpochCount,
     FeatureCount,
-    FeatureName,
     GradientNormClip,
     InteractionCount,
     LayerCount,
@@ -88,8 +88,8 @@ class SplitSection(DomainRecord):
 
 class FeaturesSection(DomainRecord):
     feature_count: FeatureCount
-    log1p_magnitude_features: tuple[FeatureName, ...]
-    rate_features: tuple[FeatureName, ...]
+    log1p_magnitude_features: tuple[NetworkExecutionFeature, ...]
+    rate_features: tuple[NetworkExecutionFeature, ...]
 
 
 class CounterfactualsSection(DomainRecord):

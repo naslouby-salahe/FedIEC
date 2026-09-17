@@ -279,8 +279,6 @@ class DatasetRawDirectoryName(StrEnum):
     FEDIEC_CONTRACTS = "FedIEC-Contracts"
     PINGPONG = "PingPong"
     TU_WIEN_PHILIPS_HUE = "TU Wien Philips Hue"
-    # Real on-disk name in the shared data pool differs from the dataset's
-    # documented prose spelling ("CIC IoT 2022") — verified, not assumed.
     CIC_IOT_2022 = "cic-iot-2022"
 
 
@@ -297,10 +295,6 @@ class PingPongEligibleDevice(StrEnum):
 
 
 class PingPongEvaluationSubtree(StrEnum):
-    """LOCAL_PHONE and SAME_VENDOR are wired into the adapter today.
-    REMOTE_PHONE/IFTTT/PUBLIC_DATASET exist on disk but are not yet
-    included — see decisions-and-blockers.md."""
-
     LOCAL_PHONE = "local-phone"
     SAME_VENDOR = "same-vendor"
     REMOTE_PHONE = "remote-phone"
@@ -326,16 +320,11 @@ class RawCaptureFileSuffix(StrEnum):
 
 
 class StructByteOrder(StrEnum):
-    """struct module format-string byte-order codes."""
-
     LITTLE = "<"
     BIG = ">"
 
 
 class RepositoryPathSegment(StrEnum):
-    """Every path-segment literal used by paths.py's resolve_path(). One
-    definition per segment name so no segment string is ever retyped."""
-
     DOCS = "docs"
     IMPLEMENTATION = "implementation"
     DATA = "data"
@@ -359,9 +348,30 @@ class RepositoryPathSegment(StrEnum):
     DEVICE_METADATA = "device-metadata"
 
 
-class DatasetRawSubpath(StrEnum):
-    """Sub-paths inside a specific dataset's raw directory, named by the
-    real on-disk structure verified during dataset acquisition."""
+class NetworkExecutionFeature(StrEnum):
 
+    TOTAL_PACKET_COUNT = "total_packet_count"
+    OUTBOUND_PACKET_COUNT = "outbound_packet_count"
+    INBOUND_PACKET_COUNT = "inbound_packet_count"
+    TOTAL_BYTES = "total_bytes"
+    OUTBOUND_BYTES = "outbound_bytes"
+    INBOUND_BYTES = "inbound_bytes"
+    MEAN_OUTBOUND_PACKET_SIZE = "mean_outbound_packet_size"
+    STD_OUTBOUND_PACKET_SIZE = "std_outbound_packet_size"
+    MEAN_INBOUND_PACKET_SIZE = "mean_inbound_packet_size"
+    STD_INBOUND_PACKET_SIZE = "std_inbound_packet_size"
+    MEAN_INTER_ARRIVAL_TIME = "mean_inter_arrival_time"
+    STD_INTER_ARRIVAL_TIME = "std_inter_arrival_time"
+    MEDIAN_INTER_ARRIVAL_TIME = "median_inter_arrival_time"
+    P95_INTER_ARRIVAL_TIME = "p95_inter_arrival_time"
+    UNIQUE_REMOTE_ENDPOINTS = "unique_remote_endpoints"
+    UNIQUE_REMOTE_PORTS = "unique_remote_ports"
+    FIRST_PACKET_LATENCY = "first_packet_latency"
+    ACTIVE_SPAN = "active_span"
+    TCP_FRACTION = "tcp_fraction"
+    UDP_FRACTION = "udp_fraction"
+
+
+class DatasetRawSubpath(StrEnum):
     CIC_IOT_2022_INTERACTIONS = "3-Interactions"
     PINGPONG_EVALUATION_DATASETS = "evaluation-datasets"

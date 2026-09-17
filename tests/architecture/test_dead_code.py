@@ -1,10 +1,3 @@
-"""Flags orphan modules unreachable from the CLI entry point.
-
-Does not auto-delete anything: before deleting apparently-unused code,
-check whether it is required functionality that simply is not wired up
-yet.
-"""
-
 from __future__ import annotations
 
 import ast
@@ -12,10 +5,6 @@ from pathlib import Path
 
 SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
-# Foundational/library modules with an explicit, narrow, documented reason
-# to remain unreachable from cli.py today: they are infrastructure for
-# workflows that do not exist yet (collect/preprocess/prepare/run/report
-# are wired but raise NotImplementedError), not abandoned code.
 _UNREACHABLE_BUT_JUSTIFIED = {
     "artifacts": "checksum/provenance IO for collect/preprocess, neither built yet",
 }
@@ -45,9 +34,6 @@ def _build_import_graph() -> dict[str, set[str]]:
             target = node.module.removeprefix("fediec.").removeprefix("fediec")
             if not target:
                 continue
-            # "from fediec.workflows import doctor" imports the submodule
-            # workflows.doctor, not just the workflows package — record
-            # the more specific edge when it resolves to a real module.
             resolved_any = False
             for alias in node.names:
                 candidate = f"{target}.{alias.name}"
@@ -87,8 +73,6 @@ def test_every_module_is_reachable_from_cli_or_explicitly_justified() -> None:
 
 
 def test_justified_exemptions_are_still_real_modules() -> None:
-    """The exemption list itself must not quietly rot into a dumping
-    ground for things that could just be deleted."""
     existing = {_module_name(path) for path in SRC_ROOT.rglob("*.py") if path.name != "__init__.py"}
     stale = set(_UNREACHABLE_BUT_JUSTIFIED) - existing
     assert not stale, f"exemption list references modules that no longer exist: {stale}"

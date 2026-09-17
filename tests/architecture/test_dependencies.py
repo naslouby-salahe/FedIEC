@@ -1,6 +1,3 @@
-"""Enforces the dependency direction:
-cli -> workflows -> datasets -> config -> paths/artifacts -> enums/types."""
-
 from __future__ import annotations
 
 import ast
@@ -8,10 +5,6 @@ from pathlib import Path
 
 SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
-# Allowed fediec.* import prefixes per module, keyed by the module's own
-# top-level name under "fediec.". A module may import anything whose
-# dotted path (with the "fediec." prefix stripped) starts with one of its
-# allowed prefixes, or itself (sibling imports within the same package).
 _ALLOWED_IMPORT_PREFIXES: dict[str, tuple[str, ...]] = {
     "enums": (),
     "types": (),

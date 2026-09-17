@@ -1,13 +1,5 @@
-"""Custom Semgrep rule bodies, materialized to a temp YAML file at test
-time by test_static_analysis.py; no committed .semgrep.yml under the
-one-YAML rule."""
-
 from __future__ import annotations
 
-# Files where converting an enum to its serialized value is a genuine
-# boundary (CLI display/logging, filesystem path segments, an
-# error-message string naming the unimplemented experiment) rather than an
-# escape from enum typing.
 _VALUE_BOUNDARY_EXCLUDES = [
     "src/fediec/cli.py",
     "src/fediec/paths.py",

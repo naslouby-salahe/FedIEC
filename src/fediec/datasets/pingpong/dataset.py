@@ -15,35 +15,10 @@ from fediec.enums import (
 from fediec.paths import resolve_dataset_raw_root, resolve_pingpong_evaluation_root
 from fediec.types import DeviceId, DirectoryName, DomainRecord, RepositoryPath, WallClockTimestamp
 
-# ON/OFF polarity is not stored per-line in PingPong's raw .timestamps
-# files. It is recovered from PingPong's own official tool source
-# (github.com/uci-plrg/pingpong, SignatureGenerator.java lines 123-126):
-#
-#   // Tag each trigger with "ON" or "OFF", assuming that the first
-#   // trigger is an "ON" and that they alternate.
-#   userActions.add(new UserAction(
-#       i % 2 == 0 ? Type.TOGGLE_ON : Type.TOGGLE_OFF, triggerTimes.get(i)));
-#
-# and the class-level doc comment: "The events ON and OFF were generated
-# alternately for 100 times using the automation scripts." This is the
-# verified ground-truth convention the dataset was collected under, not a
-# heuristic guess.
 _FIRST_TRIGGER_IS_ON = True
 
-# Only capture-unit directories with genuine binary ON/OFF semantics are
-# included. Directories such as *-intensity, *-color, *-mode, *-quickrun,
-# *-photo, *-watch, and ambiguous single-purpose devices without an
-# explicit "-onoff" marker (ring-alarm, kwikset-doorlock, nest-thermostat,
-# roomba-vacuum-robot, dlink-siren, arlo-camera, ecobee-thermostat-*,
-# blossom-sprinkler-*, rachio-sprinkler-*) are deliberately excluded
-# rather than guessed at.
 _ONOFF_SUFFIX = "-onoff"
 
-# remote-phone/, ifttt/, and public-dataset/ collections are not yet
-# included: their intent-provenance chain (an official Android companion
-# application) needs separate verification before eligibility (ifttt is a
-# third-party automation service, and public-dataset's original trigger
-# mechanism is documented by the IMC'19 paper, not by PingPong itself).
 _ELIGIBLE_EVALUATION_SUBTREES = (
     PingPongEvaluationSubtree.LOCAL_PHONE,
     PingPongEvaluationSubtree.SAME_VENDOR,
@@ -72,8 +47,6 @@ def describe_raw_availability() -> DatasetAvailability:
 
 
 def _real_pcap_files(directory: Path) -> list[Path]:
-    # macOS AppleDouble sidecar files ("._name.pcap") are not real data;
-    # verified present in this checkout, excluded here.
     return sorted(
         path
         for path in directory.glob(f"*{RawCaptureFileSuffix.PCAP}")
@@ -138,8 +111,6 @@ def _enumerate_capture_units() -> list[tuple[DeviceId, Path]]:
 def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
     interactions: list[RawTriggerInteraction] = []
     for device_id, capture_unit_directory in _enumerate_capture_units():
-        # macOS AppleDouble sidecar files ("._name.timestamps") are not
-        # real data; verified present in this checkout, excluded here.
         timestamp_files = sorted(
             path
             for path in (

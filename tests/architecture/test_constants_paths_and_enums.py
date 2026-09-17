@@ -49,13 +49,6 @@ def _has_magic_context(names: set[str]) -> bool:
 
 
 def find_suspicious_magic_numbers(paths: list[Path]) -> list[str]:
-    """Find values whose nearby name says they are research decisions.
-
-    This deliberately does not ban every literal: pcap byte offsets and the
-    checksum read-buffer size are implementation-format details, not protocol
-    choices. A threshold/count/tolerance-like name makes the literal a likely
-    unconfigured scientific or runtime choice instead.
-    """
     offenders: list[str] = []
     for path in paths:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -136,10 +129,6 @@ def test_no_suspicious_scientific_magic_numbers() -> None:
 
 
 def test_no_hardcoded_repository_path_fragments() -> None:
-    # paths.py is the path authority, not an exemption from this rule —
-    # it must compose from RepositoryPathSegment/DatasetRawSubpath enum
-    # members like every other module. enums.py is where those values are
-    # legitimately defined once.
     paths = [path for path in _source_files() if path.name != "enums.py"]
     assert not find_hardcoded_path_fragments(paths)
 
@@ -175,8 +164,6 @@ def find_forbidden_words(paths: list[Path]) -> list[str]:
 
 
 def test_no_roadmap_or_technical_doc_mentions_in_source() -> None:
-    """Source and test files must be self-contained and not cite external
-    docs by name — that coupling drifts as either side changes."""
     this_file = Path(__file__).resolve()
     paths = [
         path
@@ -201,10 +188,6 @@ def _newtype_alias_names() -> set[str]:
 
 
 def find_literal_collections_that_should_be_enums(paths: list[Path]) -> list[str]:
-    """A module-level tuple/list/dict/frozenset containing 2+ calls to the
-    same NewType-alias constructor with distinct string literals is a
-    closed vocabulary hiding in a boundary-identifier type. It belongs in
-    a StrEnum instead."""
     alias_names = _newtype_alias_names()
     offenders: list[str] = []
     for path in paths:

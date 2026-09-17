@@ -1,6 +1,3 @@
-"""Flags repository drift: TODO debt, generic dumping-ground modules,
-forbidden claim/audit infrastructure, and versioned/legacy naming."""
-
 from __future__ import annotations
 
 import re

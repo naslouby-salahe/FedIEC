@@ -13,9 +13,6 @@ from fediec.enums import (
 from fediec.paths import resolve_dataset_raw_root
 from fediec.types import DeviceId, DomainRecord, RepositoryPath, WallClockTimestamp
 
-# armstate_labeled.csv at the dataset root is a stray file from an unrelated
-# arm/disarm security-system dataset, not part of this Hue ON/OFF source; it
-# is intentionally excluded from enumeration.
 _TRIGGER_FILENAME_PATTERN = re.compile(
     r"^\d+_(?P<date>\d{8})_(?P<time>\d{6})_.*_Turn_(?P<polarity>On|Off)\.pcap$"
 )
