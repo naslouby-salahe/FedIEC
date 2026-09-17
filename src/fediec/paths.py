@@ -4,13 +4,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fediec.enums import DatasetRawDirectoryName, DatasetSource, ExperimentName, RepositoryPathKey
-from fediec.types import (
-    CaptureId,
-    FileName,
-    RepositoryPath,
-    Seed,
-    SessionId,
-)
+from fediec.types import FileName, RepositoryPath, Seed
 
 
 @lru_cache(maxsize=1)
@@ -123,13 +117,6 @@ def resolve_processed_dataset_directory(dataset: DatasetSource) -> RepositoryPat
     processed_root = resolve_path(RepositoryPathKey.OUTPUTS_PROCESSED_ROOT)
     slug = _DATASET_SOURCE_DIRECTORY_NAME[dataset].lower().replace(" ", "-")
     return RepositoryPath(Path(processed_root) / slug)
-
-
-def resolve_capture_reference(
-    dataset: DatasetSource, session_id: SessionId, capture_id: CaptureId
-) -> RepositoryPath:
-    dataset_root = resolve_dataset_raw_root(dataset)
-    return RepositoryPath(Path(dataset_root) / session_id / f"{capture_id}.pcap")
 
 
 def resolve_fediec_contracts_required_raw_directories() -> tuple[RepositoryPath, ...]:
