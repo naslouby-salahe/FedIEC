@@ -34,7 +34,10 @@ follow once the action-polarity blocker is resolved.
 | trigger-method directory (`LOCAL_ON`/`LOCAL_OFF`/`LAN_ON`/`LAN_OFF`/`WAN_ON`/`WAN_OFF`) | path segment | `semantic_action` + companion-app eligibility flag | `SemanticAction` | `*_ON` -> `TURN_ON`, `*_OFF` -> `TURN_OFF`; `LOCAL_`/`LAN_`/`WAN_` = companion-app eligible, matches Roadmap Sec. 16 | must be one of the 6 app-triggered folder names | required — companion-app provenance | inspected against real `Gosund Plug - Center` folder |
 | trigger-method directory (`ALEXA_ON`/`ALEXA_OFF`/`GOOGLE_ON`/`GOOGLE_OFF`) | path segment | excluded (voice assistant, not companion app) | — | — | — | Roadmap Sec. 16 requires official Android companion app; voice trigger does not qualify | inspected |
 | `.pcap` file (3 per trigger-method folder) | PCAP | `capture_path` | `RepositoryPath` | direct file reference | file exists | source for B/E feature extraction | inspected |
-| trigger timestamp | — | `trigger_timestamp` | `WallClockTimestamp` | **UNRESOLVED** — no per-trigger timestamp file found; must be derived from each pcap's own first-packet capture time | needs a raw-pcap-header read, not yet implemented | intent timestamp | recorded as remaining work |
+| trigger timestamp | — | `trigger_timestamp` | `WallClockTimestamp` | read from each pcap's raw global+first-record header (`read_pcap_first_packet_timestamp()`) | classic-pcap magic number checked; raises on pcapng/unknown format rather than guessing | intent timestamp | implemented, verified against 264 real files |
 | `6-Attacks/<mechanism>/<device>/*.pcap` | PCAP | potential real-attack alignment source (Roadmap Sec. 33) | — | not attempted | needs intent+attack-interval+execution alignment per device | Sec. 33 optional real-attack claim | inspected, not attempted |
 
-No CIC IoT 2022 adapter code exists yet beyond presence detection.
+**Adapter implemented**: `fediec.datasets.cic_iot_2022.dataset.enumerate_raw_interactions()`,
+verified against real `3-Interactions/Home Automation/` data (264
+interactions, 132/132 ON/OFF, all from `LOCAL_`/`LAN_`/`WAN_` folders
+only).

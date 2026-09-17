@@ -22,18 +22,26 @@
 
 ## Open Blockers
 
-1. **PingPong action polarity is unresolved.** The raw `.timestamps` files
-   record trigger times but not which trigger was ON vs OFF. No README,
-   script, or manifest in this checkout documents the convention (checked:
-   dataset root `README`, `evaluation-datasets/public-dataset/smarthome/`
-   scripts `format-timestamps.py` and `underline_to_colon.py` — neither
-   documents polarity). Resolving this requires either the original
-   PingPong paper/companion scripts (not present in this checkout) or a
-   pcap-derived device-state heuristic verified against a known ground
-   truth. No `SemanticAction` is assigned for PingPong until this is
-   resolved — guessing an alternation convention would violate the
-   "never implement an expected value without verifying the real source"
-   rule.
+1. **PingPong action polarity — root cause confirmed, still unresolved.**
+   `evaluation-datasets/public-dataset/smarthome/README` documents
+   PingPong's own preprocessing: "we copy the PCAP files from the LAN
+   folders for both ON and OFF events... into `wemo-insight-plug/wlan`",
+   then merge with `mergecap` and derive the timestamp list from `ls -1`
+   on the merged folder. PingPong **intentionally discards ON/OFF
+   polarity** during its own packaging because its event-signature
+   detection algorithm is polarity-agnostic. This is not a documentation
+   gap on our side — the released `.timestamps` files structurally cannot
+   distinguish ON from OFF. The `local-phone/` folders (PingPong's own
+   collection) share the identical folder shape and very likely the same
+   merge-and-discard pattern, though no pre-merge per-event files remain
+   to confirm this directly. Recorded in `docs/FedIEC_Roadmap.md` Sec.
+   28.1. Resolving this requires either the original IMC'19 per-event
+   pcaps (separate ON/OFF directories, before PingPong's merge step —
+   would need to be sourced from `moniotrlab.ccis.neu.edu/imc19`) or a
+   pcap-content heuristic verified against independent ground truth. No
+   `SemanticAction` is assigned for PingPong until one of these exists —
+   guessing an alternation convention would violate the "never implement
+   an expected value without verifying the real source" rule.
 2. **CIC IoT 2022 trigger timestamps are not in a separate log** — they
    must be read from each pcap's own first-packet capture time. The
    adapter needs a lightweight pcap-header reader; not yet implemented.

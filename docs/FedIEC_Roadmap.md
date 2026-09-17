@@ -1691,13 +1691,50 @@ All eligible devices are used.
 
 No performance-based device selection is allowed.
 
+## 28.1 Known Acquisition Constraint on Criterion 2
+
+The acquired PingPong release packages captures by **merging ON and OFF
+event pcaps together** before deriving its timestamp list (`mergecap` +
+`ls -1` over the merged directory, per the dataset's own instructions).
+This is intentional on PingPong's part — its event-signature detection is
+polarity-agnostic — but it means the released `timestamps` files do not by
+themselves state which trigger was ON and which was OFF.
+
+Consequently, criterion 2 is **not automatically satisfied** by the
+release as acquired. Before a PingPong device can be marked eligible, one
+of the following must independently establish polarity:
+
+```text
+the original per-event pcaps from the source IMC'19 public release
+(separate ON/OFF directories, before PingPong's merge step), if obtainable
+```
+
+or:
+
+```text
+a verified pcap-content heuristic for this device's protocol, checked
+against at least one independently known ground-truth ON/OFF pair
+```
+
+Guessing an alternation convention is forbidden. A device without a
+verified polarity source is `MISSING_EXTERNAL`-equivalent for the ON/OFF
+task regardless of how much raw capture data exists for it, and remains
+so until this is resolved.
+
 ---
 
 # 29. External Dataset 2 — TU Wien Philips Hue
 
 The TU Wien Philips Hue dataset remains a useful large-scale mechanism dataset.
 
-It contains repeated labeled ON/OFF captures.
+It contains repeated labeled ON/OFF captures. As acquired, ON/OFF polarity
+is directly encoded in each capture's filename
+(`{index}_{yyyymmdd}_{hhmmss}_{device label}_Turn_{On|Off}.pcap`) — unlike
+PingPong (Sec. 28.1), no separate polarity-verification step is required
+for this source; 5000 ON / 5000 OFF captures for one device were confirmed
+by direct enumeration. A stray `armstate_labeled.csv` file co-located at
+the dataset root belongs to an unrelated arm/disarm security-system
+dataset and is not TU Wien Philips Hue data — exclude it.
 
 Its revised role is:
 
@@ -1747,6 +1784,17 @@ CIC IoT 2022 or another suitable dataset may be used only if the following can b
 5. target-device execution during that interval.
 
 If any condition is missing, the dataset cannot support the real-attack claim.
+
+As acquired, the raw CIC IoT 2022 material's `3-Interactions/<category>/
+<device>/` directories separate app-triggered polarity by trigger-method
+subfolder (`LOCAL_ON`, `LOCAL_OFF`, `LAN_ON`, `LAN_OFF`, `WAN_ON`,
+`WAN_OFF`) alongside voice-assistant subfolders (`ALEXA_*`, `GOOGLE_*`).
+Only the `LOCAL_`/`LAN_`/`WAN_` subfolders satisfy the official-companion-
+app intent-provenance requirement in Sec. 16; `ALEXA_*`/`GOOGLE_*` are
+voice triggers and are excluded from FedIEC eligibility regardless of
+otherwise-usable capture quality. Per-interaction intent timestamps are
+not provided separately and must be read from each capture's own
+first-packet time.
 
 ---
 

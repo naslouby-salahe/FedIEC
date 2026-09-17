@@ -76,6 +76,10 @@ FedIEC/
 │   ├── technical_doc.md
 │   │   # This document: architecture, tree, tooling, coding, testing, and artifact rules.
 │   │
+│   ├── roadmap_changes.md
+│   │   # Reasoning behind surgical roadmap updates (CLAUDE.md's change protocol).
+│   │   # Explains why; the roadmap itself stays clean and current, not a changelog.
+│   │
 │   └── implementation/
 │       # Human-authored implementation tracking: checklist, requirement
 │       # traceability, dataset inventory/schema map, wiring map, decisions

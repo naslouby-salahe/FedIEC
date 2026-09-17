@@ -88,7 +88,10 @@ alignment source for Roadmap Sec. 33, contingent on establishing intent
 timestamp + attack-interval + execution alignment per device, not yet
 attempted.
 
-**Not yet built:** the directory-walking adapter that turns
-`LOCAL_ON/LAN_ON/WAN_ON/OFF` folders into `RawTriggerInteraction` records
-(mirroring the TU Wien adapter), and the pcap-first-packet-timestamp
-extraction it needs. Recorded as remaining work, not fabricated.
+**Adapter implemented and verified**: `enumerate_raw_interactions()` walks
+`3-Interactions/<category>/<device>/{LOCAL,LAN,WAN}_{ON,OFF}/` (skipping
+`ALEXA_*`/`GOOGLE_*`), reads each pcap's first-packet timestamp from the
+raw libpcap global+record header (classic pcap only — verified via `file`
+against real captures, no pcapng observed), and returns 264 real
+interactions across the Home Automation category — 132 ON / 132 OFF,
+confirmed by direct enumeration.
