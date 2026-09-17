@@ -199,7 +199,6 @@ class RepositoryPathKey(StrEnum):
 
 
 class CliCommand(StrEnum):
-    """Public CLI command identity (technical_doc.md Sec. 12)."""
 
     DOCTOR = "doctor"
     COLLECT = "collect"
@@ -213,7 +212,6 @@ class CliCommand(StrEnum):
 
 
 class LogEvent(StrEnum):
-    """Structured-logging event identity, emitted by cli.py."""
 
     DOCTOR_START = "cli.doctor.start"
     DOCTOR_DONE = "cli.doctor.done"
@@ -230,7 +228,6 @@ class LogEvent(StrEnum):
 
 
 class TableColumn(StrEnum):
-    """CLI table column header (cli.py Rich tables)."""
 
     CHECK = "check"
     STATUS = "status"
@@ -240,9 +237,96 @@ class TableColumn(StrEnum):
 
 
 class TerminalColor(StrEnum):
-    """Rich terminal style name used for CLI table cell coloring."""
 
     GREEN = "green"
     YELLOW = "yellow"
     RED = "red"
     BLUE = "blue"
+
+
+class CheckKind(StrEnum):
+
+    CONFIGURATION = "configuration"
+    DATASET_FEDIEC_CONTRACTS = "dataset:fediec_contracts"
+    DATASET_PINGPONG = "dataset:pingpong"
+    DATASET_TU_WIEN_PHILIPS_HUE = "dataset:tu_wien_philips_hue"
+    DATASET_CIC_IOT_2022 = "dataset:cic_iot_2022"
+
+
+class CicTriggerMethod(StrEnum):
+
+    LOCAL = "LOCAL_"
+    LAN = "LAN_"
+    WAN = "WAN_"
+    ALEXA = "ALEXA_"
+    GOOGLE = "GOOGLE_"
+
+
+class CicPolarityToken(StrEnum):
+
+    ON = "ON"
+    OFF = "OFF"
+
+
+class TuWienPolarityToken(StrEnum):
+
+    ON = "On"
+    OFF = "Off"
+
+
+class DatasetRawDirectoryName(StrEnum):
+
+    FEDIEC_CONTRACTS = "FedIEC-Contracts"
+    PINGPONG = "PingPong"
+    TU_WIEN_PHILIPS_HUE = "TU Wien Philips Hue"
+    # Real on-disk name in the shared data pool differs from the dataset's
+    # documented prose spelling ("CIC IoT 2022") — verified, not assumed.
+    CIC_IOT_2022 = "cic-iot-2022"
+
+
+class PingPongEligibleDevice(StrEnum):
+
+    AMAZON_PLUG = "amazon-plug"
+    DLINK_PLUG = "dlink-plug"
+    ST_PLUG = "st-plug"
+    TPLINK_PLUG = "tplink-plug"
+    TPLINK_POWER_STRIP = "tplink-power-strip"
+    TPLINK_TWO_OUTLET_PLUG = "tplink-two-outlet-plug"
+    WEMO_INSIGHT_PLUG = "wemo-insight-plug"
+    WEMO_PLUG = "wemo-plug"
+
+
+class PingPongEvaluationSubtree(StrEnum):
+    """LOCAL_PHONE and SAME_VENDOR are wired into the adapter today.
+    REMOTE_PHONE/IFTTT/PUBLIC_DATASET exist on disk but are not yet
+    included — see decisions-and-blockers.md."""
+
+    LOCAL_PHONE = "local-phone"
+    SAME_VENDOR = "same-vendor"
+    REMOTE_PHONE = "remote-phone"
+    IFTTT = "ifttt"
+    PUBLIC_DATASET = "public-dataset"
+
+
+class NetworkCaptureSubdirectory(StrEnum):
+
+    TIMESTAMPS = "timestamps"
+    WLAN1 = "wlan1"
+    WLAN = "wlan"
+    ETH0 = "eth0"
+    ETH1 = "eth1"
+    VPN = "vpn"
+    EVENT = "event"
+
+
+class RawCaptureFileSuffix(StrEnum):
+
+    PCAP = ".pcap"
+    TIMESTAMPS = ".timestamps"
+
+
+class StructByteOrder(StrEnum):
+    """struct module format-string byte-order codes."""
+
+    LITTLE = "<"
+    BIG = ">"

@@ -4,46 +4,45 @@ import struct
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fediec.enums import DatasetAvailability, DatasetSource, SemanticAction
-from fediec.paths import resolve_dataset_raw_root
+from fediec.enums import (
+    CicPolarityToken,
+    CicTriggerMethod,
+    DatasetAvailability,
+    DatasetSource,
+    RawCaptureFileSuffix,
+    SemanticAction,
+    StructByteOrder,
+)
+from fediec.paths import resolve_cic_iot_2022_interactions_root, resolve_dataset_raw_root
 from fediec.types import (
     DeviceId,
     DomainRecord,
     PcapTimestampScale,
-    RawPolarityToken,
-    RawTriggerMethodPrefix,
     RepositoryPath,
-    StructEndianness,
     WallClockTimestamp,
 )
 
-# Verified against real files under
-# data/raw/cic-iot-2022/3-Interactions/<category>/<device>/: each device
-# directory has trigger-method subfolders. LOCAL_/LAN_/WAN_ prefixes are
-# official-companion-app triggers (Roadmap Sec. 16 intent-provenance
-# requirement); ALEXA_/GOOGLE_ are voice-assistant triggers and are
-# excluded — a voice command is not an official Android companion-app
-# interaction.
-_ELIGIBLE_TRIGGER_METHOD_PREFIXES: tuple[RawTriggerMethodPrefix, ...] = (
-    RawTriggerMethodPrefix("LOCAL_"),
-    RawTriggerMethodPrefix("LAN_"),
-    RawTriggerMethodPrefix("WAN_"),
+# LOCAL_/LAN_/WAN_ are official-companion-app triggers; ALEXA_/GOOGLE_ are
+# voice-assistant triggers and are excluded — a voice command is not an
+# official Android companion-app interaction.
+_ELIGIBLE_TRIGGER_METHODS = frozenset(
+    {CicTriggerMethod.LOCAL, CicTriggerMethod.LAN, CicTriggerMethod.WAN}
 )
 
-_POLARITY_SUFFIX_TO_ACTION: dict[RawPolarityToken, SemanticAction] = {
-    RawPolarityToken("ON"): SemanticAction.TURN_ON,
-    RawPolarityToken("OFF"): SemanticAction.TURN_OFF,
+_POLARITY_TOKEN_TO_ACTION: dict[CicPolarityToken, SemanticAction] = {
+    CicPolarityToken.ON: SemanticAction.TURN_ON,
+    CicPolarityToken.OFF: SemanticAction.TURN_OFF,
 }
 
 # Classic (non-pcapng) libpcap global-header magic numbers: little/big
 # endian, microsecond/nanosecond resolution. pcapng is not present in this
 # dataset (verified via `file` on real captures) and is intentionally
 # unsupported here rather than guessed at.
-_PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[StructEndianness, PcapTimestampScale]] = {
-    b"\xd4\xc3\xb2\xa1": (StructEndianness("<"), 1e-6),
-    b"\xa1\xb2\xc3\xd4": (StructEndianness(">"), 1e-6),
-    b"\x4d\x3c\xb2\xa1": (StructEndianness("<"), 1e-9),
-    b"\xa1\xb2\x3c\x4d": (StructEndianness(">"), 1e-9),
+_PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[StructByteOrder, PcapTimestampScale]] = {
+    b"\xd4\xc3\xb2\xa1": (StructByteOrder.LITTLE, 1e-6),
+    b"\xa1\xb2\xc3\xd4": (StructByteOrder.BIG, 1e-6),
+    b"\x4d\x3c\xb2\xa1": (StructByteOrder.LITTLE, 1e-9),
+    b"\xa1\xb2\x3c\x4d": (StructByteOrder.BIG, 1e-9),
 }
 
 
@@ -79,32 +78,32 @@ def read_pcap_first_packet_timestamp(capture_path: RepositoryPath) -> WallClockT
 
 
 def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
-    raw_root = resolve_dataset_raw_root(DatasetSource.CIC_IOT_2022)
-    interactions_root = Path(raw_root) / "3-Interactions"
+    interactions_root = resolve_cic_iot_2022_interactions_root()
     interactions: list[RawTriggerInteraction] = []
     for category_directory in sorted(p for p in interactions_root.iterdir() if p.is_dir()):
         for device_directory in sorted(p for p in category_directory.iterdir() if p.is_dir()):
-            for trigger_directory in sorted(
-                p for p in device_directory.iterdir() if p.is_dir()
-            ):
+            for trigger_directory in sorted(p for p in device_directory.iterdir() if p.is_dir()):
                 prefix, _, polarity = trigger_directory.name.partition("_")
-                trigger_method = RawTriggerMethodPrefix(f"{prefix}_")
-                if trigger_method not in _ELIGIBLE_TRIGGER_METHOD_PREFIXES:
+                try:
+                    trigger_method = CicTriggerMethod(f"{prefix}_")
+                except ValueError:
                     continue
-                semantic_action = _POLARITY_SUFFIX_TO_ACTION.get(
-                    RawPolarityToken(polarity)
-                )
-                if semantic_action is None:
+                if trigger_method not in _ELIGIBLE_TRIGGER_METHODS:
                     continue
-                for capture_path in sorted(trigger_directory.glob("*.pcap")):
+                try:
+                    polarity_token = CicPolarityToken(polarity)
+                except ValueError:
+                    continue
+                semantic_action = _POLARITY_TOKEN_TO_ACTION[polarity_token]
+                for capture_path in sorted(
+                    trigger_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")
+                ):
                     typed_capture_path = RepositoryPath(capture_path)
                     interactions.append(
                         RawTriggerInteraction(
                             device_id=DeviceId(device_directory.name),
                             semantic_action=semantic_action,
-                            trigger_timestamp=read_pcap_first_packet_timestamp(
-                                typed_capture_path
-                            ),
+                            trigger_timestamp=read_pcap_first_packet_timestamp(typed_capture_path),
                             capture_path=typed_capture_path,
                         )
                     )

@@ -1,7 +1,6 @@
-"""Custom Semgrep rule bodies, materialized to a temp YAML file at test time
-by test_static_analysis.py (technical_doc.md Sec. 15.3: no committed
-.semgrep.yml under the one-YAML rule).
-"""
+"""Custom Semgrep rule bodies, materialized to a temp YAML file at test
+time by test_static_analysis.py; no committed .semgrep.yml under the
+one-YAML rule."""
 
 from __future__ import annotations
 
@@ -56,7 +55,7 @@ RULES: dict[str, object] = {
             "languages": ["python"],
             "message": (
                 "yaml.safe_load called outside config.py. Only config.py may "
-                "parse config.yaml (technical_doc.md Sec. 6.3)."
+                "parse config.yaml."
             ),
             "severity": "ERROR",
             "pattern": "yaml.safe_load(...)",
@@ -67,7 +66,7 @@ RULES: dict[str, object] = {
             "languages": ["python"],
             "message": (
                 "typing.cast(...) used. Fix the underlying type instead of "
-                "casting past it (technical_doc.md Sec. 9)."
+                "casting past it."
             ),
             "severity": "ERROR",
             "pattern": "cast(...)",

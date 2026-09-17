@@ -9,8 +9,8 @@ from fediec.datasets.cic_iot_2022 import dataset as cic_iot_2022_dataset
 from fediec.datasets.fediec_contracts import dataset as fediec_contracts_dataset
 from fediec.datasets.pingpong import dataset as pingpong_dataset
 from fediec.datasets.tu_wien_philips_hue import dataset as tu_wien_philips_hue_dataset
-from fediec.enums import CheckStatus, DatasetAvailability, DatasetSource
-from fediec.types import CheckDetail, CheckLabel, DomainRecord
+from fediec.enums import CheckKind, CheckStatus, DatasetAvailability, DatasetSource
+from fediec.types import CheckDetail, DomainRecord
 
 _DATASET_AVAILABILITY_CHECK_STATUS: dict[DatasetAvailability, CheckStatus] = {
     DatasetAvailability.PRESENT_AND_VALID: CheckStatus.PASS,
@@ -28,9 +28,16 @@ _DATASET_AVAILABILITY_CHECK: dict[DatasetSource, Callable[[], DatasetAvailabilit
     DatasetSource.CIC_IOT_2022: cic_iot_2022_dataset.describe_raw_availability,
 }
 
+_CHECK_KIND_FOR_DATASET: dict[DatasetSource, CheckKind] = {
+    DatasetSource.FEDIEC_CONTRACTS: CheckKind.DATASET_FEDIEC_CONTRACTS,
+    DatasetSource.PINGPONG: CheckKind.DATASET_PINGPONG,
+    DatasetSource.TU_WIEN_PHILIPS_HUE: CheckKind.DATASET_TU_WIEN_PHILIPS_HUE,
+    DatasetSource.CIC_IOT_2022: CheckKind.DATASET_CIC_IOT_2022,
+}
+
 
 class DoctorCheckResult(DomainRecord):
-    label: CheckLabel
+    label: CheckKind
     status: CheckStatus
     detail: CheckDetail
 
@@ -53,18 +60,18 @@ def _check_configuration() -> DoctorCheckResult:
         config = load_config()
     except ValidationError as error:
         return DoctorCheckResult(
-            label=CheckLabel("configuration"),
+            label=CheckKind.CONFIGURATION,
             status=CheckStatus.FAIL,
             detail=CheckDetail(f"config.yaml failed validation: {error}"),
         )
     except OSError as error:
         return DoctorCheckResult(
-            label=CheckLabel("configuration"),
+            label=CheckKind.CONFIGURATION,
             status=CheckStatus.FAIL,
             detail=CheckDetail(f"config.yaml could not be read: {error}"),
         )
     return DoctorCheckResult(
-        label=CheckLabel("configuration"),
+        label=CheckKind.CONFIGURATION,
         status=CheckStatus.PASS,
         detail=CheckDetail(
             f"config.yaml valid: {len(config.training.seeds)} training seeds configured"
@@ -77,7 +84,7 @@ def _check_dataset(dataset: DatasetSource) -> DoctorCheckResult:
     availability = describe()
     status = _DATASET_AVAILABILITY_CHECK_STATUS[availability]
     return DoctorCheckResult(
-        label=CheckLabel(f"dataset:{dataset.value}"),
+        label=_CHECK_KIND_FOR_DATASET[dataset],
         status=status,
         detail=CheckDetail(availability.value),
     )

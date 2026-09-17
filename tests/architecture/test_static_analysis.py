@@ -1,6 +1,5 @@
-"""Requires Ruff, Pyright, and Semgrep checks to pass (technical_doc.md
-Sec. 21). Custom Semgrep rules are materialized at runtime; no second YAML
-is committed (Sec. 6.1, Sec. 15.3)."""
+"""Requires Ruff, Pyright, and Semgrep checks to pass. Custom Semgrep rules
+are materialized at runtime; no second YAML is committed."""
 
 from __future__ import annotations
 

@@ -3,10 +3,9 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from fediec.enums import DatasetSource, ExperimentName, RepositoryPathKey
+from fediec.enums import DatasetRawDirectoryName, DatasetSource, ExperimentName, RepositoryPathKey
 from fediec.types import (
     CaptureId,
-    DirectoryName,
     FileName,
     RepositoryPath,
     Seed,
@@ -19,14 +18,11 @@ def _repository_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-_DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DirectoryName] = {
-    DatasetSource.FEDIEC_CONTRACTS: DirectoryName("FedIEC-Contracts"),
-    DatasetSource.PINGPONG: DirectoryName("PingPong"),
-    DatasetSource.TU_WIEN_PHILIPS_HUE: DirectoryName("TU Wien Philips Hue"),
-    # Real on-disk name in the shared data pool differs from the roadmap's
-    # prose spelling ("CIC IoT 2022") — verified against the actual
-    # directory rather than assumed.
-    DatasetSource.CIC_IOT_2022: DirectoryName("cic-iot-2022"),
+_DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DatasetRawDirectoryName] = {
+    DatasetSource.FEDIEC_CONTRACTS: DatasetRawDirectoryName.FEDIEC_CONTRACTS,
+    DatasetSource.PINGPONG: DatasetRawDirectoryName.PINGPONG,
+    DatasetSource.TU_WIEN_PHILIPS_HUE: DatasetRawDirectoryName.TU_WIEN_PHILIPS_HUE,
+    DatasetSource.CIC_IOT_2022: DatasetRawDirectoryName.CIC_IOT_2022,
 }
 
 
@@ -93,6 +89,14 @@ def resolve_path(key: RepositoryPathKey) -> RepositoryPath:
 def resolve_dataset_raw_root(dataset: DatasetSource) -> RepositoryPath:
     directory_name = _DATASET_SOURCE_DIRECTORY_NAME[dataset]
     return RepositoryPath(_repository_root() / "data" / "raw" / directory_name)
+
+
+def resolve_cic_iot_2022_interactions_root() -> RepositoryPath:
+    return RepositoryPath(resolve_dataset_raw_root(DatasetSource.CIC_IOT_2022) / "3-Interactions")
+
+
+def resolve_pingpong_evaluation_root() -> RepositoryPath:
+    return RepositoryPath(resolve_dataset_raw_root(DatasetSource.PINGPONG) / "evaluation-datasets")
 
 
 _RUN_MANIFEST_FILENAME = FileName("manifest.json")
