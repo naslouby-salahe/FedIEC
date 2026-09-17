@@ -82,7 +82,6 @@ CheckDetail = NewType("CheckDetail", str)
 ConfigText = NewType("ConfigText", str)
 FeatureName = NewType("FeatureName", str)
 DirectoryName = NewType("DirectoryName", str)
-FileName = NewType("FileName", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)
 

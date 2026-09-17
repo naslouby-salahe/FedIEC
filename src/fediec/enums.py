@@ -352,6 +352,7 @@ class RepositoryPathSegment(StrEnum):
     TABLES = "tables"
     FIGURES = "figures"
     CONFIG_FILE = "config.yaml"
+    RUN_MANIFEST_FILE = "manifest.json"
     CAPTURES = "captures"
     INTENT_LOGS = "intent-logs"
     SESSION_MANIFESTS = "session-manifests"

@@ -11,7 +11,7 @@ from fediec.enums import (
     RepositoryPathKey,
     RepositoryPathSegment,
 )
-from fediec.types import FileName, RepositoryPath, Seed
+from fediec.types import RepositoryPath, Seed
 
 
 @lru_cache(maxsize=1)
@@ -106,8 +106,6 @@ def resolve_pingpong_evaluation_root() -> RepositoryPath:
     return RepositoryPath(Path(pingpong_root) / DatasetRawSubpath.PINGPONG_EVALUATION_DATASETS)
 
 
-_RUN_MANIFEST_FILENAME = FileName("manifest.json")
-
 _FEDIEC_CONTRACTS_REQUIRED_RAW_PATH_KEYS: tuple[RepositoryPathKey, ...] = (
     RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_CAPTURES,
     RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_INTENT_LOGS,
@@ -123,7 +121,7 @@ def resolve_output_run_directory(experiment: ExperimentName, seed: Seed) -> Repo
 
 def resolve_run_manifest_path(experiment: ExperimentName, seed: Seed) -> RepositoryPath:
     run_directory = resolve_output_run_directory(experiment, seed)
-    return RepositoryPath(Path(run_directory) / _RUN_MANIFEST_FILENAME)
+    return RepositoryPath(Path(run_directory) / RepositoryPathSegment.RUN_MANIFEST_FILE)
 
 
 def resolve_processed_dataset_directory(dataset: DatasetSource) -> RepositoryPath:
