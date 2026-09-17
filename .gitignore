@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# FedIEC Local Data & Symlinks
+/data/
+data/
+!data/.gitkeep
+
+# Raw & processed dataset files
+*.pcap
+*.pcapng
+*.cap
+*.tar.gz
+*.tgz
+*.7z
+*.zip
+*.parquet
+*.npz
+
+# Temporary downloads, partial & ongoing transfer artifacts
+*.aria2
+*.part
+*.ongoing
+*.tmp
+*.temp
+*.crdownload
+*INCOMPLETE*
+
+# Download-state, session, & progress artifacts
+download_state*.json
+download_manifest*.json
+*.download_manifest.json
+DOWNLOAD_STATUS*.md
+*cookies*.txt
+*.session
+*.log

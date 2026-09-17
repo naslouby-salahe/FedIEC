@@ -655,10 +655,6 @@ PingPong external device-event validation
         ↓
 TU Wien Philips Hue mechanism replication
         ↓
-IMC 2023 IoT Local external federated validation
-        ↓
-IMC 2019 Mon(IoT)r if IMC 2023 is unsuitable
-        ↓
 CIC IoT 2022 or another valid aligned dataset
 for optional real-attack validation
 
@@ -1718,49 +1714,6 @@ It does not establish multi-device federation by itself.
 
 ---
 
-# 30. External Dataset 3 — IMC 2023 IoT Local
-
-The IMC 2023 IoT Local dataset is used if its metadata supports independent action provenance.
-
-Eligible records must satisfy:
-
-```text
-physical device identity known
-mobile companion-app trigger known
-TURN_ON versus TURN_OFF explicitly distinguishable
-interaction timestamp available
-execution attributable to target device
-
-```
-
-Voice-assistant interactions remain outside the confirmatory population.
-
-Generic interaction labels do not qualify.
-
----
-
-# 31. External Dataset 4 — IMC 2019 Mon(IoT)r
-
-IMC 2019 is audited if IMC 2023 cannot support the intended external replication.
-
-Exactly the same semantic rules apply.
-
-Labels such as:
-
-```text
-power
-activity
-interaction
-toggle
-
-```
-
-do not automatically establish ON versus OFF.
-
-Direction-specific semantics must be independently documented.
-
----
-
 # 32. Public-Dataset Failure Rule
 
 Failure of an external dataset does **not** invalidate FedIEC.
@@ -2665,7 +2618,7 @@ This analysis is reported separately from leave-one-device-out and supports only
 
 # 61. External Cross-Device Validation
 
-Where PingPong or IMC data permit, repeat the same concept across an independent collection.
+Where PingPong data permit, repeat the same concept across an independent collection.
 
 The purpose is not to pool incompatible datasets.
 
@@ -3772,8 +3725,6 @@ Audit PingPong eligibility
         ↓
 Run external validation
         ↓
-Audit IMC datasets if needed
-        ↓
 Audit real-attack alignment
         ↓
 Run real-attack evaluation only if valid
@@ -4013,7 +3964,7 @@ current-through-2026 novelty audit
 closest-work collision matrix
 hardware selection/acquisition for >=6 core devices
 manufacturer/category/topology coverage lock
-PingPong + IMC access requests
+PingPong access request
 Android automation harness
 capture pipeline
 feature extractor
