@@ -9,6 +9,7 @@ from fediec.enums import (
     CicTriggerMethod,
     DatasetAvailability,
     DatasetSource,
+    IntentProvenanceGrade,
     RawCaptureFileSuffix,
     SemanticAction,
     StructByteOrder,
@@ -16,9 +17,12 @@ from fediec.enums import (
 from fediec.paths import resolve_cic_iot_2022_interactions_root, resolve_dataset_raw_root
 from fediec.types import (
     DeviceId,
-    DomainRecord,
+    InteractionId,
     PcapTimestampScale,
+    PublicSourceInteraction,
     RepositoryPath,
+    SourceCaptureId,
+    SourceGroupId,
     WallClockTimestamp,
 )
 
@@ -37,13 +41,6 @@ _PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[StructByteOrder, PcapTimestampScale]] =
     b"\x4d\x3c\xb2\xa1": (StructByteOrder.LITTLE, 1e-9),
     b"\xa1\xb2\x3c\x4d": (StructByteOrder.BIG, 1e-9),
 }
-
-
-class RawTriggerInteraction(DomainRecord):
-    device_id: DeviceId
-    semantic_action: SemanticAction
-    trigger_timestamp: WallClockTimestamp
-    capture_path: RepositoryPath
 
 
 def describe_raw_availability() -> DatasetAvailability:
@@ -70,9 +67,9 @@ def read_pcap_first_packet_timestamp(capture_path: RepositoryPath) -> WallClockT
         return WallClockTimestamp(datetime.fromtimestamp(epoch_seconds, tz=UTC))
 
 
-def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
+def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
     interactions_root = resolve_cic_iot_2022_interactions_root()
-    interactions: list[RawTriggerInteraction] = []
+    interactions: list[PublicSourceInteraction] = []
     for category_directory in sorted(p for p in interactions_root.iterdir() if p.is_dir()):
         for device_directory in sorted(p for p in category_directory.iterdir() if p.is_dir()):
             for trigger_directory in sorted(p for p in device_directory.iterdir() if p.is_dir()):
@@ -93,10 +90,19 @@ def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
                 ):
                     typed_capture_path = RepositoryPath(capture_path)
                     interactions.append(
-                        RawTriggerInteraction(
+                        PublicSourceInteraction(
+                            dataset_source=DatasetSource.CIC_IOT_2022,
+                            interaction_id=InteractionId(
+                                capture_path.relative_to(interactions_root).as_posix()
+                            ),
                             device_id=DeviceId(device_directory.name),
+                            source_capture_id=SourceCaptureId(capture_path.name),
+                            source_group_id=SourceGroupId(
+                                trigger_directory.relative_to(interactions_root).as_posix()
+                            ),
                             semantic_action=semantic_action,
                             trigger_timestamp=read_pcap_first_packet_timestamp(typed_capture_path),
+                            intent_provenance_grade=IntentProvenanceGrade.SOURCE_DOCUMENTED_PATH,
                             capture_path=typed_capture_path,
                         )
                     )

@@ -40,6 +40,10 @@ class ViolationFamily(StrEnum):
     SUBSTITUTION = "substitution"
     UNCOMMANDED_EXECUTION = "uncommanded_execution"
     EXCESS_EXECUTION = "excess_execution"
+    REPLAY_OR_LATE_EXECUTION = "replay_or_late_execution"
+
+
+class ReplayLateExecutionSubtype(StrEnum):
     TEMPORALLY_MISALIGNED_EXECUTION = "temporally_misaligned_execution"
     PURE_REPLAY_REPRESENTATION_LIMIT = "pure_replay_representation_limit"
 
@@ -50,9 +54,9 @@ class ArtifactAuditFamily(StrEnum):
 
 
 class MatchingTier(StrEnum):
-    TIER_1_SAME_SESSION = "tier_1_same_session"
-    TIER_2_SAME_DAY = "tier_2_same_day"
-    TIER_3_ADJACENT_DAY = "tier_3_adjacent_day"
+    TIER_1_SAME_SOURCE_GROUP = "tier_1_same_source_group"
+    TIER_2_NEAREST_DISTINCT_SOURCE_GROUP = "tier_2_nearest_distinct_source_group"
+    TIER_3_OTHER_ELIGIBLE_SOURCE_GROUP = "tier_3_other_eligible_source_group"
 
 
 class InfeasibilityReason(StrEnum):
@@ -89,7 +93,6 @@ class LearningRegime(StrEnum):
 
 
 class DatasetSource(StrEnum):
-    FEDIEC_CONTRACTS = "fediec_contracts"
     PINGPONG = "pingpong"
     TU_WIEN_PHILIPS_HUE = "tu_wien_philips_hue"
     CIC_IOT_2022 = "cic_iot_2022"
@@ -101,22 +104,29 @@ class DatasetAvailability(StrEnum):
     PRESENT_BUT_SCHEMA_DRIFTED = "present_but_schema_drifted"
     PRESENT_BUT_CORRUPT = "present_but_corrupt"
     MISSING_EXTERNAL = "missing_external"
-    MISSING_CONTROLLED_BENCHMARK = "missing_controlled_benchmark"
+    ACCESS_RESTRICTED = "access_restricted"
 
 
-class AutomationSource(StrEnum):
-    ANDROID_UIAUTOMATOR = "android_uiautomator"
-    ANDROID_APPIUM = "android_appium"
-    MANUAL_LOGGED = "manual_logged"
+class DatasetEligibility(StrEnum):
+    FULL_CONTRACT_ELIGIBLE = "full_contract_eligible"
+    ACTION_CONTRACT_ONLY = "action_contract_only"
+    REPLICATION_ONLY = "replication_only"
+    ATTACK_ALIGNMENT_ONLY = "attack_alignment_only"
+    INELIGIBLE = "ineligible"
 
 
-class PhysicalViolationMechanism(StrEnum):
-    COMMAND_DELIVERY_INTERRUPTION = "command_delivery_interruption"
-    SECONDARY_CONTROLLER_COMMAND = "secondary_controller_command"
-    UNCOMMANDED_STATE_CHANGE = "uncommanded_state_change"
-    DELAYED_COMMAND_EXECUTION = "delayed_command_execution"
-    RAPID_CONTRADICTORY_COMMAND = "rapid_contradictory_command"
-    TEMPORARY_NETWORK_INTERRUPTION = "temporary_network_interruption"
+class DatasetRole(StrEnum):
+    PRIMARY_CANDIDATE = "primary_candidate"
+    SECONDARY_CANDIDATE = "secondary_candidate"
+    MECHANISM_REPLICATION = "mechanism_replication"
+    OPTIONAL_ALIGNED_SOURCE = "optional_aligned_source"
+
+
+class IntentProvenanceGrade(StrEnum):
+    VERIFIED_DIRECT = "verified_direct"
+    VERIFIED_PROTOCOL = "verified_protocol"
+    SOURCE_DOCUMENTED_PATH = "source_documented_path"
+    INSUFFICIENT = "insufficient"
 
 
 class CheckStatus(StrEnum):
@@ -141,7 +151,7 @@ class ExperimentName(StrEnum):
     HETEROGENEITY = "heterogeneity"
     TRANSFER = "transfer"
     PROVENANCE_ROBUSTNESS = "provenance-robustness"
-    PHYSICAL_VIOLATIONS = "physical-violations"
+    OBSERVED_CONTROL_FAILURES = "observed-control-failures"
     EXTERNAL_VALIDATION = "external-validation"
 
 
@@ -175,14 +185,9 @@ class RepositoryPathKey(StrEnum):
     DOCS_IMPLEMENTATION_ROOT = "docs_implementation_root"
     DATA_ROOT = "data_root"
     DATA_RAW_ROOT = "data_raw_root"
-    DATA_RAW_FEDIEC_CONTRACTS = "data_raw_fediec_contracts"
     DATA_RAW_PINGPONG = "data_raw_pingpong"
     DATA_RAW_TU_WIEN_PHILIPS_HUE = "data_raw_tu_wien_philips_hue"
     DATA_RAW_CIC_IOT_2022 = "data_raw_cic_iot_2022"
-    DATA_RAW_FEDIEC_CONTRACTS_CAPTURES = "data_raw_fediec_contracts_captures"
-    DATA_RAW_FEDIEC_CONTRACTS_INTENT_LOGS = "data_raw_fediec_contracts_intent_logs"
-    DATA_RAW_FEDIEC_CONTRACTS_SESSION_MANIFESTS = "data_raw_fediec_contracts_session_manifests"
-    DATA_RAW_FEDIEC_CONTRACTS_DEVICE_METADATA = "data_raw_fediec_contracts_device_metadata"
     OUTPUTS_ROOT = "outputs_root"
     OUTPUTS_PROCESSED_ROOT = "outputs_processed_root"
     OUTPUTS_BENCHMARK_ROOT = "outputs_benchmark_root"
@@ -201,7 +206,6 @@ class RepositoryPathKey(StrEnum):
 class CliCommand(StrEnum):
 
     DOCTOR = "doctor"
-    COLLECT = "collect"
     PREPROCESS = "preprocess"
     PREPARE = "prepare"
     PLAN = "plan"
@@ -215,7 +219,6 @@ class LogEvent(StrEnum):
 
     DOCTOR_START = "cli.doctor.start"
     DOCTOR_DONE = "cli.doctor.done"
-    COLLECT_START = "cli.collect.start"
     PREPROCESS_START = "cli.preprocess.start"
     PREPARE_START = "cli.prepare.start"
     PLAN_START = "cli.plan.start"
@@ -247,7 +250,6 @@ class TerminalColor(StrEnum):
 class CheckKind(StrEnum):
 
     CONFIGURATION = "configuration"
-    DATASET_FEDIEC_CONTRACTS = "dataset:fediec_contracts"
     DATASET_PINGPONG = "dataset:pingpong"
     DATASET_TU_WIEN_PHILIPS_HUE = "dataset:tu_wien_philips_hue"
     DATASET_CIC_IOT_2022 = "dataset:cic_iot_2022"
@@ -276,7 +278,6 @@ class TuWienPolarityToken(StrEnum):
 
 class DatasetRawDirectoryName(StrEnum):
 
-    FEDIEC_CONTRACTS = "FedIEC-Contracts"
     PINGPONG = "PingPong"
     TU_WIEN_PHILIPS_HUE = "TU Wien Philips Hue"
     CIC_IOT_2022 = "cic-iot-2022"
@@ -342,10 +343,6 @@ class RepositoryPathSegment(StrEnum):
     FIGURES = "figures"
     CONFIG_FILE = "config.yaml"
     RUN_MANIFEST_FILE = "manifest.json"
-    CAPTURES = "captures"
-    INTENT_LOGS = "intent-logs"
-    SESSION_MANIFESTS = "session-manifests"
-    DEVICE_METADATA = "device-metadata"
 
 
 class NetworkExecutionFeature(StrEnum):

@@ -20,7 +20,6 @@ def _repository_root() -> Path:
 
 
 _DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DatasetRawDirectoryName] = {
-    DatasetSource.FEDIEC_CONTRACTS: DatasetRawDirectoryName.FEDIEC_CONTRACTS,
     DatasetSource.PINGPONG: DatasetRawDirectoryName.PINGPONG,
     DatasetSource.TU_WIEN_PHILIPS_HUE: DatasetRawDirectoryName.TU_WIEN_PHILIPS_HUE,
     DatasetSource.CIC_IOT_2022: DatasetRawDirectoryName.CIC_IOT_2022,
@@ -41,8 +40,6 @@ def resolve_path(key: RepositoryPathKey) -> RepositoryPath:
             resolved = root / seg.DATA
         case RepositoryPathKey.DATA_RAW_ROOT:
             resolved = Path(resolve_path(RepositoryPathKey.DATA_ROOT)) / seg.RAW
-        case RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS:
-            resolved = resolve_dataset_raw_root(DatasetSource.FEDIEC_CONTRACTS)
         case RepositoryPathKey.DATA_RAW_PINGPONG:
             resolved = resolve_dataset_raw_root(DatasetSource.PINGPONG)
         case RepositoryPathKey.DATA_RAW_TU_WIEN_PHILIPS_HUE:
@@ -75,18 +72,6 @@ def resolve_path(key: RepositoryPathKey) -> RepositoryPath:
             resolved = Path(resolve_path(RepositoryPathKey.RESULTS_ROOT)) / seg.FIGURES
         case RepositoryPathKey.CONFIG_FILE:
             resolved = root / seg.CONFIG_FILE
-        case RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_CAPTURES:
-            resolved = resolve_dataset_raw_root(DatasetSource.FEDIEC_CONTRACTS) / seg.CAPTURES
-        case RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_INTENT_LOGS:
-            resolved = resolve_dataset_raw_root(DatasetSource.FEDIEC_CONTRACTS) / seg.INTENT_LOGS
-        case RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_SESSION_MANIFESTS:
-            resolved = (
-                resolve_dataset_raw_root(DatasetSource.FEDIEC_CONTRACTS) / seg.SESSION_MANIFESTS
-            )
-        case RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_DEVICE_METADATA:
-            resolved = (
-                resolve_dataset_raw_root(DatasetSource.FEDIEC_CONTRACTS) / seg.DEVICE_METADATA
-            )
     return RepositoryPath(resolved)
 
 
@@ -106,14 +91,6 @@ def resolve_pingpong_evaluation_root() -> RepositoryPath:
     return RepositoryPath(Path(pingpong_root) / DatasetRawSubpath.PINGPONG_EVALUATION_DATASETS)
 
 
-_FEDIEC_CONTRACTS_REQUIRED_RAW_PATH_KEYS: tuple[RepositoryPathKey, ...] = (
-    RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_CAPTURES,
-    RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_INTENT_LOGS,
-    RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_SESSION_MANIFESTS,
-    RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_DEVICE_METADATA,
-)
-
-
 def resolve_output_run_directory(experiment: ExperimentName, seed: Seed) -> RepositoryPath:
     runs_root = resolve_path(RepositoryPathKey.OUTPUTS_RUNS_ROOT)
     return RepositoryPath(Path(runs_root) / experiment.value / f"{seed}")
@@ -128,7 +105,3 @@ def resolve_processed_dataset_directory(dataset: DatasetSource) -> RepositoryPat
     processed_root = resolve_path(RepositoryPathKey.OUTPUTS_PROCESSED_ROOT)
     slug = _DATASET_SOURCE_DIRECTORY_NAME[dataset].lower().replace(" ", "-")
     return RepositoryPath(Path(processed_root) / slug)
-
-
-def resolve_fediec_contracts_required_raw_directories() -> tuple[RepositoryPath, ...]:
-    return tuple(resolve_path(key) for key in _FEDIEC_CONTRACTS_REQUIRED_RAW_PATH_KEYS)

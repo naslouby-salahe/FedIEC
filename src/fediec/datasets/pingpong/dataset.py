@@ -6,6 +6,7 @@ from pathlib import Path
 from fediec.enums import (
     DatasetAvailability,
     DatasetSource,
+    IntentProvenanceGrade,
     NetworkCaptureSubdirectory,
     PingPongEligibleDevice,
     PingPongEvaluationSubtree,
@@ -13,7 +14,16 @@ from fediec.enums import (
     SemanticAction,
 )
 from fediec.paths import resolve_dataset_raw_root, resolve_pingpong_evaluation_root
-from fediec.types import DeviceId, DirectoryName, DomainRecord, RepositoryPath, WallClockTimestamp
+from fediec.types import (
+    DeviceId,
+    DirectoryName,
+    InteractionId,
+    PublicSourceInteraction,
+    RepositoryPath,
+    SourceCaptureId,
+    SourceGroupId,
+    WallClockTimestamp,
+)
 
 _FIRST_TRIGGER_IS_ON = True
 
@@ -30,13 +40,6 @@ _CAPTURE_DIRECTORY_PRIORITY = (
     NetworkCaptureSubdirectory.ETH0,
     NetworkCaptureSubdirectory.ETH1,
 )
-
-
-class RawTriggerInteraction(DomainRecord):
-    device_id: DeviceId
-    semantic_action: SemanticAction
-    trigger_timestamp: WallClockTimestamp
-    capture_path: RepositoryPath
 
 
 def describe_raw_availability() -> DatasetAvailability:
@@ -108,8 +111,9 @@ def _enumerate_capture_units() -> list[tuple[DeviceId, Path]]:
     return units
 
 
-def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
-    interactions: list[RawTriggerInteraction] = []
+def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
+    raw_root = resolve_dataset_raw_root(DatasetSource.PINGPONG)
+    interactions: list[PublicSourceInteraction] = []
     for device_id, capture_unit_directory in _enumerate_capture_units():
         timestamp_files = sorted(
             path
@@ -127,12 +131,21 @@ def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
             for index, trigger_timestamp in enumerate(_parse_timestamps_file(timestamp_file)):
                 is_on = (index % 2 == 0) == _FIRST_TRIGGER_IS_ON
                 interactions.append(
-                    RawTriggerInteraction(
+                    PublicSourceInteraction(
+                        dataset_source=DatasetSource.PINGPONG,
+                        interaction_id=InteractionId(
+                            f"{capture_unit_directory.relative_to(raw_root).as_posix()}:{index}"
+                        ),
                         device_id=device_id,
+                        source_capture_id=SourceCaptureId(capture_path.name),
+                        source_group_id=SourceGroupId(
+                            capture_unit_directory.relative_to(raw_root).as_posix()
+                        ),
                         semantic_action=(
                             SemanticAction.TURN_ON if is_on else SemanticAction.TURN_OFF
                         ),
                         trigger_timestamp=WallClockTimestamp(trigger_timestamp),
+                        intent_provenance_grade=IntentProvenanceGrade.VERIFIED_PROTOCOL,
                         capture_path=capture_path,
                     )
                 )

@@ -6,6 +6,17 @@ from typing import Annotated, NewType
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from fediec.enums import (
+    DatasetEligibility,
+    DatasetRole,
+    DatasetSource,
+    DeviceCategory,
+    IntentProvenanceGrade,
+    NetworkTopology,
+    SemanticAction,
+    TransitionClass,
+)
+
 NonNegativeInt = Annotated[int, Field(ge=0)]
 PositiveInt = Annotated[int, Field(gt=0)]
 SignedInt = int
@@ -61,6 +72,8 @@ ManufacturerId = NewType("ManufacturerId", str)
 SessionId = NewType("SessionId", str)
 InteractionId = NewType("InteractionId", str)
 CaptureId = NewType("CaptureId", str)
+SourceCaptureId = NewType("SourceCaptureId", str)
+SourceGroupId = NewType("SourceGroupId", str)
 CollectionDay = NewType("CollectionDay", date)
 AppPackage = NewType("AppPackage", str)
 ConfigHash = NewType("ConfigHash", str)
@@ -76,3 +89,27 @@ RepositoryPath = NewType("RepositoryPath", Path)
 
 class DomainRecord(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class PublicSourceInteraction(DomainRecord):
+    dataset_source: DatasetSource
+    interaction_id: InteractionId
+    device_id: DeviceId
+    source_capture_id: SourceCaptureId
+    source_group_id: SourceGroupId
+    semantic_action: SemanticAction
+    trigger_timestamp: WallClockTimestamp
+    intent_provenance_grade: IntentProvenanceGrade
+    capture_path: RepositoryPath
+    source_checksum: ArtifactChecksum | None = None
+    manufacturer_id: ManufacturerId | None = None
+    device_category: DeviceCategory | None = None
+    network_topology: NetworkTopology | None = None
+    transition_class: TransitionClass | None = None
+
+
+class DatasetAssessment(DomainRecord):
+    dataset_source: DatasetSource
+    role: DatasetRole
+    eligibility: DatasetEligibility
+    intent_provenance_grade: IntentProvenanceGrade

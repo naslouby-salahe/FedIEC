@@ -6,11 +6,10 @@ from pydantic import ValidationError
 
 from fediec.config import load_config
 from fediec.datasets.cic_iot_2022 import dataset as cic_iot_2022_dataset
-from fediec.datasets.fediec_contracts import dataset as fediec_contracts_dataset
 from fediec.datasets.pingpong import dataset as pingpong_dataset
 from fediec.datasets.tu_wien_philips_hue import dataset as tu_wien_philips_hue_dataset
 from fediec.enums import CheckKind, CheckStatus, DatasetAvailability, DatasetSource
-from fediec.types import CheckDetail, DomainRecord
+from fediec.types import CheckDetail, DatasetAssessment, DomainRecord
 
 _DATASET_AVAILABILITY_CHECK_STATUS: dict[DatasetAvailability, CheckStatus] = {
     DatasetAvailability.PRESENT_AND_VALID: CheckStatus.PASS,
@@ -18,18 +17,16 @@ _DATASET_AVAILABILITY_CHECK_STATUS: dict[DatasetAvailability, CheckStatus] = {
     DatasetAvailability.PRESENT_BUT_SCHEMA_DRIFTED: CheckStatus.WARN,
     DatasetAvailability.PRESENT_BUT_CORRUPT: CheckStatus.FAIL,
     DatasetAvailability.MISSING_EXTERNAL: CheckStatus.WARN,
-    DatasetAvailability.MISSING_CONTROLLED_BENCHMARK: CheckStatus.WARN,
+    DatasetAvailability.ACCESS_RESTRICTED: CheckStatus.WARN,
 }
 
 _DATASET_AVAILABILITY_CHECK: dict[DatasetSource, Callable[[], DatasetAvailability]] = {
-    DatasetSource.FEDIEC_CONTRACTS: fediec_contracts_dataset.describe_raw_availability,
     DatasetSource.PINGPONG: pingpong_dataset.describe_raw_availability,
     DatasetSource.TU_WIEN_PHILIPS_HUE: tu_wien_philips_hue_dataset.describe_raw_availability,
     DatasetSource.CIC_IOT_2022: cic_iot_2022_dataset.describe_raw_availability,
 }
 
 _CHECK_KIND_FOR_DATASET: dict[DatasetSource, CheckKind] = {
-    DatasetSource.FEDIEC_CONTRACTS: CheckKind.DATASET_FEDIEC_CONTRACTS,
     DatasetSource.PINGPONG: CheckKind.DATASET_PINGPONG,
     DatasetSource.TU_WIEN_PHILIPS_HUE: CheckKind.DATASET_TU_WIEN_PHILIPS_HUE,
     DatasetSource.CIC_IOT_2022: CheckKind.DATASET_CIC_IOT_2022,
@@ -53,6 +50,23 @@ class DoctorReport(DomainRecord):
         if CheckStatus.WARN in statuses:
             return CheckStatus.WARN
         return CheckStatus.PASS
+
+
+def _resolve_dataset_assessment(dataset_source: DatasetSource) -> DatasetAssessment:
+    public_sources = load_config().public_sources
+    match dataset_source:
+        case DatasetSource.PINGPONG:
+            configured = public_sources.pingpong
+        case DatasetSource.CIC_IOT_2022:
+            configured = public_sources.cic_iot_2022
+        case DatasetSource.TU_WIEN_PHILIPS_HUE:
+            configured = public_sources.tu_wien_philips_hue
+    return DatasetAssessment(
+        dataset_source=dataset_source,
+        role=configured.role,
+        eligibility=configured.eligibility,
+        intent_provenance_grade=configured.intent_provenance,
+    )
 
 
 def _check_configuration() -> DoctorCheckResult:
@@ -82,11 +96,16 @@ def _check_configuration() -> DoctorCheckResult:
 def _check_dataset(dataset: DatasetSource) -> DoctorCheckResult:
     describe = _DATASET_AVAILABILITY_CHECK[dataset]
     availability = describe()
+    assessment = _resolve_dataset_assessment(dataset)
     status = _DATASET_AVAILABILITY_CHECK_STATUS[availability]
     return DoctorCheckResult(
         label=_CHECK_KIND_FOR_DATASET[dataset],
         status=status,
-        detail=CheckDetail(availability.value),
+        detail=CheckDetail(
+            f"{availability.value}; role={assessment.role.value}; "
+            f"eligibility={assessment.eligibility.value}; "
+            f"provenance={assessment.intent_provenance_grade.value}"
+        ),
     )
 
 

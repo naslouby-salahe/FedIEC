@@ -6,7 +6,7 @@ from pathlib import Path
 SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
 _UNREACHABLE_BUT_JUSTIFIED = {
-    "artifacts": "checksum/provenance IO for collect/preprocess, neither built yet",
+    "artifacts": "checksum/provenance IO for future public-source preprocessing",
 }
 
 

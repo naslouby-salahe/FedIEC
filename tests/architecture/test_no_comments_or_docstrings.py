@@ -50,7 +50,9 @@ def find_forbidden_docstrings(paths: list[Path]) -> list[str]:
         if _has_docstring(tree):
             offenders.append(f"{path.relative_to(REPO_ROOT)}:1 (module docstring)")
         for node in ast.walk(tree):
-            is_documentable = isinstance(node, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef)
+            is_documentable = isinstance(
+                node, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+            )
             if is_documentable and _has_docstring(node):  # type: ignore[arg-type]
                 offenders.append(f"{path.relative_to(REPO_ROOT)}:{node.lineno} ({node.name})")
     return offenders

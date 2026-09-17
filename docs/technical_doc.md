@@ -66,7 +66,7 @@ FedIEC/
 │
 ├── config.yaml
 │   # The ONLY committed YAML/YML file in the repository.
-│   # Contains all configurable project, collection, benchmark, model, training,
+│   # Contains all configurable public-source, model, training,
 │   # federated, experiment, evaluation, statistics, and reporting parameters.
 │
 ├── docs/
@@ -87,10 +87,6 @@ FedIEC/
 │
 ├── data/
 │   └── raw/
-│       ├── FedIEC-Contracts/
-│       │   # Raw controlled physical-device benchmark material:
-│       │   # captures, intent records, synchronization metadata, and source manifests.
-│       │
 │       ├── PingPong/
 │       │   # Untouched external PingPong source material.
 │       │
@@ -136,11 +132,6 @@ FedIEC/
 │       │   # config hashes, Git commit capture, and safe serialization conventions.
 │       │
 │       ├── datasets/
-│       │   ├── fediec_contracts/
-│       │   │   └── dataset.py
-│       │   │       # FedIEC-Contracts loading, raw-schema validation, metadata mapping,
-│       │   │       # and dataset-specific eligibility rules.
-│       │   │
 │       │   ├── pingpong/
 │       │   │   └── dataset.py
 │       │   │       # PingPong loading, independent intent/action mapping,
@@ -155,23 +146,6 @@ FedIEC/
 │       │       └── dataset.py
 │       │           # Optional real-attack dataset loading and strict alignment eligibility.
 │       │           # It must not manufacture missing intent/action alignment.
-│       │
-│       ├── collection/
-│       │   ├── android.py
-│       │   │   # Android companion-app automation and independent intent logging.
-│       │   │
-│       │   ├── capture.py
-│       │   │   # Gateway capture orchestration, target-device attribution, and PCAP metadata.
-│       │   │
-│       │   ├── scheduling.py
-│       │   │   # Constrained-random action scheduling and NO_ACTION scheduling.
-│       │   │
-│       │   ├── synchronization.py
-│       │   │   # Clock checks, interaction timing, capture alignment, and settling latency.
-│       │   │
-│       │   └── physical_violations.py
-│       │       # Execution/orchestration of pre-registered physically induced violation mechanisms.
-│       │       # This is collection/security-experiment logic, not an "audit" framework.
 │       │
 │       ├── preprocessing/
 │       │   ├── interactions.py
@@ -261,9 +235,6 @@ FedIEC/
 │       └── workflows/
 │           ├── doctor.py
 │           │   # Fast environment, path, configuration, dependency, and dataset sanity checks.
-│           │
-│           ├── collect.py
-│           │   # Controlled physical-data collection entry workflow.
 │           │
 │           ├── preprocess.py
 │           │   # Raw data → interactions → features → splits → normalization artifacts.
@@ -378,8 +349,6 @@ FedIEC/
 │
 ├── outputs/
 │   ├── processed/
-│   │   ├── fediec-contracts/
-│   │   │   # Compact derived FedIEC interactions/features only; never copied raw PCAPs.
 │   │   ├── pingpong/
 │   │   │   # Compact derived PingPong data.
 │   │   ├── tu-wien-philips-hue/
@@ -432,8 +401,6 @@ FedIEC/
     │   │   # Final exclusion counts and frozen reasons.
     │   ├── counterfactuals.parquet
     │   │   # Final feasibility, dependency, and artifact-control summary.
-    │   └── physical-violations.parquet
-    │       # Final physical-violation coverage summary.
     │
     ├── experiments/
     │   ├── intent-value/
@@ -452,8 +419,8 @@ FedIEC/
     │   │   # Final LODO/topology/protocol/eligible LOMO evidence.
     │   ├── provenance-robustness/
     │   │   # Final intent-provenance robustness evidence.
-    │   ├── physical-violations/
-    │   │   # Final physically induced security-relevance evidence.
+    │   ├── observed-control-failures/
+    │   │   # Final independently documented public-source failure evidence, when eligible.
     │   └── external-validation/
     │       # Final PingPong, TU Wien, and eligible real-attack evidence kept distinguishable.
     │
@@ -548,9 +515,8 @@ If a future tool absolutely requires committed YAML, the one-YAML rule must be e
 All configurable scientific/runtime values belong in `config.yaml`, including when applicable:
 
 - paths;
-- collection parameters;
-- action schedules;
-- settling/timing parameters;
+- public-source identities, eligibility rules, and provenance controls;
+- source-aware observation-window and source-group rules;
 - feature parameters;
 - split parameters;
 - normalization parameters;
@@ -693,7 +659,8 @@ Rules:
 9. Tests may import production modules; production modules must never import tests.
 10. Avoid circular dependencies.
 11. Avoid dependency inversion that exists only to satisfy a pattern.
-12. Shared types/enums/config/artifact primitives should remain low-level and stable.
+12. Shared enums are the lowest categorical layer; `types.py` may depend on
+    them only to model canonical domain records. Both remain low-level and stable.
 13. Architecture tests must enforce dependency directions.
 
 ---
@@ -706,7 +673,6 @@ Primary commands:
 
 ```text
 doctor
-collect
 preprocess
 prepare
 plan
@@ -1070,21 +1036,20 @@ They do **not** justify introducing a top-level `audit/` framework.
 
 Security interpretation must not proceed as if a transformation were valid when its required artifact-control condition fails.
 
-### 19.7 Physical Violations
+### 19.7 Public-Source Violation Boundaries
 
-1. Physical violation mechanisms are distinct from generated counterfactuals.
-2. Keep mechanism provenance explicit.
-3. Do not relabel counterfactuals as real attacks.
-4. Do not relabel physically induced control-path violations as malware unless evidence supports that wording.
-5. Physical/security evaluation must preserve source/device/session identity.
+1. Generated counterfactuals are distinct from observed public-source events.
+2. Preserve source, device, capture, and provenance identity.
+3. Do not relabel counterfactuals as real attacks or observed failures.
+4. Do not induce new failures or acquire new traffic.
 
 ### 19.8 External/Real-Attack Validation
 
-1. PingPong is external validation, not a replacement for FedIEC-Contracts.
+1. PingPong is the first candidate for a public-source main study.
 2. TU Wien Philips Hue is mechanism replication according to the roadmap, not proof of multi-device federation by itself.
 3. CIC IoT 2022 or another real-attack dataset is used only when intent/device/time/attack/execution alignment requirements are satisfied.
 4. If required real-attack alignment is absent, no code path may manufacture it.
-5. External results remain distinguishable from controlled-benchmark results.
+5. Results remain distinguishable by source collection; incompatible sources are not pooled.
 
 ### 19.9 Statistical Units
 
@@ -1475,7 +1440,7 @@ Rules:
 8. No temporary bootstrap/permutation replicates unless the final analysis explicitly requires preserving them.
 9. Preserve negative/inconclusive evidence rather than selecting only favorable runs.
 10. Preserve failed/invalid run status where scientifically relevant.
-11. Results must keep external-validation evidence distinguishable from the controlled benchmark.
+11. Results must keep evidence distinguishable by public source.
 12. Tables/figures in `results/` are the versions intended for the chapter/manuscript.
 13. Promotion must never invent prose claims.
 14. There is no `claim-gates/` folder.
@@ -1566,7 +1531,7 @@ Containerization may be reconsidered only if explicitly requested later.
 ## 34. Reproducibility Rules
 
 1. Same raw inputs + same code + same config + same seed should reproduce the same deterministic stages within practical framework limits.
-2. Collection randomness/schedules must preserve recorded seeds/manifests.
+2. Source identities, frozen manifests, and split assignments must be preserved.
 3. Split assignments must be materialized and reproducible.
 4. Counterfactual donor assignment must be reproducible.
 5. Training seeds must be recorded.
@@ -1582,7 +1547,7 @@ Containerization may be reconsidered only if explicitly requested later.
 
 ## 35. Performance and Long-Running Work Rules
 
-1. Do not block development by staring at long-running preprocessing/collection commands.
+1. Do not block development by staring at long-running preprocessing commands.
 2. When working interactively and safe to do so, launch long deterministic preprocessing/background tasks non-blocking and continue other independent verification work.
 3. Return to the task when its artifacts are ready.
 4. Do not repeatedly poll expensive commands without purpose.

@@ -7,7 +7,7 @@ SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
 _ALLOWED_IMPORT_PREFIXES: dict[str, tuple[str, ...]] = {
     "enums": (),
-    "types": (),
+    "types": ("enums",),
     "paths": ("enums", "types"),
     "artifacts": ("enums", "types"),
     "config": ("enums", "types", "paths"),

@@ -3,12 +3,15 @@ from __future__ import annotations
 from functools import lru_cache
 
 import yaml
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict
 
 from fediec.enums import (
     ActivationFunction,
     AggregationRule,
     ClientWeighting,
+    DatasetEligibility,
+    DatasetRole,
+    IntentProvenanceGrade,
     ModelArchitectureKind,
     NetworkExecutionFeature,
     Optimizer,
@@ -20,64 +23,41 @@ from fediec.types import (
     ArtifactDetectabilityBound,
     BatchSize,
     BlockCount,
-    CategoryCount,
-    DayCount,
     DeviceCount,
-    DeviceId,
     Dimension,
     DomainRecord,
-    Duration,
     EpochCount,
     FeatureCount,
     GradientNormClip,
-    InteractionCount,
     LayerCount,
     LearningRate,
-    ManufacturerCount,
-    PassiveMonitoringMinutes,
     Quantile,
     ReplicateCount,
     RoundCount,
     SampleCount,
     Seed,
-    SessionCount,
     SignificanceLevel,
     SplitSampleCount,
     Tolerance,
     UnitCount,
     WeightDecay,
-    WindowCount,
 )
 
 
 class ProjectSection(DomainRecord):
-    target_device_count: DeviceCount
-    minimum_device_count: DeviceCount
-    minimum_manufacturer_count: ManufacturerCount
-    minimum_category_count: CategoryCount
+    minimum_eligible_device_clients_for_main_federated_claim: DeviceCount
 
 
-class NoActionStrataQuota(DomainRecord):
-    background_silent: WindowCount
-    background_low_activity: WindowCount
-    background_active_burst: WindowCount
+class PublicSourceSection(DomainRecord):
+    role: DatasetRole
+    eligibility: DatasetEligibility
+    intent_provenance: IntentProvenanceGrade
 
 
-class CollectionSection(DomainRecord):
-    turn_on_interactions_per_device: InteractionCount
-    turn_off_interactions_per_device: InteractionCount
-    no_action_windows_per_device: WindowCount
-    no_action_strata_quota: NoActionStrataQuota
-    minimum_sessions_per_device: SessionCount
-    minimum_days_per_device: DayCount
-    pilot_turn_on_interactions_per_device: InteractionCount
-    pilot_turn_off_interactions_per_device: InteractionCount
-    pilot_minimum_passive_monitoring_minutes: PassiveMonitoringMinutes
-    observation_window_seconds: Duration | None = None
-    settling_latency_seconds_per_device: dict[DeviceId, Duration] = Field(
-        default_factory=dict[DeviceId, Duration]
-    )
-    clock_synchronization_tolerance_seconds: Duration | None = None
+class PublicSourcesSection(DomainRecord):
+    pingpong: PublicSourceSection
+    cic_iot_2022: PublicSourceSection
+    tu_wien_philips_hue: PublicSourceSection
 
 
 class SplitSection(DomainRecord):
@@ -143,7 +123,7 @@ class FediecConfig(DomainRecord):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     project: ProjectSection
-    collection: CollectionSection
+    public_sources: PublicSourcesSection
     split: SplitSection
     features: FeaturesSection
     counterfactuals: CounterfactualsSection

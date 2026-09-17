@@ -14,7 +14,6 @@ from fediec.enums import (
     TableColumn,
     TerminalColor,
 )
-from fediec.workflows import collect as collect_workflow
 from fediec.workflows import doctor as doctor_workflow
 from fediec.workflows import plan as plan_workflow
 from fediec.workflows import prepare as prepare_workflow
@@ -60,12 +59,6 @@ def doctor() -> None:
     logger.info(LogEvent.DOCTOR_DONE, overall_status=report.overall_status.value)
     if report.overall_status == CheckStatus.FAIL:
         raise typer.Exit(code=1)
-
-
-@app.command()
-def collect() -> None:
-    logger.info(LogEvent.COLLECT_START)
-    collect_workflow.run_collect()
 
 
 @app.command()

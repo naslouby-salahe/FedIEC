@@ -1,32 +1,24 @@
 # FedIEC configuration — the only committed YAML/YML file in this repository.
 # Values here implement the locked protocol in docs/FedIEC_Roadmap.md.
-# `pilot_pending` fields are genuinely undetermined until the excluded pilot
-# (Roadmap Sec. 18) is run on real devices; they are left null rather than
-# filled with an invented number, and workflows that need them must refuse
-# to proceed until they are frozen.
+# Public-source datasets are the only evidence inputs.  No collection,
+# device-control, capture-orchestration, or pilot settings belong here.
 
 project:
-  target_device_count: 8
-  minimum_device_count: 6
-  minimum_manufacturer_count: 3
-  minimum_category_count: 3
+  minimum_eligible_device_clients_for_main_federated_claim: 4
 
-collection:
-  turn_on_interactions_per_device: 150
-  turn_off_interactions_per_device: 150
-  no_action_windows_per_device: 150
-  no_action_strata_quota:
-    background_silent: 50
-    background_low_activity: 50
-    background_active_burst: 50
-  minimum_sessions_per_device: 5
-  minimum_days_per_device: 3
-  pilot_turn_on_interactions_per_device: 20
-  pilot_turn_off_interactions_per_device: 20
-  pilot_minimum_passive_monitoring_minutes: 60
-  observation_window_seconds: null # pilot_pending: frozen W (Roadmap Sec. 18-19)
-  settling_latency_seconds_per_device: {} # pilot_pending: frozen L_settle per device_id
-  clock_synchronization_tolerance_seconds: null # pilot_pending
+public_sources:
+  pingpong:
+    role: primary_candidate
+    eligibility: action_contract_only
+    intent_provenance: verified_protocol
+  cic_iot_2022:
+    role: secondary_candidate
+    eligibility: action_contract_only
+    intent_provenance: source_documented_path
+  tu_wien_philips_hue:
+    role: mechanism_replication
+    eligibility: replication_only
+    intent_provenance: verified_direct
 
 split:
   training_samples_per_device_context: 90
