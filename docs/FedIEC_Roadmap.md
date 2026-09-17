@@ -12,11 +12,19 @@
 
 ### One-Sentence Research Identity
 
-FedIEC investigates whether explicit control actions issued through mobile companion applications can be treated as **runtime execution contracts**, whether violations of those contracts can be detected from the resulting IoT network behavior, and whether the underlying contract knowledge can be learned collaboratively across heterogeneous physical IoT devices using federated learning.
+FedIEC investigates whether explicit control actions recorded during existing mobile-controlled IoT experiments can be treated as **runtime execution contracts**, whether violations of those contracts can be detected from the resulting IoT network behavior, and whether the underlying contract knowledge can be learned collaboratively across heterogeneous real devices represented in public datasets using federated learning.
+
+### Evidence Model
+
+FedIEC is a **public-dataset-only computational study**. It does not require the researcher to purchase, operate, automate, modify or physically interfere with IoT devices.
+
+The core evidence comes from previously collected real-device traces whose action provenance and device identity can be independently verified from dataset metadata, collection documentation or original tooling.
 
 ### Protocol-Hardening Principle
 
-Counterfactual evidence is valid only when the detector cannot exploit the mechanics used to construct the counterfactual. The locked protocol therefore treats donor matching, transition semantics, B→E continuity, packet-timeline feasibility, transformation-specific artifact audits, donor dependence and statistical effective sample size as first-class validity conditions. If a valid transformation cannot be constructed under the frozen rules, the observation is reported as infeasible; the matching rules are never weakened to manufacture a positive result.
+Counterfactual evidence is valid only when the detector cannot exploit the mechanics used to construct the counterfactual. The locked protocol therefore treats intent provenance, raw-capture coverage, donor matching, transition semantics where observable, B→E continuity, packet-timeline feasibility, transformation-specific artifact audits, donor dependence and statistical effective sample size as first-class validity conditions.
+
+If a required property cannot be established from the source dataset, the observation or violation family is reported as unavailable or infeasible. Missing metadata are never reconstructed from the target traffic merely to preserve a planned claim.
 
 ---
 
@@ -40,7 +48,7 @@ This formulation ignores information that is often available immediately before 
 
 > **What was the device actually instructed to do?**
 
-Mobile-controlled IoT systems provide an external source of such information.
+Existing mobile-controlled IoT datasets can provide an external source of such information when the original control action was independently recorded.
 
 A mobile companion application may issue an explicit action:
 
@@ -154,7 +162,7 @@ E \notin \mathcal C_I(B)
 
 or when an action-like execution occurs without a corresponding recorded intent.
 
-This accommodates encrypted traffic, protocol variation, retransmissions, cloud-mediated communication, timing variability, and differences between physical devices.
+This accommodates encrypted traffic, protocol variation, retransmissions, cloud-mediated communication, timing variability, and differences between physical devices represented in real-device traces.
 
 ---
 
@@ -207,20 +215,21 @@ QUERY_STATUS
 
 are outside the confirmatory study.
 
-They may be explored only after the locked ON/OFF study is complete.
+They may be explored only after the locked ON/OFF study is complete and only when public-source provenance supports them.
 
 ---
 
 # 5. Intent Provenance Requirement
 
-The intended action must come from an **independent control-plane source**.
+The intended action must come from an **independent control-plane source recorded by the original data collection**.
 
 Allowed sources are:
 
-1. an experimental Android automation harness;
-2. an explicitly recorded mobile-app interaction;
-3. dataset metadata generated during the original controlled interaction;
-4. another independently logged control event with equivalent provenance.
+1. dataset metadata generated during the original controlled interaction;
+2. an explicitly recorded mobile-app interaction or trigger log;
+3. source filenames or directory structure whose ON/OFF semantics are documented by the original collection protocol;
+4. original dataset tooling that deterministically maps recorded trigger order to semantic action;
+5. another independently logged control event with equivalent provenance.
 
 The intended action must never be inferred retrospectively from:
 
@@ -231,39 +240,48 @@ traffic direction
 device responses
 predicted action labels
 network signatures
-
 ```
 
 of the execution being evaluated.
 
-This separation is fundamental.
+This separation is fundamental. Otherwise the model would be validating a label that was derived from the same evidence it is supposed to verify.
 
-Otherwise the model would be validating a label that was derived from the same evidence it is supposed to verify.
+Every dataset receives an **intent-provenance grade** before model evaluation:
+
+```text
+VERIFIED_DIRECT        explicit action label/timestamp from source collection
+VERIFIED_PROTOCOL      semantic action recoverable from documented original protocol/tooling
+PARTIAL                action known but timestamp/boundary provenance incomplete
+INELIGIBLE             action inferred from target traffic or provenance cannot be established
+```
+
+Only `VERIFIED_DIRECT` and `VERIFIED_PROTOCOL` observations may support the main confirmatory contract claims. `PARTIAL` data may be used only for explicitly labeled diagnostic replication if the corresponding analysis does not require the missing provenance field.
 
 ---
 
 # 6. Mobile Application Role
 
-The mobile companion application is a first-class part of the security setting but is **not itself reverse engineered in the confirmatory study**.
+The mobile companion application is a first-class part of the security setting but is **not executed, reverse engineered or automated by the researcher in the confirmatory study**.
 
-Its role is:
+Its role in the original source collection is:
 
 ```text
 Mobile companion app
         ↓
 Explicit user/control action
         ↓
-Externally logged intent
+Externally recorded intent provenance
         ↓
-IoT network execution
+IoT network execution captured by the source dataset
         ↓
-Execution-contract verification
-
+FedIEC execution-contract verification
 ```
 
-The mobile application therefore provides **action provenance**.
+The mobile application therefore supplies **action provenance through the source dataset**.
 
-FedIEC investigates whether this provenance supplies security information that network behavior alone does not provide.
+FedIEC investigates whether this previously recorded provenance supplies security information that network behavior alone does not provide.
+
+No claim is made that FedIEC extracts intent from arbitrary mobile applications at runtime.
 
 ---
 
@@ -367,35 +385,33 @@ cross-device learning
 
 FedIEC does not claim novelty from merely combining these labels.
 
-The narrower gap investigated is whether **independently recorded mobile-side intent can serve as provenance for a probabilistic network execution contract, modeled as \(p(E\mid B,I)\), that is learned collaboratively across naturally heterogeneous physical IoT devices, tested against artifact-controlled semantic violation classes and physically realized control-path anomalies, and evaluated under genuine unseen-device and unseen-manufacturer transfer without target-domain normalization leakage.**
+The narrower gap investigated is whether **independently recorded mobile-side intent from existing real-device datasets can serve as provenance for a probabilistic network execution contract, modeled as \(p(E\mid B,I)\), that is learned collaboratively across heterogeneous device clients, tested against artifact-controlled semantic violation classes, and evaluated under leakage-safe unseen-device transfer without target-device normalization or calibration leakage.**
 
 The target contribution therefore requires the joint presence of:
 
 ```text
-independent mobile intent provenance
+independent mobile-intent provenance
 +
-pre-action behavioral context
+pre-action behavioral context where source capture permits
 +
-post-action execution
+post-action network execution
 +
 artifact-controlled contract counterfactuals
 +
-physically realized violations
-+
-natural physical-device clients
+real physical-device identities represented in public traces
 +
 federated learning
 +
 data-scarcity collaboration analysis
 +
-heterogeneity and topology characterization
+device heterogeneity characterization
 +
 genuine unseen-device transfer
 +
-where possible unseen-manufacturer transfer
+manufacturer/topology transfer only where source metadata support it
 ```
 
-The research question is not whether ON/OFF traffic can be recognized. It is whether the **relationship between independently observed intent and resulting execution** can be learned as a transferable security contract and whether federation provides measurable value when individual devices have limited contract data.
+The research question is not whether ON/OFF traffic can be recognized. It is whether the **relationship between independently observed intent and resulting execution** can be learned as a transferable security contract and whether federation provides measurable value when individual device clients have limited contract data.
 
 No absolute claim such as:
 
@@ -407,6 +423,8 @@ first action-aware IoT detector
 ```
 
 is permitted until the final pre-submission literature audit.
+
+The public-dataset-only design deliberately gives up the stronger claim of a newly collected physical benchmark and the stronger claim of experimentally induced physical control-path anomalies.
 
 ---
 
@@ -437,7 +455,7 @@ but:
 ```text
 verify whether execution is legitimate
 relative to independently observed mobile intent
-and the pre-action behavioral context
+and, where available, pre-action behavioral context
 ```
 
 ## Contribution B — Violation Taxonomy and Observability Boundary
@@ -452,45 +470,52 @@ EXCESS_EXECUTION
 REPLAY_OR_LATE_EXECUTION
 ```
 
-For each family, state what is observable under the locked feature representation. A theoretically meaningful violation that is not identifiable from the available observables is reported as an **observability limit**, not forced into a positive detection claim.
+For each family, state both the representation observability boundary and the **source-dataset feasibility boundary**. A theoretically meaningful violation that cannot be constructed without unsupported metadata is reported as unavailable rather than forced into the evaluation.
 
-## Contribution C — Synchronized Physical Benchmark
+## Contribution C — Public Real-Device Contract Corpus and Provenance Audit
 
-Create a reproducible physical-device benchmark containing:
+Construct a reproducible **derived evaluation corpus and manifest layer** from eligible public real-device traces containing, where available:
 
 ```text
-mobile intent
+dataset identity
 physical device identity
-manufacturer and category metadata
-network-topology metadata
-intent timestamp
-session/day identifier
+manufacturer/category metadata
+network-topology metadata when documented
+intent label
+intent timestamp or bounded trigger time
+source capture/session identifier
 pre-action network context
 post-action network execution
 semantic action
-pre/post physical state where observable
+pre/post state metadata when documented
 clean/violation status
-violation type
 counterfactual provenance
+source-file checksum/reference
 ```
+
+This is **not claimed as a newly captured traffic dataset**. The contribution is the harmonized eligibility, provenance, split and transformation protocol over existing traces.
 
 ## Contribution D — Artifact-Controlled Contract Evaluation
 
-Counterfactuals are generated from held-out raw windows under frozen common-support calipers, deterministic session/day matching, recipient-state transition compatibility, B→E boundary-continuity checks and raw-timeline feasibility rules. Replacement/translation transformations and EXCESS composition are audited separately so apparent security performance cannot be explained by splice, merge, timestamp, flow-state or donor-selection artifacts.
+Counterfactuals are generated from held-out raw windows under frozen source-aware matching, common-support rules, transition compatibility where observable, B→E continuity checks and raw-timeline feasibility rules. Transformation-specific artifact audits are mandatory so apparent security performance cannot be explained by splice, merge, timestamp, flow-state or donor-selection artifacts.
 
 ## Contribution E — Federated Contract Learning
 
 Evaluate whether contract knowledge can be learned collaboratively with:
 
 ```text
-one physical device = one federated client
+one dataset-identified physical device = one federated client
 ```
 
-without centrally pooling raw interaction traces, and determine when collaboration is useful as local clean-contract data become scarce.
+while keeping the FL interface restricted to model updates and determine when collaboration is useful as local clean-contract data become scarce.
 
-## Contribution F — Cross-Device and Cross-Manufacturer Transfer
+The study is an FL simulation over public datasets; it does not claim operational privacy or a live distributed deployment.
 
-Evaluate whether a contract learned from other physical devices can recognize valid and invalid intent–execution relationships on a physical device absent from model training, and where device coverage permits, on a manufacturer absent from training.
+## Contribution F — Cross-Device and Cross-Dataset Transfer
+
+Evaluate whether a contract learned from other device clients can recognize valid and invalid intent–execution relationships on a held-out physical device absent from model training, normalization and main zero-shot calibration.
+
+Where metadata and sample counts permit, add manufacturer-stratified or topology-stratified analysis. Replicate the formulation on a second public dataset without silently pooling incompatible collections.
 
 No single contribution is sufficient by itself to support every proposed claim.
 
@@ -509,24 +534,27 @@ conditional density model ≈ direct action classifier
 federated model ≈ local models
 federated model < centralized model
 some violation types are difficult to detect
+some public datasets fail full-contract eligibility
 some device types transfer poorly
 ON/OFF distinction is weak for one device
-
+NO_ACTION cannot be reconstructed for one source
+manufacturer/topology metadata are unavailable
 ```
 
 Such results restrict the permitted claims but do not remove:
 
 ```text
 the security task
-the benchmark
+the provenance and eligibility protocol
+the derived public-data evaluation corpus
 the violation taxonomy
-the evaluation protocol
+the artifact-controlled evaluation protocol
+the federated scarcity analysis
 the cross-device analysis
-the empirical boundary finding
-
+the empirical observability/transfer boundaries
 ```
 
-This is a non-negotiable design objective.
+A source dataset is never promoted, excluded or redefined based on model performance.
 
 ---
 
@@ -538,17 +566,17 @@ Does knowledge of independently recorded mobile intent improve execution-consist
 
 ## RQ2 — Pre-Execution Context
 
-Does conditioning on the network context immediately before the mobile action improve contract verification beyond modeling:
+Where the source captures contain valid pre-action coverage, does conditioning on the network context immediately before the recorded mobile action improve contract verification beyond modeling:
 
 ```math
 p(E\mid I)
 ```
 
-alone, after eliminating command-order and settling-tail confounds?
+alone?
 
 ## RQ3 — Violation Differentiation
 
-How well can the same clean-trained contract model detect:
+How well can the same clean-trained contract model detect the following **where each family is source-feasible and passes its artifact audit**:
 
 ```text
 omission
@@ -562,27 +590,27 @@ without being trained on those violations and without exploiting counterfactual-
 
 ## RQ4 — Federated Learnability
 
-Can intent–execution contracts be learned collaboratively across naturally different physical IoT devices?
+Can intent–execution contracts be learned collaboratively across naturally different physical device clients represented in public IoT traces?
 
 ## RQ5 — Heterogeneity and Collaboration Need
 
-How do contract distributions vary across devices, manufacturers and network topologies, and under what local-data scarcity levels does federation provide measurable benefit over isolated learning?
+How do contract distributions vary across device clients and, where documented, manufacturers or network-control settings, and under what local-data scarcity levels does federation provide measurable benefit over isolated learning?
 
 ## RQ6 — Cross-Device Generalization
 
-Can a federated contract model trained without one physical device identify valid and invalid intent–execution relationships on that device using no target-device training, calibration or normalization information in the main zero-shot result?
+Can a federated contract model trained without one physical-device client identify valid and invalid intent–execution relationships on that device using no target-device training, normalization or main zero-shot calibration information?
 
 ## RQ7 — Security Relevance
 
-Do physically induced control-path anomalies and, where valid ground truth exists, real attack scenarios produce measurable contract violations under a frozen clean-trained detector?
+Do artifact-controlled contract counterfactuals and, where valid aligned public evidence exists, observed attack/control-failure traces produce measurable contract violations under a frozen clean-trained detector?
 
 ## RQ8 — Intent-Provenance Robustness
 
-How sensitive is contract verification to realistic intent-provenance imperfections such as timestamp jitter, logging delay, missing intents and duplicate intents?
+How sensitive is contract verification to realistic imperfections in the recorded intent channel such as timestamp jitter, logging delay, missing intents and duplicate intents?
 
 ## RQ9 — Transfer Boundary
 
-How much of unseen-device performance is explained by semantic transfer versus protocol/topology mismatch, and does transfer remain meaningful within topology-matched groups and, where supported, under leave-one-manufacturer-out evaluation?
+How much of unseen-device performance is explained by semantic transfer versus protocol/dataset mismatch, and does the formulation remain meaningful when independently replicated on another eligible real-device dataset?
 
 ---
 
@@ -638,7 +666,7 @@ isolated local contract learning
 
 ```
 
-using identical client populations and architectures.
+using identical eligible public-device client populations and architectures.
 
 Other comparisons are required baselines or secondary analyses but are not added to the confirmatory hypothesis family.
 
@@ -646,101 +674,93 @@ Other comparisons are required baselines or secondary analyses but are not added
 
 # 13. Dataset Hierarchy
 
-The revised evidence hierarchy is:
+FedIEC uses a **public-dataset-only evidence hierarchy**.
+
+The candidate priority before model results are inspected is:
 
 ```text
-Mandatory controlled FedIEC benchmark
+Primary multi-device candidate: PingPong eligible official-companion-app traces
         ↓
-PingPong external device-event validation
+Secondary multi-device candidate/replication: CIC IoT 2022 eligible app-triggered interaction traces
         ↓
-TU Wien Philips Hue mechanism replication
+Large-sample mechanism replication: TU Wien Philips Hue ON/OFF traces
         ↓
-CIC IoT 2022 or another valid aligned dataset
-for optional real-attack validation
-
+Optional additional aligned public dataset
+        ↓
+Optional attack-aligned subset only when intent + attack + device execution ground truth coexist
 ```
 
-The controlled benchmark is no longer a contingency.
+Dataset priority is based only on **protocol eligibility**, not on model performance.
 
-It is a core contribution.
+The first candidate that passes the complete main-study eligibility gate becomes the primary confirmatory dataset. If more than one dataset passes, the highest-priority source remains primary and the others are independent replications.
 
-Public datasets provide independent replication and external validity.
+Datasets are not pooled by default. Each collection keeps its own capture semantics, source dependence and dataset-specific observation-window protocol.
 
-A public dataset may not replace the controlled benchmark simply because it produces stronger model performance.
+TU Wien Philips Hue is a single-device-family replication source and cannot establish multi-device federation by itself.
 
 ---
 
-# 14. Mandatory Controlled Benchmark
+# 14. Public-Dataset Main-Study Eligibility
 
-The controlled benchmark is provisionally named:
+A dataset can support the **full main FedIEC study** only if the required evidence exists before any model result is inspected.
 
-**FedIEC-Contracts**
-
-The confirmatory benchmark contains **at least six physical consumer IoT devices**, with a target of eight where acquisition and stable control are feasible before protocol lock.
-
-Minimum requirements:
+Minimum source requirements:
 
 ```text
-K >= 6 physical devices
-target K = 8
->= 3 manufacturers
->= 3 device categories
-official Android companion application
-explicit ON function
-explicit OFF function
-network traffic observable at controlled gateway
-device identity unambiguous
-mobile action timestamp recordable independently
+multiple identifiable real physical IoT devices
+independently documented TURN_ON and TURN_OFF semantics
+raw packet traces or equivalent packet-timeline material
+intent timestamp or reproducible trigger-time boundary
+unambiguous device attribution
+sufficient pre/post capture around the trigger for the required B/E windows
+non-overlapping train/calibration/test construction possible
+sufficient per-device interactions for local and federated comparison
 ```
 
-Device categories should include at least three of:
+The full three-context study additionally requires reconstructable clean `NO_ACTION` windows from intervals known not to contain a control trigger.
+
+A dataset receives one of:
 
 ```text
-smart bulb
-smart plug
-smart switch
-smart power strip
-other binary-actuation consumer IoT device
+FULL_CONTRACT_ELIGIBLE
+ACTION_CONTRACT_ONLY
+REPLICATION_ONLY
+ATTACK_ALIGNMENT_ONLY
+INELIGIBLE
 ```
 
-Network-control topology is recorded for every device using a locked metadata label such as:
+`FULL_CONTRACT_ELIGIBLE` supports the complete `(B,I,E)` protocol, `NO_ACTION`, the main violation suite and federated evaluation.
 
-```text
-LOCAL_WLAN
-CLOUD_MEDIATED
-HYBRID_OR_OTHER
-```
+`ACTION_CONTRACT_ONLY` supports ON/OFF conditioned analyses but not claims requiring valid `NO_ACTION` or the full violation suite.
 
-Where acquisition permits, the benchmark should contain at least two devices in each topology represented by the main transfer claims.
+`REPLICATION_ONLY` supports a narrower mechanism replication such as large-sample action-conditioned consistency.
 
-The collection must span multiple independent sessions. For every device, the 150 observations per intent context are distributed across:
+`ATTACK_ALIGNMENT_ONLY` supports only a separately reported attack-aligned analysis.
 
-```text
->= 5 collection sessions
->= 3 distinct collection days
-```
+No minimum manufacturer/category quota is imposed merely to preserve the original hardware-acquisition design. Instead, the exact device, manufacturer, category and topology coverage of every public source is reported transparently.
 
-so statistical uncertainty is not based solely on repeated model seeds from one capture session.
-
-Device brands, categories and topologies are selected before confirmatory model evaluation and never selected based on performance.
+The main federated claim requires at least **four eligible physical-device clients** after all provenance and split gates. If fewer than four remain, FedIEC may still evaluate the contract formulation but does not make a broad multi-device federated learnability claim.
 
 ---
 
-# 15. Device Replacement Rule
+# 15. Dataset and Device Inclusion Rule
 
-A device may be replaced before the main collection only if it fails a technical eligibility criterion such as:
+Every source and device is selected by frozen technical eligibility rules before model evaluation.
+
+A device may be excluded only for reasons such as:
 
 ```text
-cannot reliably connect to the test network
-official Android application unavailable
-ON/OFF control not reproducible
-traffic cannot be attributed to the device
-mobile action cannot be timestamped independently
-device becomes defective
-
+intent provenance cannot be verified
+device identity is ambiguous
+required raw capture is unavailable or corrupted
+ON/OFF semantics cannot be established independently
+insufficient pre/post trigger coverage
+insufficient samples for the declared analysis
+train/test separation cannot be made without source overlap
+traffic cannot be attributed to the target device
 ```
 
-A device may **not** be replaced because:
+A device may **not** be excluded because:
 
 ```text
 its distributions overlap
@@ -748,159 +768,129 @@ its model performance is poor
 its behavior differs strongly from other devices
 it reduces federated performance
 it produces inconvenient results
-
+it weakens a transfer claim
 ```
 
-Replacement occurs before confirmatory collection.
+Every exclusion is recorded in a dataset/device eligibility manifest with a frozen reason.
+
+No source is replaced with a more favorable dataset after confirmatory results are observed.
 
 ---
 
-# 16. Android Control Harness
+# 16. Public Intent-Provenance Audit
 
-Actions are generated through the vendor's official Android companion application.
+No Android automation harness is built for the confirmatory study.
 
-The preferred automation order is:
+For every candidate dataset, audit the original collection documentation, metadata and tooling to establish:
 
 ```text
-Android UIAutomator / ADB
-        ↓
-Appium if required
-        ↓
-manually triggered action with independently logged timestamp
-only if reliable automation is impossible
+how the action was generated
+whether an official companion app was used
+how TURN_ON versus TURN_OFF is encoded
+how the trigger timestamp/boundary is recorded
+whether action order is deterministic or randomized
+whether multiple triggers can overlap one capture
+whether device state is documented
+whether NO_ACTION intervals can be identified independently
 ```
 
-Every action record contains:
+Every eligible interaction records:
 
 ```text
-interaction_id
+dataset_id
+source_capture_id
 device_id
-session_id
-collection_day
-app_package
 semantic_action
-intent_timestamp_monotonic
-intent_timestamp_wall_clock
-trigger_start_timestamp
-trigger_completion_timestamp if observable
-automation/manual source
-capture_id
-expected pre-state
-observed post-state where measurable
+intent_timestamp_or_boundary
+intent_provenance_grade
+original_metadata_reference
+original_tool/protocol reference when needed
+source checksum or immutable file reference
 ```
 
-The semantic label is recorded by the experimental harness before or at the time the action is triggered.
+The semantic action is taken from source provenance **before** the target-device network execution is evaluated.
 
-No network classifier is used to generate the label.
+If polarity is recovered from original tooling rather than an explicit field, the exact source rule and code/documentation pointer are frozen in the manifest.
 
-Clock alignment between the Android intent logger and gateway capture is checked at session start and session end. A session is invalid if synchronization error exceeds the pilot-locked tolerance.
-
-The harness must also support a provenance-robustness replay mode in which recorded intent timestamps can be deterministically perturbed **after clean collection** for the pre-registered timestamp-jitter analysis. These perturbations never replace the original trusted timestamps.
+Provenance-robustness experiments perturb copied metadata after clean corpus construction; they never replace or rewrite the original source label.
 
 ---
 
-# 17. Network Capture Architecture
+# 17. Raw Capture and Device-Attribution Audit
 
-The controlled environment contains:
+FedIEC does not collect new network traffic.
+
+For every candidate source, the raw-data audit establishes:
 
 ```text
-Android phone
-        ↓
-controlled Wi-Fi access point / gateway
-        ↓
-physical IoT device
-        ↓
-Internet / vendor cloud if required
-
+capture file structure
+capture time basis and timestamp resolution
+target-device identifiers available for filtering
+whether phone/controller traffic is co-captured
+capture start/end coverage relative to trigger time
+whether multiple devices share one capture
+whether individual interaction boundaries are explicit or reconstructable
+whether packets before and after the trigger are available
 ```
 
-Packet captures are collected at the controlled gateway.
+The **detection model uses only traffic attributable to the target IoT device**.
 
-Both phone and IoT traffic may be retained for provenance and debugging.
+Controller/phone traffic may be inspected only for provenance verification when allowed by the source and is not supplied as a learned feature.
 
-The **detection model itself uses only traffic attributed to the target IoT device**.
-
-Mobile-phone payloads are not model inputs.
-
-This prevents the model from trivially reading the outgoing command or learning vendor-specific mobile identifiers.
+The public dataset may reside centrally on the research machine. Client separation is therefore an experimental partitioning construct representing source-device silos; it is not evidence of operational raw-data isolation in deployment.
 
 ---
 
-# 18. Pilot Phase
+# 18. Dataset Characterization and Protocol Lock
 
-Before confirmatory collection, perform an excluded pilot on **every core device**:
+Before confirmatory model results are inspected, perform a **training-only dataset characterization stage** for every candidate primary source.
 
-```text
-20 TURN_ON interactions per device
-20 TURN_OFF interactions per device
->= 60 minutes passive/background monitoring per device
-```
+This replaces the original physical-device pilot.
 
-Pilot observations are used only to:
+The characterization stage is used only to:
 
 ```text
-verify automation
-verify capture attribution
-estimate device settling latency
-freeze the inter-action separation rule
-determine the fixed pre/post observation-window length W
-characterize routine background activity for NO_ACTION strata
-verify device state transitions
-verify repeated ON->ON and OFF->OFF behavior where supported
-measure Android↔gateway timestamp synchronization error
-measure capture timestamp resolution and raw packet-order stability
-record the effective gateway/link capture characteristics needed for physical-timeline checks
-characterize natural short-gap/inter-arrival behavior and packet-timestamp collision rates
-characterize naturally occurring action-plus-background concurrency
-freeze the raw B→E boundary-continuity descriptor and matching procedure
-freeze the pre-action-context distance metric and caliper-construction procedure
-freeze the EXCESS_EXECUTION composition/serialization feasibility checks
-classify device network-control topology
-detect collection bugs
+verify provenance reconstruction
+verify target-device attribution
+measure available pre/post trigger coverage
+select a dataset-specific fixed observation-window length W
+characterize source timestamp resolution
+identify source capture/session grouping
+characterize background intervals available for NO_ACTION
+verify action-transition metadata where available
+measure natural packet timing and collision behavior
+freeze B→E boundary-continuity descriptors
+freeze pre-action-context distance and caliper procedure
+freeze EXCESS composition feasibility rules if EXCESS is source-feasible
+detect preprocessing/capture anomalies
 ```
 
-For device `i`, define the pilot-derived conservative settling latency:
+All numerical quantities that could leak test behavior are computed from the training partition only after the source-aware split is frozen.
 
-```math
-L_{settle,i}
-```
+The characterization stage fixes **procedures**, not favorable model parameters.
 
-as the upper locked bound after which command-related traffic has returned to the device's steady background regime.
-
-Pilot samples are never used for:
-
-```text
-main model training
-threshold calibration
-confirmatory testing
-model selection
-claim support
-```
-
-After the pilot, `W`, settling rules, timestamp tolerance, background-activity strata, collection-state rules, counterfactual matching hierarchy, boundary-continuity definition, raw-timeline feasibility checks and artifact-audit tolerance are frozen.
-
-The pilot fixes **procedures**, not confirmatory thresholds derived from held-out data. Any data-dependent context caliper or natural-timing envelope used later is computed from the clean **training partition only** after the chronological split and before violation scores are inspected.
+If a dataset cannot support a required procedure, its eligibility status is narrowed rather than modifying the procedure after observing detection results.
 
 ---
 
 # 19. Observation Windows
 
-For each intent timestamp:
+For each independently recorded intent timestamp or reproducible trigger boundary:
 
 ```math
 t_I
 ```
 
-construct:
+construct, when raw coverage permits:
 
 ```math
-B = [t_I-W,\;t_I)
+B=[t_I-W_d,\;t_I)
 ```
 
 and:
 
 ```math
-E = [t_I,\;t_I+W)
+E=[t_I,\;t_I+W_d)
 ```
 
 where:
@@ -908,69 +898,48 @@ where:
 ```text
 B = pre-action behavioral context
 E = post-action execution
+W_d = fixed observation-window length for source dataset d
 ```
 
-`W` is frozen after the excluded pilot.
+A single `W_d` is frozen for all eligible device clients within a dataset before confirmatory model evaluation.
 
-The same `W` is used for every device in the confirmatory benchmark unless a technical impossibility is documented during the pilot before any confirmatory samples are inspected.
+Different public datasets may use different `W_d` values because their original capture boundaries and timing semantics can differ. Cross-dataset results are therefore treated as replications, not pooled as if they came from one collection protocol.
 
-No per-device window tuning is permitted after confirmatory data are inspected.
+## Pre-Context Integrity Rule
 
-## Settling-Integrity Rule
+An interaction is eligible for the main `p(E|B,I)` analysis only when the source capture contains the complete pre-action interval and the interval is not known to contain another control trigger.
 
-The pre-action context of a command must not contain the decaying execution tail of the preceding controlled action.
+Where the source documents previous trigger times, require the previous controlled action not to overlap the current `B` window under the frozen dataset-specific exclusion rule.
 
-For consecutive controlled intents at `t_j` and `t_{j+1}` on device `i`, require:
+Where such integrity cannot be established, the observation may remain usable for `p(E|I)` replication but is excluded from the confirmatory pre-context comparison.
 
-```math
-t_{j+1}-t_j \ge 2W + L_{settle,i}
-```
-
-Equivalently, once the previous post-action window ends at `t_j+W`, no new controlled intent is issued until at least:
-
-```math
-W + L_{settle,i}
-```
-
-additional time has elapsed.
-
-This guarantees that:
-
-```math
-[t_{j+1}-W,\;t_{j+1})
-```
-
-represents a steady pre-action context rather than command-tail contamination.
-
-Any interaction violating the frozen separation rule is excluded before splitting and the reason is recorded.
+No missing pre-trigger traffic is fabricated, padded with synthetic network behavior or inferred from another capture.
 
 ---
 
-# 20. NO\_ACTION Windows
+# 20. NO_ACTION Windows
 
-Dedicated background windows are collected for every physical device.
+`NO_ACTION` is retained only when it can be reconstructed from source material without inferring intent from the target-device traffic.
 
-They satisfy:
+An eligible `NO_ACTION` pseudo-event requires:
 
 ```text
-no mobile control intent in ±W
-no controlled action tail intersects B or E
-device remains connected
-device remains in its ordinary operating environment
-no deliberate violation is occurring
+no recorded mobile/control trigger in the frozen exclusion interval
+complete B/E raw-capture coverage
+target device remains attributable
+no known controlled-action overlap
+no attack/intervention label active unless explicitly used in a separate study
 ```
 
-They receive:
+It receives:
 
 ```text
 IntentContext = NO_ACTION
 ```
 
-## Stratified Background Sampling
+## Background Activity Stratification
 
-`NO_ACTION` must not collapse into a trivial all-zero "idle" class.
-
-During the excluded pilot, background windows are partitioned into three locked activity strata using a training-independent activity score based only on packet/byte volume:
+If enough eligible background material exists, partition training-only `NO_ACTION` windows by a simple packet/byte activity score into:
 
 ```text
 BACKGROUND_SILENT
@@ -978,174 +947,131 @@ BACKGROUND_LOW_ACTIVITY
 BACKGROUND_ACTIVE_BURST
 ```
 
-The 150 confirmatory `NO_ACTION` windows per device are allocated equally:
+The cut points are learned only from the training partition and frozen before test evaluation.
 
-```text
-50 silent
-50 low-activity
-50 active-background
-```
+The confirmatory test set should contain representation from all available strata, but no fixed 50/50/50 quota is imposed when the original dataset does not contain that amount of background behavior.
 
-`BACKGROUND_ACTIVE_BURST` windows are aligned to spontaneous legitimate traffic such as:
-
-```text
-keep-alives
-vendor cloud synchronization
-NTP/DNS-related activity where attributable to the device
-routine telemetry/status traffic
-other recurring benign background bursts
-```
-
-without any corresponding mobile command.
-
-Pseudo-event timestamps for active-background windows are placed using the frozen pilot rule so that the burst is meaningfully represented in `B`, `E`, or across their boundary rather than sampled only from network silence.
+`BACKGROUND_ACTIVE_BURST` should include legitimate spontaneous traffic where the source permits it, such as keep-alives, cloud synchronization, NTP/DNS-related activity or routine telemetry.
 
 The activity stratum is metadata, not a model feature.
 
-Performance and false alarms must be reported separately for all three `NO_ACTION` strata.
+If valid `NO_ACTION` cannot be reconstructed, the dataset is not `FULL_CONTRACT_ELIGIBLE`; it may still support action-conditioned replication.
 
 ---
 
-# 21. Clean Collection Size
+# 21. Eligible Corpus Size
 
-For each device collect:
+FedIEC does not prescribe a new collection size because no new traffic is collected.
+
+After eligibility filtering, report for every dataset and device:
 
 ```text
-150 TURN_ON interactions
-150 TURN_OFF interactions
-150 NO_ACTION windows
+number of raw source captures
+number of verified TURN_ON interactions
+number of verified TURN_OFF interactions
+number of reconstructable NO_ACTION windows
+number with valid B coverage
+number with valid E coverage
+number excluded and reason
+number retained for train/calibration/test
 ```
 
-Therefore, for `K` physical devices:
+The primary dataset must contain enough eligible observations to support:
 
-```math
-N_{clean}=K\times3\times150=450K
+```text
+local training
+federated training
+clean calibration
+held-out testing
+source-aware counterfactual construction
+leave-one-device-out where claimed
 ```
 
-The minimum confirmatory benchmark with `K=6` contains:
+No source interaction is duplicated merely to satisfy a planned sample count.
 
-```math
-2700
-```
-
-clean contract observations.
-
-The target `K=8` benchmark contains:
-
-```math
-3600
-```
-
-clean contract observations.
-
-The clean dataset is fixed before violation-generation experiments begin.
+The effective evidence size of generated counterfactuals is always reported through unique source interactions and source-dependency clusters, not only generated-row count.
 
 ---
 
 # 22. Clean Split
 
-Within every:
+The split is **source-aware and leakage-resistant**.
+
+Within each dataset and device × intent context, use chronological ordering when trustworthy source timestamps exist.
+
+Where the dataset is organized into capture/session groups rather than a continuous chronology, use a deterministic blocked split that keeps one source capture group entirely inside one partition.
+
+The target proportions are:
 
 ```text
-device × intent context
+training    ≈ 60%
+calibration ≈ 20%
+test        ≈ 20%
 ```
 
-the chronological split is:
+subject to source-group integrity and minimum sample requirements.
 
-| Partition | Samples per device × context |
-| --- | ---: |
-| Training | 90 |
-| Calibration | 30 |
-| Test | 30 |
+The exact counts are frozen in a split manifest before model evaluation.
 
-For `K` devices:
+Forbidden:
 
 ```text
-Training    = 270K
-Calibration = 90K
-Clean test  = 90K
+randomly splitting packets from the same interaction
+placing one repeated/source capture in multiple partitions
+choosing split boundaries based on model performance
+using test observations to increase a sparse training client
 ```
 
-At the mandatory minimum `K=6`:
-
-```text
-Training    = 1620
-Calibration = 540
-Clean test  = 540
-```
-
-No random train/calibration/test split is used.
-
-No repeated interaction may cross partitions.
-
-Each partition must retain representation from multiple collection sessions where sample counts permit. Session identifiers are preserved so the statistical analysis can cluster interactions correctly.
+If timestamps are available, the blocked split preserves chronology. If only source-group identities are available, a deterministic group ordering is documented and used consistently.
 
 ---
 
-# 23. Collection Order
+# 23. Source-Order and Dependence Control
 
-Large homogeneous ON-only or OFF-only blocks are forbidden, but deterministic ON/OFF alternation is also forbidden because it can make the next intent predictable from the previous physical/network state.
+FedIEC inherits the original collection order; it does not attempt to redesign that order retrospectively.
 
-The confirmatory sequence uses a **constrained randomized action schedule** generated before collection.
-
-The schedule must:
+For every source, document whether actions were collected using:
 
 ```text
-respect the frozen settling-integrity rule
-balance TURN_ON and TURN_OFF counts across sessions
-randomize action order subject to physical-state validity
-include repeated ON->ON and OFF->OFF requests where the official app/device accepts them reliably
-interleave NO_ACTION collection across sessions and days
-avoid selecting actions based on observed network traces or model scores
+alternation
+randomized order
+blocked ON/OFF runs
+separate files per action
+unknown order
 ```
 
-Repeated same-state commands are retained as the same semantic action, not introduced as new labels. Their purpose is to prevent the pre-action state from deterministically revealing the next intent and to force the model to use the full `(B,I)` relationship.
+If deterministic alternation or collection blocks make the pre-action state predictive of the next action, this is treated as a **source confound** and handled explicitly rather than hidden.
 
-For every action transition type, report the number of observations, including:
+Required controls where feasible:
 
 ```text
-OFF -> ON
-ON -> OFF
-ON -> ON where supported
-OFF -> OFF where supported
+report action-transition frequencies
+stratify or match by known pre-state/previous action when metadata exist
+include p(E|I) as the action-conditioned baseline
+report whether B alone predicts I
+perform the pre-context claim only when B is not merely a deterministic encoding of collection order
 ```
 
-The collection design reduces:
+A dataset whose source protocol makes RQ2 fundamentally uninterpretable may still support the other FedIEC questions.
 
-```text
-temporal drift confounding
-cloud-condition confounding
-firmware-session confounding
-collection-order confounding
-previous-action leakage
-state-to-intent determinism
-```
-
-The exact randomization seed and generated action schedule are released.
+No source trace is reordered to create artificial independence.
 
 ---
 
 # 24. Contract-Violation Taxonomy
 
-FedIEC evaluates five distinct failure semantics, but every family is subject to an explicit **observability, physical-feasibility and artifact-control boundary**. A violation family is not credited merely because a synthetic transformation is easy to distinguish.
+FedIEC evaluates five distinct failure semantics, but every family is subject to an explicit **observability, source-feasibility and artifact-control boundary**. A violation family is not credited merely because a synthetic transformation is easy to distinguish.
 
 ## 24.1 Omission
 
 ```text
 Intent exists
-Expected execution is absent within W
+Expected execution is absent within W_d
 ```
 
-Example:
+A Level-A omission counterfactual replaces the held-out commanded execution with a matched legitimate `NO_ACTION` execution from the same device when valid background material exists.
 
-```text
-TURN_ON requested
-device remains behaviorally idle within W
-```
-
-An execution that occurs only after `W` is not distinguishable from omission **inside the original intent window alone**. Late execution therefore requires the separate temporally misaligned evaluation defined in 24.5.
-
-`OMISSION` counterfactuals use matched legitimate `NO_ACTION` execution material and must pass the replacement/translation artifact audit in Section 25.
+If the source cannot provide trustworthy `NO_ACTION`, omission is unavailable for that dataset.
 
 ## 24.2 Substitution
 
@@ -1161,19 +1087,9 @@ TURN_ON requested
 execution corresponds to TURN_OFF
 ```
 
-Substitution is defined relative to the **recipient physical pre-state**. The donor execution must come from the same physical device and from a donor pre-state equivalent to the recipient pre-state for the substituted action. Therefore the donor's observed transition class under the substituted action must be exactly the transition class that the substituted action would induce from the recipient pre-state.
+The donor execution comes from the same physical device.
 
-Examples:
-
-```text
-recipient pre-state OFF + substituted TURN_OFF
-    -> donor must be an OFF -> OFF execution, not ON -> OFF
-
-recipient pre-state ON + substituted TURN_OFF
-    -> donor must be an ON -> OFF execution, not OFF -> OFF
-```
-
-This rule prevents a model from detecting a physically impossible state-transition signature rather than an intent–execution mismatch.
+When source metadata provide physical pre-state or transition class, the donor must be transition-compatible with the recipient context. When state metadata are absent and transition compatibility cannot be established from independent source metadata, substitution is marked unavailable for that device rather than inferred from network traffic.
 
 ## 24.3 Uncommanded Execution
 
@@ -1182,16 +1098,9 @@ No mobile intent exists
 Action-like execution occurs
 ```
 
-Example:
+A valid `NO_ACTION` recipient is paired with a matched legitimate action execution from the same device.
 
-```text
-NO_ACTION recorded
-device exhibits a normal TURN_ON-like execution
-```
-
-Evaluation must include background-active `NO_ACTION` windows so the detector cannot solve this task as silence-versus-activity classification.
-
-The donor action execution must satisfy the same context, session, boundary-continuity and temporal-alignment rules used elsewhere in Section 25.
+The evaluation must include active-background `NO_ACTION` controls where source data permit so the detector cannot solve the task as silence-versus-activity classification.
 
 ## 24.4 Excess Execution
 
@@ -1200,72 +1109,45 @@ Expected execution occurs
 but an additional legitimate-looking device-network effect is present
 ```
 
-The mandatory Level-A construction is **not random packet noise** and is **not a naïve PCAP overlay**.
+The mandatory Level-A construction, where source-feasible, combines a held-out commanded execution with an independently captured legitimate active-background burst from the same device.
 
-For a clean held-out action execution, combine its raw packet timeline with a held-out, active, legitimate `NO_ACTION` background burst from the same device only after the pair passes the matching and physical-timeline feasibility rules in Section 25. The complete 20-feature `E` window is then re-extracted from the resulting raw timeline.
+It is not random packet noise and not naïve feature-vector addition.
 
-The intended semantic composition is:
+### Raw-Timeline Requirement
 
-```text
-valid commanded execution
-+
-valid uncommanded background behavior
-```
-
-rather than arbitrary corruption.
-
-### Physical-Timeline Requirement
-
-An `EXCESS_EXECUTION` composite is admissible only if all of the following hold before feature extraction:
+An `EXCESS_EXECUTION` composite is admissible only if:
 
 ```text
-both components are raw held-out captures from the same physical device
-the background donor satisfies the locked session/day hierarchy and B-context caliper
-internal packet order and internal packet offsets of both components are preserved
-no packet timestamp is manually epsilon-jittered to force feasibility
-no newly introduced timestamp-collision pattern exceeds the clean training-derived envelope
-no newly introduced ultra-short inter-arrival pattern exceeds the clean training-derived envelope
-no conflicting TCP stream state or incompatible packet ordering is created across a shared transport flow
-components sharing an active TCP 5-tuple are rejected unless continuation compatibility is mechanically verified
-raw B→E boundary continuity remains compatible with the recipient context
-the transformed timeline passes the frozen raw-timeline feasibility checker
+both components are raw held-out traces from the same physical device
+internal packet order and offsets are preserved
+no arbitrary epsilon timestamp repair is used
+new timestamp-collision/ultra-short-gap artifacts remain inside training-derived envelopes
+no incompatible shared-flow/TCP state is created
+B→E boundary continuity remains compatible
+identical raw-to-feature extraction is rerun after composition
 ```
 
-Raw transport identifiers, TCP sequence/acknowledgment information and timestamp-resolution diagnostics may be used **only** by this feasibility checker. They never become contract-model features.
+Raw transport identifiers and sequence information may be used by the feasibility checker only; they never become learned features.
 
-If any check fails, the candidate is recorded as:
-
-```text
-COUNTERFACTUAL_INFEASIBLE_PHYSICAL_TIMELINE
-```
-
-and is not repaired by arbitrary timestamp perturbation.
+If the public source does not contain suitable active-background material or cannot support the composition audit, `EXCESS_EXECUTION` is `SOURCE_INFEASIBLE` or `ARTIFACT_AUDIT_INSUFFICIENT` and cannot support a claim.
 
 ### Natural-Concurrency Boundary
 
-Before an overlay is labeled `EXCESS_EXECUTION`, clean training data are checked for naturally occurring action-plus-background overlap using a frozen training-only rule.
-
-If the same background-behavior class is already an ordinary component of clean commanded execution, it is **not** labeled excess. It is retained as a hard clean/concurrency control.
-
-This prevents routine concurrency from being mislabeled as a contract violation.
-
-`EXCESS_EXECUTION` is permitted to support a Level-A claim only if the dedicated composition artifact audit in Section 25 is feasible and passes.
+If the same background-behavior class is already an ordinary component of clean commanded execution, it is not labeled excess. It becomes a hard clean/concurrency control.
 
 ## 24.5 Replay or Late Execution
 
-A pure replay of a valid execution can be mathematically indistinguishable from a genuine execution under the locked 20-feature representation because the features do not include absolute time, cryptographic state or packet sequence identifiers.
+A pure replay of a valid execution can be mathematically indistinguishable from a genuine execution under the locked feature representation.
 
 FedIEC therefore separates two cases.
 
 ### Detectable late / temporally misaligned execution
 
-A valid held-out execution is shifted into a later `NO_ACTION` pseudo-event window with no immediately preceding matching intent. The detector is tested on whether valid-looking execution is inconsistent with the contemporaneous `(B,I=NO_ACTION)` contract.
-
-The shifted execution must satisfy the same frozen session/day matching, B-context caliper, boundary-continuity and temporal-alignment requirements in Section 25. A donor that breaks an unresolved recipient-side flow or background rhythm is infeasible rather than an easy anomaly.
+Where a valid later `NO_ACTION` context exists, a held-out legitimate execution can be translated into that context with no corresponding intent. The transform must pass the same source, context, boundary and timing audits as other counterfactuals.
 
 ### Pure replay observability limit
 
-If replay preserves the same 20-dimensional `E` representation and occurs under an indistinguishable `B`, the current representation contains no information with which to distinguish it from a valid execution.
+If replay preserves the final execution representation and occurs under an indistinguishable context, the current representation contains no information with which to distinguish it from a valid execution.
 
 Such cases are reported as:
 
@@ -1275,213 +1157,179 @@ REPRESENTATION_UNOBSERVABLE
 
 and cannot support a replay-detection claim.
 
-FedIEC must never imply cryptographic or sequence-aware replay detection unless additional observables are explicitly added before protocol lock.
-
 ---
 
-# 25. Two-Level Violation Evaluation
+# 25. Artifact-Controlled Violation Evaluation
 
-Violation evaluation has two clearly separated levels.
+Violation evaluation is based on **public-source held-out traces only**.
+
+There is no mandatory physically induced Level-B experiment.
 
 ## Level A — Artifact-Controlled Contract Counterfactuals
 
-Mandatory.
+Mandatory for every counterfactual-based claim.
 
-Generated only from held-out observations and raw captured windows.
+Generated only from held-out observations and raw captured timelines.
 
 No counterfactual is created by directly concatenating already-extracted feature vectors.
 
-A generated counterfactual is eligible for a semantic claim only when its **family-specific transformation audit** passes.
+A generated counterfactual is eligible for a semantic claim only when its family-specific source-feasibility and transformation audit pass.
 
 ### 25.1 Frozen Counterfactual Metadata
 
-Before donor assignment, every eligible held-out clean interaction receives the following metadata from clean capture material:
+Before donor assignment, every eligible held-out clean interaction records all source-supported metadata needed for matching:
 
 ```text
-physical device
-manufacturer/category/topology metadata
-session ID and collection day
+dataset_id
+physical device id
+manufacturer/category where documented
+topology where documented
+source capture/session group
+source timestamp/order
 semantic intent
-physical pre-state and observed post-state where available
-transition class induced by the action from that pre-state
+intent-provenance grade
+pre-state/post-state where independently documented
+transition class where independently documented
 pre-action B feature vector
-raw B→E boundary-continuity signature
+raw B→E boundary-continuity signature where observable
 active raw transport-flow summary around t_I
-capture timestamp-resolution metadata
+capture timestamp resolution
 background-activity stratum where applicable
 ```
 
-These metadata are used for matching and artifact checks only. Raw identifiers and transport state do not enter the learned contract representation.
+Missing metadata remain missing; they are not inferred from the execution under evaluation.
 
 ### 25.2 Frozen B-Context Distance and Common-Support Caliper
 
-The **distance definition** is frozen during the excluded pilot.
+The distance definition is frozen before main model evaluation.
 
-After the chronological split, the numerical caliper is computed from the clean **training partition only**.
+After the clean split, compute the numerical common-support caliper from the **training partition only** for every device with sufficient support.
 
-For each device, use the transformed/standardized `B` representation and compute a training-only nearest-neighbor distance distribution among observations satisfying the same locked physical-state/topology compatibility rules used by the relevant counterfactual family.
-
-Define:
+For device `i`:
 
 ```math
 c_i = Q_{0.95}(d_{B,\mathrm{NN}})
 ```
 
-where `c_i` is the device-specific common-support caliper.
-
 A donor is admissible only when:
 
 ```math
-d_B(B_{recipient}, B_{donor}) \le c_i
+d_B(B_{recipient},B_{donor}) \le c_i
 ```
 
-A nearest donor **outside** the caliper is not accepted merely because it is the closest available observation.
+If the source cannot support a stable device-specific caliper, that device/family is marked insufficient rather than borrowing held-out information.
 
-If the training partition cannot support a stable device-specific caliper under the frozen minimum-support rule, that device/family is marked insufficient for Level-A counterfactual generation rather than borrowing held-out information.
+### 25.3 Source-Aware Matching Hierarchy
 
-### 25.3 Deterministic Session/Day Matching Hierarchy
+The original physical-collection day hierarchy is replaced by a hierarchy grounded in whatever grouping the public source actually exposes.
 
-The phrase `where feasible` is not permitted in donor matching.
-
-Every main-suite donor must satisfy the following hierarchy in order:
+For each dataset, freeze one hierarchy before model evaluation, for example:
 
 ```text
-Tier 1: same physical device + same session
-Tier 2: same physical device + different session on the same collection day
-Tier 3: same physical device + adjacent collection day with |Δday| = 1
+Tier 1: same physical device + same source capture/session group
+Tier 2: same physical device + nearest distinct source group under documented chronology
+Tier 3: same physical device + another eligible group within the frozen source rule
 Otherwise: NO_VALID_COUNTERFACTUAL
 ```
 
-At every tier, the donor must also satisfy:
+If the source has no meaningful session grouping, use source capture IDs and deterministic timestamp/order proximity instead of inventing sessions or days.
 
-```text
-same network-control topology
-family-specific physical-state/transition compatibility
-B-context distance within the frozen device caliper
-B→E boundary-continuity compatibility
-all split/provenance rules
-```
+At every tier, require all family-specific compatibility, B-caliper, provenance and boundary rules that can be established independently.
 
-The algorithm always chooses the **lowest available tier first**. Within a tier it minimizes the frozen B-context distance, with deterministic tie-breaking from a pre-registered generation seed.
-
-No donor search is expanded to more distant days after seeing model scores or after a family performs poorly.
-
-The selected tier is recorded for every generated observation and reported by device and violation family.
+The exact hierarchy is frozen separately per dataset and released in the manifest.
 
 ### 25.4 Transition-Semantics Compatibility
 
-For `SUBSTITUTION`, simple physical feasibility is insufficient.
+For substitution, use independent physical-state/transition metadata when available.
 
-Let the recipient physical pre-state be `S_r`, the declared action be `I_r`, and the substituted action be `I_s`.
+If the recipient transition semantics cannot be established without analyzing the target execution itself, do not use transition-sensitive substitution for that observation.
 
-The donor execution must have been generated from a donor pre-state equivalent to `S_r` for `I_s` so that:
-
-```text
-transition_class(donor execution under I_s)
-=
-transition_class(I_s applied to recipient pre-state S_r)
-```
-
-Thus state-changing and state-maintaining signatures are never transplanted into a recipient context in which that substituted action would have the opposite transition semantics.
-
-Impossible or transition-mismatched candidates are recorded as:
+Record:
 
 ```text
+TRANSITION_VERIFIED
+TRANSITION_NOT_AVAILABLE
 COUNTERFACTUAL_INFEASIBLE_TRANSITION
 ```
 
-They are not used as easy anomalies.
+Only verified transitions support transition-specific claims.
 
 ### 25.5 B→E Boundary-Continuity Rule
 
 Similarity of aggregate `B` features alone is not enough.
 
-A frozen raw boundary descriptor is computed in a pilot-locked neighborhood around `t_I`. It summarizes only matching metadata needed to detect discontinuities, including where observable:
+Where raw captures contain the boundary around `t_I`, compute a frozen raw descriptor summarizing:
 
 ```text
-whether target-device flows remain active across the boundary
-transport protocol and connection-state class
+target-device flows active across the boundary
+transport protocol / connection-state class
 recent packet-direction/activity pattern
 endpoint/flow continuity class
-presence of a background burst that begins in B and continues into E
+background activity crossing the boundary
 ```
 
-The descriptor is never a model input.
+The descriptor is matching metadata only and never a model input.
 
-If recipient `B` contains an unresolved target-device flow or multi-part background activity crossing `t_I`, the donor `E` must provide a compatible continuation under the frozen rule. Otherwise the transformation is:
+A donor that creates an artificial disappearance or appearance of a continuing flow/background rhythm is rejected.
 
-```text
-COUNTERFACTUAL_INFEASIBLE_BOUNDARY
-```
+If boundary continuity cannot be evaluated because the source capture does not include the necessary raw context, the corresponding transformation is unavailable.
 
-This prevents the detector from exploiting an artificial disappearance or appearance of a session/background rhythm at the splice boundary.
+### 25.6 Temporal Alignment Rule
 
-### 25.6 Temporal-Boundary Alignment Rule
+Donor executions are transformed only at raw timestamp/packet level.
 
-Donor executions are transformed at the raw timestamp/packet-window level.
-
-When an execution is translated to a new pseudo-intent time:
+When translated to a new pseudo-intent time:
 
 ```text
-preserve all internal packet offsets
-preserve donor execution duration
-preserve relative first-packet latency unless the violation definition explicitly changes timing
+preserve internal packet offsets
+preserve execution duration
+preserve relative first-packet latency unless timing is the violation
 preserve internal packet order
-recompute all inter-arrival and latency features after transformation
-never splice only aggregate feature vectors
-never repair an infeasible transform by arbitrary epsilon timestamp jitter
+recompute all timing features after transformation
+never splice only aggregate features
+never repair infeasible transforms with arbitrary epsilon jitter
 ```
-
-These checks prevent discontinuities at `t_I` or transformation mechanics from becoming the detection signal.
 
 ### 25.7 Donor Assignment, Reuse and Dependence
 
 Counterfactual generation uses deterministic matching manifests.
 
-Within each violation family and each artifact-audit family:
+Within each violation family:
 
 ```text
-a clean interaction cannot be both recipient and donor for the same generated observation
-donor reuse is capped at one use per family whenever a valid one-to-one assignment exists
-if exact one-to-one assignment is impossible, the pre-registered maximum reuse cap is applied and recorded
+a clean interaction cannot be both recipient and donor in the same generated row
+donor reuse is minimized and capped by a frozen rule
 a donor is never duplicated merely to increase sample count
+all source clean interaction IDs are recorded
 ```
 
-The implementation uses deterministic minimum-cost matching under the frozen tier/caliper constraints rather than independent greedy sampling when this changes donor reuse.
+Create a `source_dependency_cluster` by linking generated observations that share any source clean interaction. Connected components are resampled together in the hierarchical analysis.
 
-Every generated observation records all source clean interaction IDs.
+### 25.8 EXCESS Composition Rule
 
-For inferential analyses that pool generated observations, create a `source_dependency_cluster` by linking any derived observations that share a source clean interaction. Connected components of this source-sharing graph are resampled together in the hierarchical analysis in Section 66.
+`EXCESS_EXECUTION` is the only planned family that composes two packet timelines.
 
-This prevents donor reuse or counterfactual multiplication from inflating the effective sample size.
+The background donor is aligned according to the frozen dataset-specific background rule. Internal timing is preserved.
 
-### 25.8 EXCESS_EXECUTION Physical-Timeline Composition Rule
-
-`EXCESS_EXECUTION` is the only mandatory family that **composes two packet timelines** rather than replacing/translating one execution.
-
-The composition algorithm therefore has an additional frozen validation layer.
-
-The background donor is aligned using the pilot-locked active-background pseudo-event rule; its internal timing is preserved. After alignment, the raw timelines are merged only if all Section 24.4 physical-timeline checks pass.
-
-Mandatory pre-feature diagnostics include:
+Mandatory diagnostics before feature extraction include:
 
 ```text
-new exact-timestamp collision count and rate
-new ultra-short inter-arrival count and rate
+new exact-timestamp collision count/rate
+new ultra-short inter-arrival count/rate
 minimum positive inter-arrival by direction
 shared active transport-flow count
-TCP sequence/acknowledgment compatibility where a shared TCP flow exists
+TCP sequence/acknowledgment compatibility where shared flows exist
 packet-order preservation for each source component
-raw-timeline feasibility-check status
+raw-timeline feasibility status
 ```
 
-The collision/short-gap diagnostics are compared with frozen clean training-derived natural envelopes. They are quality-control diagnostics only and are not detector inputs.
+Diagnostics are compared with clean training-derived natural envelopes.
 
-A candidate outside the locked natural envelope is rejected, not clipped or jittered.
+A candidate outside the frozen envelope is rejected, not clipped or jittered.
 
-### 25.9 Artifact Audit A — Replacement/Translation Transformations
+### 25.9 Artifact Audit A — Replacement/Translation
 
-This audit covers transformation mechanics used by:
+This audit covers:
 
 ```text
 OMISSION
@@ -1490,61 +1338,23 @@ UNCOMMANDED_EXECUTION
 TEMPORALLY_MISALIGNED_EXECUTION
 ```
 
-Construct **semantic-preserving replacement/translation controls** by pairing a recipient `(B,I)` with a different held-out execution of the **same intended action**, using exactly the same tier, state/transition, B-caliper, boundary-continuity and temporal-alignment rules used for violation generation.
+Construct semantic-preserving controls using the same transformation machinery but a donor execution with the **same semantic intent** as the recipient.
 
-A dedicated artifact classifier attempts to distinguish:
-
-```text
-genuine clean held-out interactions
-versus
-semantic-preserving replacement/translation controls
-```
-
-using the same final 20 execution features but without the intent label.
+A dedicated artifact classifier attempts to distinguish genuine held-out clean interactions from transformed semantic-preserving controls using the final execution representation without intent.
 
 ### 25.10 Artifact Audit B — EXCESS Composition
 
-Passing Audit A does **not** validate `EXCESS_EXECUTION`.
+Passing Audit A does not validate `EXCESS_EXECUTION`.
 
-A separate composition audit must exercise the same two-timeline merge path used by `EXCESS_EXECUTION`.
+Where enough naturally concurrent clean action+background observations exist, compare them with synthetically recomposed allowed-concurrency controls produced by the same merge path.
 
-The preferred semantic-preserving control compares:
+A no-op round-trip test is mandatory: running the composition pipeline with no added packets must reproduce the original extracted feature vector exactly.
 
-```text
-genuine clean commanded interactions containing naturally observed legitimate action+background concurrency
-versus
-synthetically recomposed legitimate action+background controls
-```
-
-The synthetic controls use a background-behavior class that the training-only natural-concurrency rule has explicitly designated as **allowed clean concurrency**, not as excess.
-
-Genuine and synthetic composites are matched by:
-
-```text
-device
-action
-recipient pre-state / transition semantics
-session/day tier
-B-context caliper
-background-activity class
-boundary-continuity class
-```
-
-The identical EXCESS merge, serialization and feasibility checker is used.
-
-A deterministic empty-donor/no-op round-trip test is also mandatory: applying the composition pipeline with no added packets must reproduce the original extracted feature vector exactly. This is a code-integrity check, not a substitute for the composition artifact audit.
-
-If there are insufficient naturally concurrent clean controls to run Audit B for a device, `EXCESS_EXECUTION` on that device is labeled:
-
-```text
-ARTIFACT_AUDIT_INSUFFICIENT
-```
-
-and cannot support a Level-A EXCESS claim. Physically realized Level-B excess-like mechanisms remain eligible if independently grounded.
+If suitable clean concurrency controls do not exist, EXCESS is `ARTIFACT_AUDIT_INSUFFICIENT` for that device/source.
 
 ### 25.11 Frozen Artifact-Audit Pass Criterion
 
-For each artifact-audit family separately, define orientation-free artifact detectability:
+For each artifact-audit family define:
 
 ```math
 A^*=\max(AUROC,1-AUROC)
@@ -1556,34 +1366,30 @@ with frozen tolerance:
 \delta_{artifact}=0.10
 ```
 
-The audit passes only if all conditions hold on held-out audit data:
+The audit passes only if all applicable conditions hold on held-out audit data:
 
 ```text
-upper bound of the 95% hierarchical CI for A* <= 0.60
+upper bound of the 95% dependence-aware CI for A* <= 0.60
 no individual-device A* > 0.70
 no single final model feature has pooled univariate A* > 0.65
 all mandatory raw-timeline feasibility diagnostics pass
 ```
 
-This is an equivalence-style artifact criterion: the protocol must provide evidence that transformation detectability is close to chance within the pre-registered tolerance. Merely obtaining a non-significant difference or a confidence interval that happens to include 0.50 is insufficient.
+If the source sample size is too small to evaluate a criterion meaningfully, the result is `ARTIFACT_AUDIT_INSUFFICIENT`, not PASS.
 
-If any criterion fails, the corresponding transformation family is considered detectably artificial and must be corrected **before** confirmatory violation results for that family are interpreted.
+### 25.12 Main Counterfactual Constructions
 
-Audit thresholds and repair rules are fixed before main contract results are inspected.
-
-### 25.12 Mandatory Level-A Constructions
+Where source-feasible:
 
 ```text
 OMISSION: correct intent + matched legitimate NO_ACTION execution
-SUBSTITUTION: correct intent + transition-compatible opposite-action execution
+SUBSTITUTION: correct intent + verified-compatible opposite-action execution
 UNCOMMANDED_EXECUTION: NO_ACTION + matched legitimate action execution
-EXCESS_EXECUTION: correct action execution + physically feasible active legitimate NO_ACTION background composition
-REPLAY_OR_LATE_EXECUTION: valid execution shifted into a later matched NO_ACTION window
+EXCESS_EXECUTION: commanded execution + feasible legitimate active background composition
+REPLAY_OR_LATE_EXECUTION: legitimate execution translated into a later matched NO_ACTION context
 ```
 
-Training data remain untouched.
-
-These observations evaluate the **contract mechanism** and are called:
+These observations are called:
 
 ```text
 contract counterfactuals
@@ -1595,29 +1401,18 @@ not:
 cyberattacks
 malware
 real compromises
+physically induced failures
 ```
 
-## Level B — Physically Induced Violations
+## Level B — Dataset-Grounded Observed Divergences
 
-Mandatory for the final confirmatory chapter unless a scenario is impossible across every eligible device for a documented technical reason.
+Optional.
 
-The study must realize at least **three pre-registered physical control-path violation mechanisms**, and at least **two distinct mechanisms must produce analyzable observations on at least three core devices**.
+If a public dataset contains independently documented failed commands, delayed commands, unintended actions or comparable control-path anomalies, evaluate them separately without synthetic transformation.
 
-Priority mechanisms are:
+The event must have independent ground truth for intended action and observed outcome.
 
-```text
-command delivery interruption / blocked command
-secondary-controller or out-of-band action
-uncommanded physical state change where safely reproducible
-delayed command execution
-rapid contradictory command
-```
-
-Only scenarios reproducible without unsafe modification of devices are included.
-
-These experiments determine whether the contract formulation survives outside recombined traces.
-
-A failure to realize the minimum physical set narrows the chapter to mechanism/benchmark claims and blocks broad security-relevance wording.
+Absence of such events does not invalidate the main FedIEC study and does not trigger new physical data collection.
 
 ---
 
@@ -1625,183 +1420,203 @@ A failure to realize the minimum physical set narrows the chapter to mechanism/b
 
 A contract counterfactual is never called an attack.
 
-A physically induced control-path failure is not automatically called malware.
+A dataset-grounded control failure is not automatically called malware.
 
-A real-attack claim requires:
+A real-attack claim requires all of:
 
 ```text
-actual attack activity
+actual attack activity independently documented
 +
 known legitimate intent
 +
-known attack-active interval
+known attack-active interval or bounded alignment
 +
 isolatable target-device execution
-
 ```
 
-If these conditions cannot be established:
+If these conditions cannot be established from the public source:
 
-> FedIEC makes no real-attack detection claim.
+> FedIEC makes no real-attack detection claim for that dataset.
+
+No live attack is generated by the researcher as part of this chapter.
 
 ---
 
-# 27. External Dataset 1 — PingPong
+# 27. Primary Candidate Dataset — PingPong
 
-PingPong is the first external validation candidate because it provides:
+PingPong is the first candidate for the main multi-device evaluation because the available source material includes real smart-home devices, companion-app-triggered device events, trigger timing information and device-event network traces.
 
-```text
-physical smart-home devices
-official Android companion applications
-trigger timestamps
-device-event network traces
-multiple device functionalities
-natural physical devices
-
-```
-
-The external evaluation uses only devices for which the semantic action can be mapped independently and unambiguously to:
+The evaluation uses only devices/capture subsets for which semantic action can be mapped independently and unambiguously to:
 
 ```text
 TURN_ON
 TURN_OFF
-
 ```
 
-No action is inferred from network traffic.
+No action is inferred from target-device network traffic.
+
+PingPong may become the **primary confirmatory dataset only if** it passes the full eligibility gate in Section 14, including the requirements for valid B/E coverage, sufficient device count and reconstructable `NO_ACTION` for the full three-context suite.
+
+If it passes only a narrower gate, its role is reduced accordingly before confirmatory model results are inspected.
 
 PingPong is not treated as a novel dataset contribution of FedIEC.
-
-Its role is independent replication.
 
 ---
 
 # 28. PingPong Eligibility
 
-A PingPong physical device is eligible only when:
+A PingPong device/capture subset is eligible only when:
 
 1. the device has clearly documented ON and OFF triggers;
-2. the trigger order/timestamps can distinguish ON from OFF;
-3. official Android-app interaction generated the relevant traffic;
-4. sufficient valid captures remain for evaluation;
+2. trigger order/timestamps distinguish ON from OFF under the original protocol;
+3. the relevant traffic was generated through an eligible mobile-control pathway;
+4. sufficient raw capture surrounds the trigger for the declared analysis;
 5. device identity is unambiguous;
-6. training and evaluation traces can be separated without overlap.
+6. training, calibration and evaluation traces can be separated without source overlap;
+7. required background/no-action intervals are available for any claim that depends on `NO_ACTION`.
 
-All eligible devices are used.
+All eligible devices are retained.
 
 No performance-based device selection is allowed.
 
-## 28.1 Acquisition Constraint on Criterion 2 — Resolved
+## 28.1 Verified Polarity Convention
 
-The acquired PingPong release does not store ON/OFF polarity per line in
-its `timestamps` files (public-dataset devices merge ON and OFF pcaps
-together via `mergecap` + `ls -1` before this file is generated, per the
-dataset's own instructions). Polarity is instead recovered from PingPong's
-own official tool source (`github.com/uci-plrg/pingpong`,
-`SignatureGenerator.java` lines 123-126):
+The acquired release does not store ON/OFF polarity per line in every `timestamps` file. Where the original PingPong collection/tooling defines alternating trigger polarity, that documented source convention may be used as `VERIFIED_PROTOCOL` provenance.
 
-```text
-// Tag each trigger with "ON" or "OFF", assuming that the first
-// trigger is an "ON" and that they alternate.
-userActions.add(new UserAction(
-    i % 2 == 0 ? Type.TOGGLE_ON : Type.TOGGLE_OFF, triggerTimes.get(i)));
-```
+The exact original tool revision/source pointer and the mapping rule are frozen in the provenance manifest.
 
-with the class-level documentation confirming this is the actual
-collection protocol: "The events ON and OFF were generated alternately for
-100 times using the automation scripts." This is the verified ground-truth
-convention the dataset was collected under — applied by PingPong's own
-tool uniformly to every capture unit it processes — not a heuristic
-guess, and criterion 2 is satisfied under it.
+This rule applies only to capture families for which the original collection documentation supports it. `remote-phone`, `ifttt`, `public-dataset` or other subsets require their own provenance audit and are not automatically promoted to eligibility.
 
-This convention applies to `evaluation-datasets/local-phone/` and
-`evaluation-datasets/same-vendor/` (PingPong's own official-companion-app
-collection). `remote-phone/`, `ifttt/`, and `public-dataset/` remain
-unaddressed: their intent-provenance chain (criterion 3, "official
-Android-app interaction") needs separate verification — `ifttt` is a
-third-party automation service rather than the manufacturer's own app, and
-`public-dataset`'s original per-device trigger mechanism is documented by
-the IMC'19 paper rather than by PingPong itself.
-
-Devices with genuinely non-binary or ambiguous semantics (thermostat
-modes, alarm arm/disarm, door lock, sprinkler modes, camera actions,
-bulb color/intensity) remain out of scope per Sec. 4 regardless of this
-resolution — they were never ON/OFF candidates.
+Devices with non-binary or ambiguous semantics remain outside the confirmatory ON/OFF study.
 
 ---
 
-# 29. External Dataset 2 — TU Wien Philips Hue
+# 29. Replication Dataset — TU Wien Philips Hue
 
-The TU Wien Philips Hue dataset remains a useful large-scale mechanism dataset.
+The TU Wien Philips Hue dataset is a large-sample action-conditioned replication source.
 
-It contains repeated labeled ON/OFF captures. As acquired, ON/OFF polarity
-is directly encoded in each capture's filename
-(`{index}_{yyyymmdd}_{hhmmss}_{device label}_Turn_{On|Off}.pcap`) — unlike
-PingPong (Sec. 28.1), no separate polarity-verification step is required
-for this source; 5000 ON / 5000 OFF captures for one device were confirmed
-by direct enumeration. A stray `armstate_labeled.csv` file co-located at
-the dataset root belongs to an unrelated arm/disarm security-system
-dataset and is not TU Wien Philips Hue data — exclude it.
+The acquired material contains repeated labeled ON/OFF captures with action polarity encoded in capture naming/documentation.
 
-Its revised role is:
+Its role is:
 
 ```text
 large-sample replication of action-conditioned consistency
-
 ```
 
-rather than proof of federated heterogeneity.
+It tests whether the FedIEC formulation remains meaningful over thousands of repeated executions from one physical-device family.
 
-It tests whether the contract formulation remains valid under thousands of repeated executions of the same physical-device family.
+Because it does not provide a multi-device client population by itself, it cannot establish:
 
-It does not establish multi-device federation by itself.
+```text
+federated heterogeneity benefit
+leave-one-device-out transfer
+manufacturer generalization
+multi-client fairness
+```
+
+If pre-action or NO_ACTION material is insufficient, evaluate only the subset of FedIEC questions actually supported by the source.
+
+---
+
+# 30. Secondary Candidate Dataset — CIC IoT 2022
+
+CIC IoT 2022 is the second multi-device candidate/replication source.
+
+Use only interaction subsets whose trigger semantics satisfy the independent intent-provenance rule.
+
+The raw material separates several app-triggered ON/OFF pathways in directory structure such as:
+
+```text
+LOCAL_ON / LOCAL_OFF
+LAN_ON / LAN_OFF
+WAN_ON / WAN_OFF
+```
+
+Voice-assistant folders such as `ALEXA_*` or `GOOGLE_*` are outside the locked mobile-companion-app confirmatory scope unless the research scope is explicitly changed before protocol lock.
+
+Per-interaction trigger time is accepted only when its derivation from the source capture is documented and does not use post-trigger target-device behavior to infer the action.
+
+CIC IoT 2022 may support:
+
+```text
+independent replication
+additional physical-device clients
+cross-dataset robustness
+optional attack-aligned evidence
+```
+
+but each role is gated separately by provenance, capture coverage and split feasibility.
+
+---
+
+# 31. Cross-Dataset Replication Rule
+
+FedIEC does not treat different public collections as interchangeable samples from one homogeneous population.
+
+The primary rule is:
+
+```text
+train/evaluate within one dataset
+replicate the protocol independently on another dataset
+compare effect direction and failure boundaries
+```
+
+Raw samples from PingPong, CIC IoT 2022 and TU Wien are not pooled into one confirmatory FL population unless a separately pre-registered harmonization analysis proves that client identity, intent semantics, observation windows and capture modalities are compatible.
+
+Cross-dataset reporting includes:
+
+```text
+source-specific W_d
+source-specific eligibility counts
+source-specific feature availability
+source-specific provenance grade
+source-specific FL client count
+source-specific effect estimates
+```
+
+A successful replication strengthens external validity. A failed replication is reported as a dataset/collection boundary rather than silently excluded.
 
 ---
 
 # 32. Public-Dataset Failure Rule
 
-Failure of an external dataset does **not** invalidate FedIEC.
+Failure of one public dataset does **not** invalidate FedIEC.
 
-The mandatory controlled benchmark supplies the core evidence.
-
-External datasets may fail because of:
+A source may fail the full protocol because of:
 
 ```text
 ambiguous intent labels
 insufficient ON/OFF samples
 uncertain mobile trigger provenance
+missing pre-action coverage
+missing NO_ACTION material
 incompatible capture boundaries
 missing physical-device identity
+insufficient independent capture groups
 licensing/access limitations
-
 ```
 
-Eligibility rules are never weakened because an external dataset would otherwise be unusable.
+Eligibility rules are never weakened because a preferred dataset would otherwise be unusable.
+
+If no candidate dataset passes the full multi-device main-study gate, the chapter must narrow its claims to the contract components that the evidence actually supports; it does not revert to acquiring physical devices as an unplanned rescue.
 
 ---
 
 # 33. Optional Real-Attack Dataset
 
-CIC IoT 2022 or another suitable dataset may be used only if the following can be established directly:
+CIC IoT 2022 or another suitable public dataset may support a real-attack analysis only if the following can be established directly:
 
 1. intended legitimate action;
 2. corresponding physical device;
-3. intent timestamp or bounded interval;
+3. intent timestamp or bounded trigger interval;
 4. attack-active interval;
 5. target-device execution during that interval.
 
 If any condition is missing, the dataset cannot support the real-attack claim.
 
-As acquired, the raw CIC IoT 2022 material's `3-Interactions/<category>/
-<device>/` directories separate app-triggered polarity by trigger-method
-subfolder (`LOCAL_ON`, `LOCAL_OFF`, `LAN_ON`, `LAN_OFF`, `WAN_ON`,
-`WAN_OFF`) alongside voice-assistant subfolders (`ALEXA_*`, `GOOGLE_*`).
-Only the `LOCAL_`/`LAN_`/`WAN_` subfolders satisfy the official-companion-
-app intent-provenance requirement in Sec. 16; `ALEXA_*`/`GOOGLE_*` are
-voice triggers and are excluded from FedIEC eligibility regardless of
-otherwise-usable capture quality. Per-interaction intent timestamps are
-not provided separately and must be read from each capture's own
-first-packet time.
+Attack-aligned evaluation is optional and remains separate from the counterfactual contract benchmark.
+
+No attack label is reverse-engineered from the contract score itself.
 
 ---
 
@@ -1816,7 +1631,7 @@ The basic contract observation is:
 where:
 
 ```text
-B = pre-intent network context
+B = pre-intent network context where source coverage permits
 I = independently observed mobile intent
 E = post-intent device execution
 ```
@@ -1824,15 +1639,17 @@ E = post-intent device execution
 Every observation additionally carries non-feature metadata required for dependence-aware analysis:
 
 ```text
+dataset_id
 device_id
-manufacturer
-category
-network_topology
-session_id
-collection_day
+manufacturer/category where documented
+network_topology where documented
+source_capture_id
+source_group_id / session_id where documented
+source timestamp/order
 interaction_id
+intent_provenance_grade
 background_activity_stratum if NO_ACTION
-physical pre-state/post-state where observable
+physical pre-state/post-state where independently documented
 ```
 
 For `NO_ACTION`:
@@ -1841,15 +1658,15 @@ For `NO_ACTION`:
 I = NO_ACTION
 ```
 
-with a pseudo-event timestamp selected under the locked stratified-background rule.
+with a pseudo-event timestamp selected from a source interval known to contain no control trigger under the locked rule.
 
-Packets/interactions are not treated as independent inferential replicates. Device and session structure is preserved through all statistical analysis.
+Packets/interactions are not treated as independent inferential replicates when they share a source capture, source session/group, or donor/recipient material.
 
 ---
 
 # 35. Network Attribution
 
-Only packets attributable to the target IoT endpoint are included in the model features.
+Only packets attributable to the target IoT endpoint in the source capture are included in the model features.
 
 The following are retained only as metadata and never used as learned features:
 
@@ -1993,29 +1810,29 @@ No raw identifier enters `C`.
 
 # 38. Invalid Interaction Rule
 
-An observation is removed before splitting if:
+An observation is removed from a specific analysis before splitting/modeling if:
 
 ```text
-intent timestamp missing
-intent ambiguous
-target device ambiguous
-capture corrupted
-capture overlaps another controlled action
-device disconnects unexpectedly before the interaction
-capture clock synchronization fails
+intent provenance is missing or ambiguous
+target device is ambiguous
+required raw capture is corrupted
+required B or E coverage is incomplete
+capture overlaps another known controlled action in a way the protocol forbids
 traffic attribution fails
-action is not one of the locked semantic actions
-
+action is outside the locked semantic scope
+source split integrity cannot be preserved
+NO_ACTION provenance cannot be established for a NO_ACTION-dependent analysis
 ```
 
-Exclusion counts and reasons are published.
+Exclusion counts and frozen reasons are published.
 
 An interaction is not removed because it is difficult for the model.
 
-A clean held-out interaction may remain in the benchmark but be ineligible for one specific Level-A violation family. Counterfactual ineligibility is recorded using a frozen reason such as:
+A clean held-out interaction may remain in the corpus but be ineligible for one specific violation family. Counterfactual ineligibility is recorded using a frozen reason such as:
 
 ```text
 NO_VALID_COUNTERFACTUAL
+SOURCE_METADATA_INSUFFICIENT
 COUNTERFACTUAL_INFEASIBLE_TRANSITION
 COUNTERFACTUAL_INFEASIBLE_BOUNDARY
 COUNTERFACTUAL_INFEASIBLE_PHYSICAL_TIMELINE
@@ -2042,7 +1859,7 @@ Rate/fraction features are not log transformed.
 
 The main confirmatory protocol uses **one training-population scaler per training fold**, not per-client test-time normalization.
 
-For each feature, the scaler statistics are computed exclusively from the union of the **training partitions of the currently eligible training clients**.
+For each feature, the scaler statistics are computed exclusively from the union of the **training partitions of the currently eligible public-device training clients**.
 
 In the federated regime, the required sufficient statistics are aggregated without pooling raw windows. In centralized analysis, the exact same resulting scaler is used. The local-model baseline also receives the same shared scaler, making the local comparison conservative because local models obtain common preprocessing statistics but no other clients' training examples.
 
@@ -2254,25 +2071,27 @@ This establishes whether a deep conditional density model is necessary at all.
 
 # 48. Required Learning Regimes
 
-The primary contract model is evaluated under three regimes.
+The primary contract model is evaluated under three regimes on the same eligible device population.
 
 ## Local
 
-Each physical-device client trains exclusively on its own training observations.
+Each dataset-defined physical-device client trains exclusively on its own training observations.
 
 ## Centralized
 
-All eligible training observations are pooled.
+All eligible training observations from participating device clients are pooled for an upper-reference training regime.
 
 Calibration and test observations are excluded.
 
 ## Federated
 
-Each physical device is one client.
+Each dataset-defined physical device is treated as one simulated federated client.
 
 The server aggregates model updates with FedAvg.
 
-The same architecture and optimizer are used in all three regimes.
+The same architecture, optimizer, eligible observations and shared training-client normalization rule are used across regimes.
+
+The federated implementation is an experimental simulation over public data, not a live deployment of training software on the original IoT devices.
 
 ---
 
@@ -2281,7 +2100,7 @@ The same architecture and optimizer are used in all three regimes.
 The main FL configuration is:
 
 ```text
-client = physical IoT device
+client = dataset-identified physical IoT device
 aggregation = FedAvg
 weighting = local training sample count
 participation = all eligible clients
@@ -2296,7 +2115,7 @@ No client is removed because of poor performance.
 
 No alternative aggregation rule is introduced after seeing results.
 
-The main study is deliberately a small cross-device/cross-gateway federation over real physical clients; it does not claim massive-client scalability.
+The main study is deliberately a small federation over real-device partitions reconstructed from public traces. It does not claim massive-client scalability, real-network orchestration or on-device training feasibility.
 
 ---
 
@@ -2308,29 +2127,29 @@ The scientific question is not:
 Which FL optimizer maximizes accuracy?
 ```
 
-The main question is whether execution-contract knowledge can be collaboratively learned across real heterogeneous physical devices and whether collaboration provides value when local contract data are limited.
+The main question is whether execution-contract knowledge can be collaboratively learned across heterogeneous real-device partitions and whether collaboration provides value when local contract data are limited.
 
 FedAvg therefore remains the fixed reference aggregator.
 
-FedProx, FedYogi, Ditto, FedBN, clustered FL, or other alternatives are outside the confirmatory study.
+FedProx, FedYogi, Ditto, FedBN, clustered FL or other alternatives are outside the confirmatory study.
 
-This prevents the novelty from drifting into optimizer comparison.
+This prevents novelty from drifting into optimizer comparison.
 
-If heterogeneous contract learning fails, alternative FL methods may be discussed as future work, but they are not introduced post hoc to rescue confirmatory performance.
+If heterogeneous contract learning fails, alternative FL methods may be discussed as future work but are not introduced post hoc to rescue confirmatory performance.
 
 ---
 
 # 51. Training-Budget Comparability and Local-Data Scarcity
 
-For the full-data comparison use:
+For the full-data comparison use comparable optimization exposure:
 
 ```text
-local model = 100 epochs
-centralized model = 100 epochs
-federated model = 100 rounds × 1 local epoch
+local model = fixed full-data epoch budget
+centralized model = same fixed epoch budget
+federated model = fixed rounds × 1 local epoch
 ```
 
-This preserves approximate exposure parity.
+The exact epoch/round budget is frozen before confirmatory execution.
 
 Final-round parameters are used.
 
@@ -2338,28 +2157,30 @@ Test performance is never used for checkpoint selection.
 
 ## Mandatory Data-Scarcity Collaboration Curve
 
-To determine whether federation contributes scientifically rather than merely reproducing a centralized-style model over distributed clients, repeat the local-versus-federated comparison using nested training budgets per device **and per semantic context**:
+Repeat local-versus-federated comparison using nested per-device/per-context training budgets drawn only from the training partition:
 
 ```text
 n = 10
 n = 30
-n = 60
-n = 90
+n = 60 where every participating client supports it
+FULL = all eligible training observations
 ```
 
-The subset rule is frozen before evaluation and preserves session diversity through deterministic session-stratified sampling from the training partition only.
+A numerical scarcity level is included only when all device clients in that comparison can supply at least that many independent eligible training interactions for the relevant context. Missing levels are reported rather than filled by duplication.
 
-For every budget report:
+The subset rule is frozen and source-group aware.
+
+For every available budget report:
 
 ```text
 local AUROC/AUPRC
 federated AUROC/AUPRC
 paired federation-minus-local effect
 per-device effect
-communication cost
+simulated communication cost
 ```
 
-The full `n=90` condition remains the confirmatory comparison. The scarcity curve is a mandatory secondary analysis supporting only claims that explicitly reference data scarcity.
+The `FULL` condition is the confirmatory collaborative comparison. The scarcity curve supports only claims explicitly referencing data scarcity.
 
 ---
 
@@ -2367,23 +2188,25 @@ The full `n=90` condition remains the confirmatory comparison. The scarcity curv
 
 Threshold selection is not a research variable.
 
-For a trained detector and client:
+For a trained detector and participating client with sufficient clean calibration data:
 
 ```math
-\tau_i = Q_{0.95}(S_{i,\text{cal}})
+\tau_i=Q_{0.95}(S_{i,\mathrm{cal}})
 ```
 
-where calibration scores come exclusively from **clean genuine contracts**.
+where calibration scores come exclusively from clean genuine contracts in the calibration partition.
 
 Violation samples never influence thresholds.
 
 Threshold-free metrics remain primary.
 
+If a client has insufficient calibration observations for a stable local threshold, use the pre-registered shared training-client calibration rule or mark the threshold-based metric unavailable; do not borrow test labels.
+
 ---
 
 # 53. Zero-Shot Threshold and Normalization Rule
 
-During true leave-one-device-out evaluation, no data from the held-out physical device may determine either:
+During true leave-one-device-out evaluation, no data from the held-out physical-device client may determine:
 
 ```text
 model parameters
@@ -2398,15 +2221,9 @@ scaler = computed only from retained clients' training partitions
 threshold = computed only from retained clients' clean calibration scores
 ```
 
-The held-out device's test data are transformed using that training-client scaler without adaptation.
+The held-out device's test data are transformed using that retained-client scaler without adaptation.
 
-A separate secondary experiment may allow:
-
-```text
-held-out-device benign calibration only
-```
-
-for threshold adaptation after the global scaler and model are already frozen.
+A separate secondary experiment may allow held-out-device **benign calibration only** after the model and global scaler are frozen.
 
 This is explicitly reported as:
 
@@ -2414,7 +2231,7 @@ This is explicitly reported as:
 
 and must not be confused with zero-shot transfer.
 
-No held-out-device feature normalization is allowed even in this secondary calibration-only adaptation unless it is declared as a separate target-adaptation experiment outside the zero-shot claim.
+No held-out-device feature normalization is allowed in the main zero-shot result.
 
 ---
 
@@ -2425,7 +2242,6 @@ Primary detection metrics are:
 ```text
 AUROC
 AUPRC
-
 ```
 
 for:
@@ -2433,8 +2249,7 @@ for:
 ```text
 clean genuine contracts
 versus
-contract violations
-
+eligible contract violations
 ```
 
 They are reported:
@@ -2442,10 +2257,12 @@ They are reported:
 ```text
 overall
 per violation type
-per physical device
+per physical-device client
 per semantic action
-
+per public dataset
 ```
+
+Cross-dataset metrics are not pooled unless explicitly justified by a separate meta-analytic summary.
 
 ---
 
@@ -2496,7 +2313,7 @@ These are secondary to AUROC and AUPRC.
 
 # 57. Violation Coverage
 
-Report performance separately for:
+Report performance separately for every source-feasible family:
 
 ```text
 OMISSION
@@ -2513,22 +2330,23 @@ TEMPORALLY_MISALIGNED_EXECUTION
 PURE_REPLAY_REPRESENTATION_LIMIT
 ```
 
-A strong aggregate metric cannot hide failure on one violation category.
+A strong aggregate metric cannot hide failure or source infeasibility in one category.
 
 For every family report:
 
 ```text
-number feasible
+number source-feasible
 number infeasible and frozen reason
 matching-tier distribution
 B-context distance distribution relative to the frozen caliper
-donor-reuse distribution and source-dependency-cluster count
+donor-reuse distribution
+source-dependency-cluster count
 family-specific artifact-audit status
 AUROC
 AUPRC
 TPR at locked threshold
 per-device results
-physical-realization status where applicable
+per-dataset availability
 ```
 
 A representation-unobservable pure replay is a valid negative finding and is never counted as a detected family.
@@ -2537,15 +2355,15 @@ A representation-unobservable pure replay is a valid negative finding and is nev
 
 # 58. Clean False-Alarm Analysis
 
-For every physical client report:
+For every physical-device client report:
 
 ```text
 clean FPR
 clean score distribution
-95th-percentile threshold
+95th-percentile threshold where available
 ```
 
-For `NO_ACTION`, report FPR separately for:
+For `NO_ACTION`, when source-feasible, report FPR separately for available background strata:
 
 ```text
 BACKGROUND_SILENT
@@ -2563,23 +2381,23 @@ P10 detection performance
 CV(FPR)
 ```
 
-Also report FPR by network-topology group.
+Where manufacturer or network-topology metadata are trustworthy and sufficiently populated, report descriptive subgroup FPR without turning sparse groups into confirmatory claims.
 
-This keeps the study aligned with heterogeneous-device fairness concerns and directly checks that the model has not learned a trivial silence-versus-activity rule.
+This directly checks that the model has not learned a trivial silence-versus-activity rule.
 
 ---
 
 # 59. Contract Heterogeneity Analysis
 
-For each semantic context:
+For each semantic context available in the primary dataset:
 
 ```text
-NO_ACTION
+NO_ACTION where valid
 TURN_ON
 TURN_OFF
 ```
 
-quantify how execution distributions differ across physical clients.
+quantify how execution distributions differ across physical-device clients.
 
 At minimum report pairwise:
 
@@ -2590,7 +2408,7 @@ energy distance
 
 on the shared training-client standardized representation.
 
-Also report:
+Also report where metadata support it:
 
 ```text
 action separation within each client
@@ -2605,12 +2423,12 @@ This allows interpretation of:
 ```text
 when federation helps
 when federation hurts
-which devices share semantics
-which devices remain distributionally distinct
-whether transfer failures are semantic or protocol-driven
+which device clients share semantics
+which remain distributionally distinct
+whether transfer failures may be protocol/source-driven
 ```
 
-No new heterogeneity metric is invented unless required.
+No manufacturer or topology label is invented when the public source does not provide defensible metadata.
 
 ---
 
@@ -2618,35 +2436,25 @@ No new heterogeneity metric is invented unless required.
 
 ## Leave-One-Device-Out — Main Zero-Shot Protocol
 
-For every device `k`:
+For every eligible device `k` in the primary multi-device dataset:
 
 1. remove all observations of device `k` from model training;
 2. remove all observations of device `k` from normalization-statistic computation;
-3. remove all observations of device `k` from training-client calibration;
-4. federatively train on the remaining devices;
+3. remove all observations of device `k` from retained-client threshold calibration;
+4. federatively train on the remaining device clients;
 5. compute the shared scaler from retained training clients only;
-6. compute the main zero-shot threshold from retained training-client calibration only;
-7. evaluate clean and violated contracts on device `k` without target adaptation.
+6. compute the main zero-shot threshold from retained-client clean calibration only;
+7. evaluate clean and eligible violated contracts on device `k` without target adaptation.
 
-Repeat until every physical device has been held out once.
+Repeat until every eligible physical-device client has been held out once.
 
-This is genuine unseen-physical-device evaluation.
+This is genuine unseen-device evaluation **within the source dataset**.
 
-## Topology-Stratified Interpretation
+## Source/Topology-Stratified Interpretation
 
-Every held-out result is labeled by the held-out device's network-control topology.
+Where network-control topology is documented independently, label and report held-out results by topology.
 
-Report separately:
-
-```text
-within-topology transfer
-cross-topology transfer
-LOCAL_WLAN holdouts
-CLOUD_MEDIATED holdouts
-HYBRID_OR_OTHER holdouts where present
-```
-
-A transfer failure dominated by transport/topology mismatch must not be described as proof that semantic contracts do not transfer.
+Where it is not documented, report the source dataset/device identity and do not infer topology from target traffic solely to create a subgroup claim.
 
 ## Protocol-Feature Sensitivity
 
@@ -2659,82 +2467,77 @@ unique remote endpoints
 unique remote ports
 ```
 
-This is a mandatory pre-registered ablation used to determine whether cross-device results are driven by protocol identity.
+This determines whether cross-device results are driven heavily by protocol identity.
 
 ## Leave-One-Manufacturer-Out
 
-With at least three manufacturers, perform a secondary leave-one-manufacturer-out evaluation whenever the remaining training fold contains at least three physical clients and at least two manufacturers.
+Perform a secondary leave-one-manufacturer-out evaluation only if:
+
+```text
+manufacturer metadata are independently documented
+>= 3 manufacturers are represented
+remaining training fold has >= 4 physical clients
+remaining training fold contains >= 2 manufacturers
+```
 
 All devices from the held-out manufacturer are excluded from training, scaling and threshold construction.
 
-This analysis is reported separately from leave-one-device-out and supports only manufacturer-transfer claims.
+If these conditions are not met, manufacturer transfer is simply not claimed.
 
 ---
 
-# 61. External Cross-Device Validation
+# 61. Cross-Dataset Validation
 
-Where PingPong data permit, repeat the same concept across an independent collection.
+After the primary dataset protocol is frozen, repeat the same **research formulation** on the next eligible public source.
 
 The purpose is not to pool incompatible datasets.
 
 The purpose is to ask:
 
-> Does the same intent–execution contract formulation remain meaningful outside the controlled FedIEC environment?
+> Does independently recorded mobile intent remain useful for execution-contract verification under a different real-device collection protocol?
 
-External results are reported separately from the core benchmark.
+Cross-dataset validation reports source-specific observation windows, client counts, available violation families, feature availability and provenance quality.
+
+A second dataset need not support every primary analysis to provide useful external evidence, but unsupported components are marked explicitly.
 
 ---
 
-# 62. Physically Induced Violation Evaluation
+# 62. Dataset-Grounded Security-Relevance Evaluation
 
-Physical control-path violations are **mandatory security-relevance evidence**, not an optional embellishment.
+FedIEC does **not** require physically inducing new failures on devices.
 
-Before confirmatory modeling, pre-register at least three technically plausible mechanisms from:
-
-```text
-command delivery interruption / blocked command
-secondary-controller command
-uncommanded state change
-delayed command execution
-rapid contradictory command
-temporary network interruption
-```
-
-At least two distinct mechanisms must yield analyzable observations on at least three core physical devices for the chapter to make the physically realized security-relevance claim.
-
-Each scenario records:
+Security relevance is evaluated through three evidence levels:
 
 ```text
-intended mobile action
-actual intervention
-physical pre-state
-physical post-state where observable
-device identity
-manufacturer/category/topology
-session ID
-intervention timestamp
-network capture
-expected contract effect
-whether the scenario corresponds to omission/substitution/uncommanded/excess/late semantics
+Level A: artifact-controlled contract counterfactuals from held-out real-device traces
+Level B: observed control failures/divergences already documented in a public dataset, if any
+Level C: attack-aligned public traces satisfying Section 26, if any
 ```
 
-The same frozen clean-trained detector, scaler and threshold are used.
+Level A is mandatory for counterfactual-based security claims.
 
-No retraining or threshold tuning on induced violations is permitted.
+Levels B and C are optional because they depend on available public ground truth.
 
-If a pre-registered mechanism is technically impossible on a device, the failure is recorded and does not justify substituting a new easier mechanism after observing scores.
+No absence of Level B/C data triggers hardware acquisition or live attack generation.
+
+The final wording must distinguish clearly among:
+
+```text
+counterfactual contract violations
+observed control failures
+real attacks
+```
 
 ---
 
 # 63. Real-Attack Evaluation
 
-If a valid attack-aligned dataset is available, evaluate:
+If a valid attack-aligned public dataset is available, evaluate:
 
 ```text
 clean execution under known intent
 versus
 attacked execution under the same known intent
-
 ```
 
 The primary score remains:
@@ -2748,29 +2551,32 @@ Metrics:
 ```text
 AUROC
 AUPRC
-TPR at fixed threshold
+TPR at fixed clean-calibration threshold
 detection delay if temporally meaningful
-
 ```
 
-Real-attack results remain separate from counterfactual and induced-failure results.
+Real-attack results remain separate from counterfactual results.
+
+If aligned ground truth is unavailable, this section is reported as not evaluated rather than replaced by a synthetic attack claim.
 
 ---
 
 # 64. Systems Metrics
 
-For federated training report:
+For simulated federated training report:
 
 ```text
 number of rounds
 convergence curve
 model parameter count
 model size
-bytes transmitted per client
-total transmitted bytes
+bytes exchanged by the FL protocol per client
+total simulated communication bytes
 wall-clock training time
-
+peak host memory if measured
 ```
+
+These are **simulation/system accounting metrics**, not measurements from the original IoT hardware or networks.
 
 No unsupported claims are made about:
 
@@ -2780,10 +2586,11 @@ Android inference latency
 microcontroller feasibility
 embedded-device RAM
 energy consumption
-
+live WAN latency
+on-device training time
 ```
 
-unless those quantities are directly measured.
+unless a future separate deployment study measures them directly.
 
 ---
 
@@ -2793,22 +2600,25 @@ Training seeds are **not independent experimental units**.
 
 They measure optimization variability only.
 
-For genuine physical observations, the dependence hierarchy is:
+For genuine public-source observations, the dependence hierarchy is:
 
 ```text
-physical device
-  └── collection session/day
-       └── interaction / contract observation
-            └── repeated model-seed predictions
+dataset
+  └── physical device
+       └── source capture/session group where available
+            └── interaction / contract observation
+                 └── repeated model-seed predictions
 ```
 
-For generated Level-A counterfactuals, each observation may depend on more than one clean source interaction. Every generated row therefore records:
+If a source does not define sessions, use the smallest defensible original capture group instead of inventing a session label.
+
+For generated counterfactuals, every row records:
 
 ```text
 recipient_source_id
 donor_source_id(s)
 artifact/control family
-generation_family
+generation family
 source_dependency_cluster
 ```
 
@@ -2819,16 +2629,13 @@ Primary uncertainty must never treat multiple derivatives of one source interact
 For every method:
 
 1. preserve predictions for every interaction and seed;
-2. compute seed-specific metrics to describe training variability;
-3. aggregate genuine-observation effects with paired hierarchical resampling over devices → sessions → interactions;
-4. aggregate counterfactual effects with paired hierarchical resampling over devices → sessions → `source_dependency_cluster`;
-5. keep all method comparisons paired on the same resampled evidence units;
-6. report per-device effects in addition to the population summary;
-7. report the number of unique physical source interactions underlying every pooled counterfactual result.
+2. compute seed-specific metrics to describe optimization variability;
+3. preserve pairing across compared methods;
+4. resample at device/source-group/source-dependency levels supported by the data;
+5. report per-device effects in addition to the population summary;
+6. report the number of unique physical source interactions underlying every pooled counterfactual result.
 
-Seed-only confidence intervals or seed-only Wilcoxon tests are not permitted as the primary inferential analysis.
-
-Generated sample count is never reported as though it were the number of independent physical observations.
+Generated sample count is never reported as though it were the number of independent source observations.
 
 ---
 
@@ -2838,32 +2645,26 @@ For each of the three confirmatory comparisons report:
 
 ```text
 paired effect estimate
-95% paired hierarchical bootstrap confidence interval
+95% paired dependence-aware bootstrap confidence interval
 paired cluster-aware randomization/permutation p-value
 effect distribution across training seeds
 per-device effect
 unique-source count for every counterfactual-based result
 ```
 
-For genuine physical observations, the hierarchical bootstrap resamples:
+For genuine observations, the bootstrap resamples the highest defensible source units available in the primary dataset:
 
 ```text
 1. physical devices
-2. sessions within resampled devices
-3. interactions within resampled sessions
+2. source capture/session groups within devices, where multiple groups exist
+3. interactions within groups
 ```
 
-For generated Level-A counterfactual observations, the third level is replaced by:
+For generated counterfactual observations, the lowest level is replaced by `source_dependency_cluster` when shared-source dependence exists.
 
-```text
-3. source_dependency_clusters within resampled sessions
-```
+If the number of device clients is too small for stable population-level hierarchical inference, report exact device-level effects and conservative small-sample intervals/tests rather than pretending large-sample asymptotics apply.
 
-All derived observations inside a selected source-dependency cluster are carried together.
-
-The evaluation metric is recomputed from the resampled evidence units.
-
-Model seeds remain nested repeated realizations and are averaged within each bootstrap replicate for the primary estimand; the full seed spread is reported separately.
+Model seeds remain nested repeated realizations and are summarized separately from physical-device evidence.
 
 Use:
 
@@ -2873,9 +2674,7 @@ Use:
 
 Holm correction is applied across the three confirmatory hypothesis comparisons.
 
-For small-sample sensitivity, also report an unadjusted device-level paired sign/permutation analysis without treating it as a replacement for the hierarchical result.
-
-For artifact audits, use the same dependence-aware hierarchy but evaluate the pre-registered equivalence-style `A*` criterion from Section 25 rather than substituting a null-hypothesis failure-to-reject argument.
+Artifact audits use the same dependence-aware principle but apply the pre-registered equivalence-style `A*` criterion from Section 25.
 
 No new significance test is introduced after results are inspected.
 
@@ -2901,11 +2700,11 @@ Primary outcome:
 \Delta AUROC
 ```
 
-using the locked artifact-controlled contract-violation suite.
+using the locked source-feasible artifact-controlled contract-violation suite.
 
 The primary effect and uncertainty are computed with the hierarchical procedure in Section 66.
 
-Background-active `NO_ACTION` observations, replacement/translation controls and—where `EXCESS_EXECUTION` is included in the evaluated suite—composition controls must be included so the result cannot be explained by silence/activity or transformation artifacts.
+Where source-feasible, background-active `NO_ACTION` observations, replacement/translation controls and—where `EXCESS_EXECUTION` is included—composition controls must be included so the result cannot be explained by silence/activity or transformation artifacts.
 
 ---
 
@@ -2929,9 +2728,11 @@ Primary outcome:
 \Delta AUROC
 ```
 
-This tests whether pre-action context contributes information beyond action conditioning after the settling-integrity and randomized-order controls prevent `B` from trivially encoding the previous command tail or deterministic next action.
+This comparison is confirmatory only on the subset of the primary dataset for which complete pre-action coverage and the frozen pre-context integrity audit pass.
 
-The primary effect and uncertainty are computed with the hierarchical procedure in Section 66.
+Before interpreting the effect, report how well `B` alone predicts the next intent and document the source collection order so deterministic alternation/block collection cannot masquerade as useful context.
+
+If the source protocol makes pre-context interpretation fundamentally confounded, RQ2 is downgraded from confirmatory to descriptive for that dataset rather than repaired with synthetic pre-action data.
 
 ---
 
@@ -2949,7 +2750,7 @@ against:
 client-local full-contract models
 ```
 
-under the full `n=90` per-device/per-context training budget.
+under the `FULL` eligible training-data condition.
 
 Primary outcome:
 
@@ -2957,21 +2758,21 @@ Primary outcome:
 \Delta AUROC
 ```
 
-using the hierarchical procedure in Section 66.
+using the dependence-aware procedure in Section 66.
 
 ## Mandatory Secondary Scarcity Analysis
 
-Repeat the comparison at:
+Repeat the comparison at every common supported budget among:
 
 ```text
-n ∈ {10, 30, 60, 90}
+n ∈ {10, 30, 60, FULL}
 ```
 
 per device and semantic context.
 
-Report the federation-minus-local curve and an area-under-scarcity-curve summary.
+Report the federation-minus-local curve and, where at least three numerical levels exist, an area-under-scarcity-curve summary.
 
-A claim that federation is especially useful under local data scarcity requires the effect to be supported across the pre-registered scarcity levels; it cannot be inferred from the full-data comparison alone.
+A claim that federation is especially useful under local data scarcity requires consistent evidence across the pre-registered available scarcity levels; it cannot be inferred from the full-data comparison alone.
 
 ---
 
@@ -2991,7 +2792,7 @@ centralized full-contract model
 
 ```
 
-This comparison quantifies the federation penalty.
+This comparison quantifies the federation penalty within the same public-device population.
 
 The federated model is not required to outperform centralized learning.
 
@@ -3019,11 +2820,11 @@ using the complete evaluation suite:
 
 ```text
 clean commanded interactions
-all three NO_ACTION background strata
+all available NO_ACTION background strata
 OMISSION
 SUBSTITUTION
 UNCOMMANDED_EXECUTION
-EXCESS_EXECUTION
+EXCESS_EXECUTION where source-feasible
 TEMPORALLY_MISALIGNED_EXECUTION
 semantic-preserving artifact controls
 ```
@@ -3040,7 +2841,7 @@ If the classifier performs equivalently or better across this full suite, that r
 
 # 72. Required Ablations and Robustness Analyses
 
-The following analyses are pre-registered and mandatory.
+The following analyses are pre-registered and mandatory when the underlying source supports them.
 
 ## Remove Intent
 
@@ -3053,6 +2854,8 @@ p(E\mid B,I) \rightarrow p(E\mid B)
 ```math
 p(E\mid B,I) \rightarrow p(E\mid I)
 ```
+
+Only on observations with valid source pre-context.
 
 ## Remove Federation
 
@@ -3070,6 +2873,8 @@ standard participating-client evaluation
 leave-one-device-out
 ```
 
+when at least four eligible device clients support the fold.
+
 ## Remove Protocol-Identity Features
 
 Remove features 15–18:
@@ -3085,18 +2890,18 @@ and repeat leave-one-device-out evaluation.
 
 ## Intent-Provenance Robustness
 
-Using the same frozen model and original captures, perturb only the recorded intent provenance:
+Using the same frozen model and original source captures, perturb copied intent metadata only:
 
 ```text
-timestamp jitter: ±0.10W, ±0.25W, ±0.50W
-logging delay: +0.10W, +0.25W, +0.50W
+timestamp jitter: ±0.10W_d, ±0.25W_d, ±0.50W_d
+logging delay: +0.10W_d, +0.25W_d, +0.50W_d
 missing intent: true command relabeled as NO_ACTION for diagnostic evaluation
-duplicate intent: duplicated same action within the locked refractory interval
+duplicate intent: duplicate same intent within a frozen interval
 ```
 
-For timestamp perturbations, `B` and `E` are re-extracted from raw capture around the perturbed timestamp; feature vectors are not manually edited.
+For timestamp perturbations, `B` and `E` are re-extracted from raw capture around the perturbed timestamp. Feature vectors are never manually edited.
 
-Report performance degradation as a function of provenance error.
+If a source does not provide enough surrounding raw coverage for a perturbation magnitude, that perturbation level is unavailable rather than padded.
 
 ## Counterfactual Artifact Controls
 
@@ -3104,48 +2909,41 @@ Report separately:
 
 ```text
 replacement/translation artifact audit
-EXCESS composition artifact audit
+EXCESS composition artifact audit where feasible
 per-feature artifact detectability diagnostics
-raw-timeline EXCESS feasibility diagnostics
+raw-timeline feasibility diagnostics
 matching-tier/caliper diagnostics
 source-dependency counts
 ```
 
-A violation family whose required transformation-specific audit is infeasible or fails cannot be used to support a Level-A claim for that family.
+A violation family whose required transformation-specific audit is infeasible or fails cannot support a counterfactual claim for that family.
 
 No additional ablation becomes mandatory after test results are observed.
 
 ---
 
-# 73. Benchmark Contribution Gate
+# 73. Derived Evaluation Corpus Contribution Gate
 
-The dataset contribution does **not** depend on model accuracy.
+FedIEC no longer claims a newly collected physical benchmark.
 
-FedIEC-Contracts is considered a valid benchmark contribution if:
+The **derived public-data evaluation corpus and protocol** is considered a valid contribution if:
 
-1. at least six physical devices pass eligibility;
-2. at least three manufacturers and three device categories are represented;
-3. network-control topology is recorded for every device;
-4. every device has the required multi-session/multi-day coverage;
-5. intent provenance is independent of evaluated network execution;
-6. all required clean observations are collected;
-7. timestamps are synchronized within the locked tolerance;
-8. settling-integrity rules are satisfied;
-9. `NO_ACTION` background strata meet their locked quotas;
-10. no split overlap exists;
-11. capture attribution is auditable;
-12. all five counterfactual violation definitions are reproducible where observable;
-13. the B-context metric, training-only caliper procedure and deterministic session/day hierarchy are frozen;
-14. transition-semantics compatibility and B→E boundary-continuity checks are implemented and audited;
-15. EXCESS raw-timeline physical-feasibility checks are implemented before feature extraction;
-16. donor assignment/reuse rules and source-dependency manifests are frozen;
-17. the replacement/translation artifact audit passes for every family relying on it;
-18. the EXCESS composition audit passes wherever Level-A EXCESS is claimed;
-19. artifact equivalence tolerances are fixed before main violation results are inspected;
-20. metadata and generation scripts are documented;
-21. infeasible transformations, exclusions and collection failures are disclosed rather than replaced by looser post-hoc matching.
+1. every retained dataset/device has an explicit frozen eligibility status;
+2. intent provenance is documented independently of evaluated target traffic;
+3. raw source identities/checksums or immutable references are recorded;
+4. device identities and capture attribution are auditable;
+5. source-aware train/calibration/test manifests contain no overlap;
+6. observation-window construction is reproducible from raw source material;
+7. all available counterfactual violation definitions are reproducible from held-out traces;
+8. matching/caliper/boundary rules are frozen before main violation results;
+9. donor assignment/reuse and source-dependency manifests are frozen;
+10. every claimed transformation family passes its required artifact audit;
+11. source-infeasible families are disclosed rather than replaced by weaker post-hoc transformations;
+12. processing code and derived metadata manifests are releaseable where licensing permits.
 
-A negative model result does not invalidate a correctly constructed benchmark.
+A negative model result does not invalidate a correctly constructed evaluation protocol.
+
+The contribution must be described as a **derived/harmonized evaluation layer over existing public real-device datasets**, not as a newly captured IoT traffic dataset.
 
 ---
 
@@ -3155,16 +2953,16 @@ The statement:
 
 > Explicit mobile intent provides a useful network execution-consistency signal.
 
-requires on the mandatory controlled benchmark:
+requires on the primary eligible dataset:
 
 1. median full-contract AUROC ≥ 0.70;
-2. lower bound of the 95% hierarchical confidence interval > 0.50;
-3. direct contract-consistency accuracy ≥ 0.70;
+2. lower bound of the 95% dependence-aware confidence interval > 0.50;
+3. direct contract-consistency accuracy ≥ 0.70 where the paired metric is defined;
 4. full-contract model outperforming the execution-only baseline in the confirmatory paired analysis;
-5. every transformation-specific artifact audit required by the pooled violation suite passing its frozen criterion;
-6. background-active `NO_ACTION` FPR reported and not hidden inside a pooled result.
+5. every transformation-specific artifact audit required by the evaluated violation suite passing its frozen criterion;
+6. background-active `NO_ACTION` FPR reported whenever valid active-background windows exist.
 
-If these conditions fail, the signal is reported as weak or unsupported.
+If these conditions fail, the signal is reported as weak or unsupported under the evaluated source conditions.
 
 ---
 
@@ -3184,13 +2982,14 @@ all of:
 
 ```text
 median paired AUROC improvement >= 0.02
-95% hierarchical paired confidence interval excludes 0
+95% paired dependence-aware confidence interval excludes 0
 Holm-adjusted cluster-aware p < 0.05
-settling-integrity audit passes
-constrained-random action-order audit passes
+complete source pre-context coverage for the evaluated observations
+pre-context integrity/source-order audit passes
+B-alone intent-predictability diagnostic reported
 ```
 
-If not satisfied, pre-action context remains an evaluated design choice rather than a claimed contribution.
+If source collection order makes `B` a trivial proxy for the next action, the pre-context contribution is not claimed even if performance improves.
 
 ---
 
@@ -3198,18 +2997,20 @@ If not satisfied, pre-action context remains an evaluated design choice rather t
 
 The statement:
 
-> Intent–execution contracts can be learned collaboratively across heterogeneous physical IoT clients.
+> Intent–execution contracts can be learned collaboratively across heterogeneous real-device clients represented in public IoT traces.
 
 requires:
 
-1. at least six core physical clients included;
-2. at least three manufacturers and three device categories represented;
-3. successful execution in at least 8 of 10 predetermined training seeds;
-4. federated median macro-AUROC ≥ 0.70;
-5. all clients use the shared training-client normalization rule;
-6. per-device results are reported, including topology metadata.
+1. at least four eligible physical-device clients in the primary source;
+2. successful execution in at least 8 of 10 predetermined training seeds;
+3. federated median macro-AUROC ≥ 0.70;
+4. all clients use the shared training-client normalization rule;
+5. per-device results are reported;
+6. exact device/manufacturer/category coverage is disclosed rather than implied.
 
 This claim does **not** require federation to outperform local learning.
+
+It is a computational federated-learning claim, not evidence of a live distributed IoT deployment.
 
 ---
 
@@ -3223,15 +3024,15 @@ for the full-data condition requires:
 
 ```text
 median paired AUROC improvement >= 0.02
-95% hierarchical paired confidence interval excludes 0
+95% paired dependence-aware confidence interval excludes 0
 Holm-adjusted cluster-aware p < 0.05
 ```
 
 The stronger statement:
 
-> Federation is particularly useful when individual devices have limited contract data.
+> Federation is particularly useful when individual device clients have limited contract data.
 
-additionally requires the pre-registered `n ∈ {10,30,60,90}` scarcity curve to show a consistent positive federation-minus-local effect at the low-data levels with uncertainty reported.
+additionally requires the pre-registered available scarcity levels from `{10,30,60,FULL}` to show a consistent positive federation-minus-local effect at low-data levels with uncertainty reported.
 
 Otherwise federation is described as:
 
@@ -3268,7 +3069,7 @@ A non-significant superiority test alone does not establish parity.
 
 The statement:
 
-> The learned contract semantics generalize to unseen physical IoT devices.
+> The learned contract semantics generalize to unseen physical-device clients within the evaluated public source.
 
 requires:
 
@@ -3278,12 +3079,14 @@ requires:
 4. no held-out-device calibration used for the main zero-shot threshold;
 5. median held-out-device AUROC ≥ 0.70;
 6. individual results reported for every held-out device;
-7. topology-stratified results reported;
-8. protocol-feature ablation reported.
+7. protocol-feature ablation reported;
+8. source/dataset boundary stated explicitly.
 
 Failure on one device remains visible.
 
-A separate statement about **unseen-manufacturer transfer** is permitted only if the leave-one-manufacturer-out protocol in Section 60 is feasible and independently passes an equivalent AUROC ≥ 0.70 criterion without held-out-manufacturer training, scaling or calibration information.
+A separate statement about unseen-manufacturer transfer is permitted only when manufacturer metadata and fold size satisfy Section 60 and the holdout independently passes the same no-leakage rules.
+
+No arbitrary-device or arbitrary-manufacturer generalization claim is permitted.
 
 ---
 
@@ -3293,47 +3096,46 @@ The statement:
 
 > FedIEC detects multiple classes of intent–execution contract violation.
 
-requires median AUROC ≥ 0.70 for at least three distinct pre-registered **observable** violation families, with the 95% hierarchical uncertainty reported.
+requires median AUROC ≥ 0.70 for at least three distinct pre-registered **source-feasible and observable** violation families, with dependence-aware uncertainty reported.
 
-A Level-A family counts toward this statement only if:
+A counterfactual family counts only if:
 
 ```text
-its frozen matching/transition/boundary rules were satisfied
+its frozen source/matching/boundary rules were satisfied
 its required transformation-specific artifact audit passed
 its effective evidence size is reported by unique source interactions/source-dependency clusters
 no post-hoc donor-rule relaxation was used
 ```
 
-For `EXCESS_EXECUTION`, the dedicated composition artifact audit must pass; success of the replacement/translation audit alone is insufficient.
+For `EXCESS_EXECUTION`, the dedicated composition audit must pass; replacement/translation audit success alone is insufficient.
 
-Claims identify exactly which families satisfy the gate.
+`PURE_REPLAY_REPRESENTATION_LIMIT` cannot be counted as a detected family unless the locked representation contains an independent differentiating observable.
 
-`PURE_REPLAY_REPRESENTATION_LIMIT` cannot be counted as a detected family unless the locked representation actually contains a differentiating observable.
-
-No blanket claim is made for violation types that fail or are artifact-audit insufficient.
+A source-infeasible family is reported as unavailable, not as a failed detector.
 
 ---
 
-# 81. Physically Induced Security-Relevance Gate
+# 81. Public-Trace Security-Relevance Gate
 
-The statement:
+The original physically induced security-relevance gate is removed.
 
-> The contract score responds to physically realized control-path anomalies.
+The permitted main statement is:
 
-requires:
+> FedIEC distinguishes source-feasible intent–execution contract violations constructed from held-out real-device traces under artifact-controlled transformations.
+
+This requires:
 
 ```text
->= 2 distinct physically realized violation mechanisms
-analyzable on >= 3 core physical devices
-independent ground truth
-frozen clean-trained model
-frozen scaler and threshold
-median AUROC >= 0.70 for each claimed physical mechanism
+>= 3 source-feasible violation families where possible
+frozen clean-trained model/scaler/threshold
+family-specific artifact audits passed
+median AUROC >= 0.70 for each claimed family
+source dependency reported
 ```
 
-Counterfactual violations cannot satisfy this gate.
+A stronger statement about **observed control-path failures** requires independently documented failure events already present in a public dataset.
 
-If the minimum physical mechanism coverage is not achieved, the final work may still claim the contract formulation and counterfactual benchmark contribution but must not generalize those results to physically realized security anomalies.
+Counterfactual results alone must not be generalized to physically realized attacks or failures.
 
 ---
 
@@ -3341,15 +3143,16 @@ If the minimum physical mechanism coverage is not achieved, the final work may s
 
 The statement:
 
-> FedIEC detects attack-induced intent–execution divergence.
+> FedIEC detects attack-induced intent–execution divergence in the evaluated public trace set.
 
 requires:
 
 1. independently known legitimate intent;
-2. actual attack activity;
+2. actual attack activity independently documented;
 3. attack/intent temporal alignment;
-4. median AUROC ≥ 0.70;
-5. median TPR ≥ 0.70 at the locked clean-calibration threshold.
+4. isolatable target-device execution;
+5. median AUROC ≥ 0.70;
+6. median TPR ≥ 0.70 at the locked clean-calibration threshold.
 
 Without these conditions, no real-attack claim is made.
 
@@ -3357,23 +3160,28 @@ Without these conditions, no real-attack claim is made.
 
 # 83. Privacy Claim Boundary
 
+The public-dataset-only implementation **does not demonstrate operational privacy**.
+
 The permitted statement is:
 
-> Raw interaction traces remain at their originating client during federated training.
+> The simulated FL protocol is implemented with device-partitioned training and an FL interface that exchanges model updates rather than examples during training.
 
-FedIEC does not claim formal privacy because the confirmatory study does not implement or evaluate:
+However, the researcher has downloaded and stores the public raw datasets centrally for preprocessing and experimentation.
+
+Therefore FedIEC does not claim:
 
 ```text
+that raw traces physically remained on independent devices
+deployment-grade data locality
 differential privacy
 secure aggregation
 homomorphic encryption
-membership inference
-gradient inversion
+membership-inference resistance
+gradient-inversion resistance
 formal leakage bounds
-
 ```
 
-Data locality is described as a structural property, not a formal privacy guarantee.
+Federation is studied as a collaborative-learning methodology over natural device partitions, not as proof of a privacy-preserving deployment.
 
 ---
 
@@ -3382,31 +3190,23 @@ Data locality is described as a structural property, not a formal privacy guaran
 The main detector assumes:
 
 ```text
-mobile intent log is trusted at collection time
-gateway capture is trusted
-training clients are benign
+source intent provenance is trustworthy for eligible interactions
+public raw captures are not maliciously altered after acquisition
+training device clients are benign
 server follows FedAvg correctly
 ```
 
-The main study detects divergence between intent and execution.
+The main study detects divergence between declared intent and observed execution.
 
-It does not defend against an attacker who simultaneously compromises:
+It does not defend against an attacker who simultaneously forges both the intent-provenance record and the network execution consistently.
 
-```text
-the intent-provenance source
-and
-the observed network execution
-```
-
-such that both are forged consistently.
-
-That is an explicit trust boundary.
+It also does not study training-time poisoning or malicious FL clients.
 
 ## Provenance Reliability Boundary
 
 Trusted does not mean perfect.
 
-The main clean benchmark requires intent timestamps within the locked synchronization tolerance, while the mandatory robustness analysis evaluates sensitivity to:
+The main clean corpus uses the source intent timestamp/boundary as recorded or deterministically reconstructed from original tooling. Mandatory robustness analysis evaluates sensitivity to:
 
 ```text
 timestamp jitter
@@ -3415,7 +3215,11 @@ missing intent records
 duplicate intent records
 ```
 
-This characterizes operational brittleness of the provenance channel without redefining those perturbations as adversarial compromise.
+This characterizes brittleness of the provenance channel without redefining those perturbations as adversarial compromise.
+
+## Dataset-Trust Boundary
+
+FedIEC assumes the original dataset documentation correctly describes device identity and trigger generation. Where source documentation is ambiguous, the corresponding evidence is downgraded or excluded rather than resolved by traffic-based inference.
 
 ---
 
@@ -3448,62 +3252,60 @@ Hyperparameters are not changed to rescue confirmatory results.
 The following are forbidden:
 
 ```text
-randomly splitting repeated captures across train/test
+randomly splitting packets from the same interaction across train/test
+placing the same source capture/group in multiple partitions
 normalization from held-out-device calibration/test data in zero-shot evaluation
-normalization from any calibration or test observations in the main protocol
+normalization from calibration or test observations in the main protocol
 model selection using test AUROC
-threshold selection from violations
-threshold selection from attacks
+threshold selection from violations or attacks
 using device identity as a learned feature
 using manufacturer as a learned feature
 using IP/MAC as a learned feature
-using mobile payload contents as a feature
-deriving intended action from target traffic
-selecting clients based on model performance
+using mobile/controller payload contents as a learned feature
+deriving intended action from target-device traffic
+selecting datasets or clients based on model performance
 selecting violation types after observing results
 selecting successful seeds only
 changing dataset priority after evaluation
 altering violation generation after seeing detector scores
-deterministic ON/OFF alternation in confirmatory collection
-allowing prior command tails to overlap a later B window
+fabricating missing pre-action context
+inventing NO_ACTION from low-traffic windows without independent trigger absence
+using deterministic source order as an unreported intent proxy
 feature-vector splicing for counterfactual generation
-using impossible physical-state transitions as substitution counterfactuals
-using a donor whose transition semantics are inconsistent with the recipient pre-state
+using unsupported physical-state assumptions for substitution
 relaxing the frozen B-context caliper because no convenient donor exists
-searching beyond the frozen session/day matching hierarchy
-using a nearest donor that lies outside common support
 ignoring an unresolved B→E flow/background continuation mismatch
 repairing timestamp collisions with arbitrary epsilon jitter
-accepting an EXCESS merge that creates incompatible shared-flow/TCP state
-accepting EXCESS timing artifacts outside the clean training-derived envelope
-using the replacement/translation artifact audit as evidence that EXCESS composition is artifact-free
-changing artifact-audit tolerances after viewing contract-model results
-replicating or repeatedly reusing donors merely to increase sample count
+accepting EXCESS timing/flow artifacts outside the clean training-derived envelope
+using replacement/translation audit as evidence that EXCESS composition is artifact-free
+changing artifact-audit tolerances after viewing model results
+replicating/reusing donors merely to increase sample count
 failing to account statistically for generated observations sharing clean sources
-sampling NO_ACTION almost exclusively from zero-traffic periods
-silently dropping devices with protocol/topology mismatch
+silently dropping devices with source/protocol mismatch
+claiming live privacy or hardware deployment from a public-data simulation
 ```
 
-Any violation of these rules blocks the corresponding claim until corrected or explicitly downgraded.
+Any violation blocks the corresponding claim until corrected or explicitly downgraded.
 
 ---
 
-# 87. Benchmark Integrity Rules
+# 87. Derived-Corpus Integrity Rules
 
-Every clean interaction records:
+Every retained clean interaction records:
 
 ```text
+dataset ID
+source file/capture reference and checksum where permitted
 interaction ID
-device/manufacturer/category/topology
-session/day
-intent provenance
+device/manufacturer/category metadata where documented
+source group/session metadata where documented
+intent provenance grade
 semantic action
-pre/post physical state where observable
-transition class
-timestamp synchronization status
-settling-rule status
-raw capture reference
-capture timestamp resolution / capture provenance
+source trigger timestamp/boundary
+pre/post physical state where independently documented
+raw capture coverage status
+B/E extraction status
+split assignment
 ```
 
 Every generated contract violation additionally records:
@@ -3511,18 +3313,18 @@ Every generated contract violation additionally records:
 ```text
 recipient source clean interaction ID
 donor source clean interaction ID(s)
-donor/recipient session IDs and collection days
+source group identifiers
 matching tier
 B-context distance
 frozen device caliper
-transition-compatibility result
-B→E boundary-continuity result
+transition-compatibility status where applicable
+B→E boundary-continuity status
 transformation type and violation family
 transformation seed if stochastic
 temporal alignment transformation
 EXCESS composition offset where applicable
-shared-flow/TCP compatibility result where applicable
-raw timing/collision feasibility diagnostics where applicable
+shared-flow/TCP compatibility where applicable
+raw timing/collision diagnostics where applicable
 resulting intent context
 resulting execution source
 artifact-audit family and status
@@ -3531,15 +3333,13 @@ source_dependency_cluster
 
 No counterfactual is generated from training observations.
 
-No calibration observation becomes an anomaly sample.
+No calibration observation becomes a violation sample.
 
 No feature-vector-only splice is permitted.
 
-Every transformed sample must be reproducible from raw held-out capture material and a manifest.
+Every transformed sample must be reproducible from source raw material and a manifest.
 
-Matching failure produces a frozen infeasibility reason rather than a relaxed donor rule.
-
-Replacement/translation and EXCESS-composition artifact audits are completed before the corresponding counterfactual security results are interpreted.
+Missing source metadata produce a frozen insufficiency reason rather than an inferred replacement field.
 
 ---
 
@@ -3548,48 +3348,47 @@ Replacement/translation and EXCESS-composition artifact audits are completed bef
 Release where licensing permits:
 
 ```text
-collection scripts
-Android automation scripts
-constrained-random action schedules and seeds
-settling-latency estimation code
-background-activity stratification rules
-capture-processing code
-feature extraction
-network-topology metadata definitions
-split manifests
+dataset acquisition instructions
+source/version/checksum manifest
+intent-provenance audit manifest
+device eligibility manifest
+raw capture parsing code
+feature extraction code
+source-aware split manifests
+NO_ACTION reconstruction rules where applicable
 shared-normalization sufficient-statistic code
 counterfactual matching code
 training-only B-context caliper construction code
-deterministic donor-assignment and reuse manifests
-transition-semantics compatibility checker
+deterministic donor-assignment/reuse manifests
+transition-semantics checker where metadata support it
 B→E boundary-continuity checker
-EXCESS raw-timeline composition and physical-feasibility checker
+EXCESS raw-timeline composition/feasibility checker
 counterfactual-generation manifests
 replacement/translation artifact-audit code
 EXCESS composition artifact-audit code
 source-dependency-cluster manifests
-physical-violation manifests
 model configs
 training seeds
 FL configs
 data-scarcity sampling manifests
 leave-one-device/manufacturer manifests
 intent-provenance perturbation manifests
-hierarchical statistical-analysis code
+dependence-aware statistical-analysis code
 result tables
 figure-generation code
 ```
 
-For restricted external datasets, release:
+For restricted public datasets, release:
 
 ```text
-dataset acquisition instructions
-checksums where permitted
+acquisition instructions
 processing manifests
+checksums where permitted
 derived non-sensitive metadata
+source file mapping without redistributed protected raw data
 ```
 
-rather than redistributing protected raw data.
+Do **not** list Android automation, live capture, device-acquisition or physical-intervention scripts because they are no longer part of the study.
 
 ---
 
@@ -3603,7 +3402,7 @@ If the full contract model does not improve over execution-only modeling:
 
 > Explicit mobile intent did not provide sufficient additional detection information under the evaluated conditions.
 
-The benchmark remains valid.
+The derived evaluation protocol remains valid.
 
 ## Pre-Context Adds Little
 
@@ -3633,7 +3432,7 @@ No artificial superiority claim is made.
 
 If FL does not improve over local learning, including under the scarcity curve:
 
-> Collaborative training did not provide measurable benefit under the evaluated device distributions and sample budgets.
+> Collaborative training did not provide measurable benefit under the evaluated public-device distributions and sample budgets.
 
 The result remains relevant to heterogeneous FL-IoT research.
 
@@ -3673,21 +3472,22 @@ The independent research objects are:
 
 ```text
 cross-layer execution-contract task
-independent mobile-intent provenance protocol
-settling- and background-controlled physical benchmark
-structured violation taxonomy with observability boundaries
+independent mobile-intent provenance audit over existing data
+public-source eligibility and harmonization protocol
+structured violation taxonomy with observability/source-feasibility boundaries
 artifact-controlled counterfactual generation protocol
-physically induced violation protocol
-federated evaluation protocol
+federated device-partition evaluation protocol
 data-scarcity collaboration analysis
 zero-shot normalization-safe transfer protocol
-topology/protocol transfer analysis
+protocol/source transfer analysis
 empirical characterization of which violations and semantics transfer
 ```
 
 Model superiority controls **which performance claims are permitted**.
 
-It does not determine whether the research question, benchmark or empirically demonstrated boundary exists.
+Dataset limitations control **which protocol components are supportable**.
+
+Neither justifies inventing missing provenance, collecting unplanned hardware evidence, or strengthening claims beyond the public traces.
 
 ---
 
@@ -3696,55 +3496,45 @@ It does not determine whether the research question, benchmark or empirically de
 ```text
 Final literature and novelty audit through current submission date
         ↓
-Acquire >= 6 eligible IoT devices (target 8)
+Acquire/download candidate public datasets under their access terms
         ↓
-Freeze manufacturer/category/topology coverage
+Freeze source versions/checksums
         ↓
-Request external datasets
+Audit intent provenance for PingPong, CIC IoT 2022 and TU Wien
         ↓
-Implement Android intent logger
+Audit physical-device identity, raw capture coverage and source grouping
         ↓
-Implement gateway capture pipeline
+Assign dataset/device eligibility statuses before model evaluation
         ↓
-Run excluded pilot on every core device
+Select primary confirmatory dataset using the frozen priority + eligibility rule
         ↓
-Freeze W, settling latency, clock tolerance, NO_ACTION strata and action randomization
+Freeze dataset-specific W_d and pre-context integrity procedure from training/source characterization
         ↓
-Generate constrained-random collection schedules
+Construct source-aware train/calibration/test manifests
         ↓
-Collect all clean FedIEC-Contracts observations across multiple sessions/days
-        ↓
-Audit timestamps, settling integrity, state transitions and device attribution
-        ↓
-Freeze chronological splits
+Reconstruct NO_ACTION where independently supportable
         ↓
 Freeze feature extraction
         ↓
-Freeze shared training-client normalization procedure
+Freeze shared training-client normalization
         ↓
 Generate clean training/calibration/test artifacts
         ↓
 Compute training-only B-context calipers and natural timing envelopes
         ↓
-Freeze deterministic donor matching, transition and B→E boundary rules
+Freeze deterministic source-aware donor matching and B→E boundary rules
         ↓
 Generate semantic-preserving replacement/translation controls
         ↓
 Run replacement/translation artifact audit
         ↓
-Generate semantic-preserving EXCESS composition controls
+Generate EXCESS composition controls where source-feasible
         ↓
-Run EXCESS composition artifact audit
+Run EXCESS composition artifact audit where source-feasible
         ↓
-Correct only the failing transformation generator if its pre-registered audit criterion fails
+Generate source-feasible artifact-controlled counterfactual suite
         ↓
-Generate mandatory family-specific artifact-controlled counterfactual suite
-        ↓
-Build and freeze source-dependency-cluster manifests
-        ↓
-Freeze violation manifests
-        ↓
-Implement and pre-register >= 3 physical violation mechanisms
+Build/freeze source-dependency-cluster manifests
         ↓
 Run simple statistical baseline
         ↓
@@ -3752,7 +3542,7 @@ Run one-class baseline
         ↓
 Run execution-only conditional model
         ↓
-Run original p(E|I) model
+Run p(E|I) model
         ↓
 Run action-classification baseline
         ↓
@@ -3764,27 +3554,23 @@ Run full federated contract model
         ↓
 Complete all 10 training seeds
         ↓
-Run n={10,30,60,90} data-scarcity comparison
+Run supported n={10,30,60,FULL} data-scarcity comparison
         ↓
 Run leave-one-device-out evaluation
         ↓
-Run topology-stratified and protocol-feature-ablation transfer analysis
+Run protocol-feature/source-stratified transfer analysis
         ↓
-Run leave-one-manufacturer-out where feasible
+Run leave-one-manufacturer-out only where eligible
         ↓
 Run intent-provenance robustness analysis
         ↓
-Run mandatory physically induced violations
+Run independent protocol replication on the next eligible dataset
         ↓
-Audit PingPong eligibility
-        ↓
-Run external validation
-        ↓
-Audit real-attack alignment
+Audit optional real-attack alignment
         ↓
 Run real-attack evaluation only if valid
         ↓
-Run locked hierarchical statistical analysis
+Run locked dependence-aware statistical analysis
         ↓
 Apply claim gates
         ↓
@@ -3798,11 +3584,19 @@ Write conclusions only from passed gates
 The confirmatory chapter does not include:
 
 ```text
+purchasing IoT devices
+building a physical smart-home testbed
+new packet capture from owned devices
+Android UIAutomator / ADB / Appium automation
+live companion-app interaction logging
+physical command blocking/interruption experiments
+secondary-controller physical interventions
+live attack generation
 automatic APK reverse engineering
 automatic semantic-intent extraction from app code
 LLM-based intent extraction
 voice-assistant commands
-actions beyond ON/OFF
+actions beyond ON/OFF in the confirmatory scope
 malware-family classification
 payload inspection
 federated poisoning
@@ -3820,10 +3614,9 @@ post-hoc feature selection
 post-hoc action selection
 post-hoc architecture search
 post-hoc hyperparameter rescue
-
 ```
 
-These belong to later work.
+These may belong to later work but are not required to complete FedIEC.
 
 ---
 
@@ -3836,21 +3629,19 @@ collaborative security detection
 +
 federated learning
 +
-physical IoT devices
+real IoT devices represented in network datasets
 +
 heterogeneous client behavior
 +
 anomaly detection
 +
 cross-device generalization
-
 ```
 
 It extends the thesis perspective by introducing a new information source:
 
 ```text
 explicit mobile-side control intent
-
 ```
 
 rather than changing the research field.
@@ -3859,15 +3650,15 @@ The project therefore remains substantially closer to:
 
 ```text
 federated IoT anomaly/malware detection
-
 ```
 
 than to:
 
 ```text
 general Android vulnerability analysis
-
 ```
+
+The public-dataset-only design changes the **evidence acquisition method**, not the core research domain.
 
 ---
 
@@ -3906,9 +3697,9 @@ Alternative title:
 
 > **FedIEC: Cross-Layer Federated Anomaly Detection from Mobile Intent to IoT Execution**
 
-Alternative benchmark-oriented title:
+Alternative public-data/protocol-oriented title:
 
-> **From Mobile Intent to IoT Execution: A Federated Benchmark and Framework for Runtime Contract Verification**
+> **From Mobile Intent to IoT Execution: Federated Contract Verification Across Public Real-Device Traces**
 
 ---
 
@@ -3916,7 +3707,7 @@ Alternative benchmark-oriented title:
 
 The chapter should position its contribution as follows:
 
-> Mobile-controlled IoT security has already been studied through application/user-action context, network behavior, stateful policy enforcement and semantic consistency. FedIEC does not claim the mobile-action-to-network link itself as novel. Instead, it formulates independently logged mobile intent and pre-action network context as a probabilistic runtime execution contract over the device's subsequent network behavior. The chapter contributes a synchronized multi-device, multi-manufacturer physical benchmark; artifact-controlled and physically realized intent–execution violations; a federated conditional-learning protocol with explicit local-data-scarcity analysis; and leakage-safe unseen-device/manufacturer transfer evaluation that separates semantic generalization from protocol/topology mismatch.
+> Mobile-controlled IoT security has already been studied through application/user-action context, network behavior, stateful policy enforcement and semantic consistency. FedIEC does not claim the mobile-action-to-network link itself as novel. Instead, it formulates independently recorded mobile intent and, where source capture permits, pre-action network context as a probabilistic runtime execution contract over subsequent device network behavior. The chapter contributes a provenance- and eligibility-controlled evaluation protocol over public real-device traces, artifact-controlled intent–execution counterfactuals, a federated conditional-learning protocol with explicit local-data-scarcity analysis, and leakage-safe unseen-device transfer evaluation with independent cross-dataset replication. It does not claim a newly collected physical benchmark or experimentally induced device failures.
 
 ---
 
@@ -3931,16 +3722,19 @@ No previous work relates commands to network behavior.
 No previous system detects command-execution mismatch.
 No previous work uses semantics for IoT anomaly detection.
 Federated learning guarantees privacy.
-Contract violations are malware.
-Counterfactual violations are attacks.
-Pure replay is detectable from the locked 20 features.
+Raw traffic remained on independent physical clients in this experiment.
+FedIEC demonstrates a live federated IoT deployment.
+FedIEC created a new raw physical-device dataset.
+Contract counterfactuals are cyberattacks.
+Contract counterfactuals are malware.
+Pure replay is detectable from the locked representation.
 FedIEC generalizes to arbitrary IoT devices.
 FedIEC generalizes across manufacturers unless the manufacturer holdout gate passes.
 FedIEC is deployable on constrained IoT hardware.
-A seed-level significance test proves population-level physical generalization.
+Public-dataset device partitions prove real-world privacy.
 ```
 
-These statements are either contradicted by prior research or exceed the evidence.
+These statements either contradict the study design or exceed the evidence.
 
 ---
 
@@ -3948,7 +3742,7 @@ These statements are either contradicted by prior research or exceed the evidenc
 
 Before the final literature audit, use:
 
-> **To the best of the literature reviewed through the current audit date, we did not identify prior work that jointly evaluates independently logged mobile control intent and pre-action context as a probabilistic IoT network execution contract, learns that contract federatively across naturally heterogeneous physical devices, evaluates artifact-controlled and physically realized intent–execution violations, and tests leakage-safe unseen-device transfer while explicitly separating semantic transfer from protocol/topology mismatch.**
+> **To the best of the literature reviewed through the current audit date, we did not identify prior work that jointly evaluates independently recorded mobile control intent and available pre-action network context as a probabilistic IoT execution contract, learns that contract federatively across natural device partitions from public real-device traces, evaluates artifact-controlled intent–execution violations under explicit source-feasibility rules, and tests leakage-safe unseen-device transfer with independent cross-dataset replication.**
 
 The final manuscript must name the closest prior UI/user-action-to-network and semantic enforcement systems rather than implying this relationship was previously unexplored.
 
@@ -3960,26 +3754,27 @@ It must not be strengthened without evidence.
 
 # 99. Proposal-Stage Deliverables
 
-Before the October 24 proposal deadline, complete:
+Before the chapter proposal deadline, complete:
 
 ```text
 current-through-2026 novelty audit
 explicit closest-work collision table
 final problem formulation
-benchmark protocol
->=6-device acquisition/eligibility plan
-manufacturer/category/topology coverage plan
-violation taxonomy + observability table
-transformation-specific counterfactual anti-artifact protocol (replacement/translation + EXCESS composition)
-Android intent-logging prototype
-gateway capture smoke test
-at least one-device pilot
-settling-integrity prototype
-NO_ACTION activity-stratification prototype
+public-dataset evidence hierarchy
+PingPong provenance/eligibility audit
+CIC IoT 2022 provenance/eligibility audit
+TU Wien replication-role audit
+device/source eligibility manifest
+observation-window and B/E coverage protocol
+NO_ACTION reconstruction feasibility audit
+violation taxonomy + source-feasibility/observability table
+counterfactual anti-artifact protocol
+source-aware split specification
 zero-shot normalization specification
-hierarchical statistics specification including shared-source dependency clusters
+dependence-aware statistics specification including shared-source clusters
+model/baseline specification
 final chapter outline
-preliminary figure of FedIEC architecture
+preliminary FedIEC architecture figure
 ```
 
 Full experimental results are desirable but are not required for the proposal.
@@ -3991,20 +3786,23 @@ Full experimental results are desirable but are not required for the proposal.
 After proposal submission:
 
 ```text
-complete >=6-device clean collection across required sessions/days
-freeze benchmark
-pass the replacement/translation artifact audit and pass the EXCESS-composition audit for every device/family used to support Level-A EXCESS; otherwise mark ARTIFACT_AUDIT_INSUFFICIENT
-generate artifact-controlled violation suite
+freeze public dataset versions and eligibility manifests
+freeze primary confirmatory dataset
+freeze source-aware clean splits
+freeze observation-window protocol
+pass replacement/translation artifact audit for claimed families
+pass EXCESS composition audit wherever EXCESS is claimed
+generate source-feasible counterfactual suite
 complete local/centralized/federated experiments
 complete 10 training seeds
-complete n={10,30,60,90} scarcity curve
+complete supported {10,30,60,FULL} scarcity curve
 complete leave-one-device-out analysis
-complete topology/protocol transfer analysis
-complete leave-one-manufacturer-out where feasible
+complete protocol-feature/source transfer analysis
+complete leave-one-manufacturer-out only where feasible
 complete intent-provenance robustness analysis
-complete mandatory physically induced violation study
-complete public-dataset replication
-complete hierarchical statistical analysis
+complete independent public-dataset replication
+complete optional attack-aligned evaluation only if valid
+complete dependence-aware statistical analysis
 freeze tables and figures
 ```
 
@@ -4017,33 +3815,35 @@ freeze tables and figures
 ```text
 current-through-2026 novelty audit
 closest-work collision matrix
-hardware selection/acquisition for >=6 core devices
-manufacturer/category/topology coverage lock
-PingPong access request
-Android automation harness
-capture pipeline
-feature extractor
-counterfactual generator design including calipers, transition semantics, B→E continuity and EXCESS physical-timeline checks
+freeze candidate public-dataset priority
+complete/verify PingPong acquisition and provenance audit
+complete CIC IoT 2022 source/provenance audit
+complete TU Wien source/provenance audit
+implement raw capture parser + device attribution
+implement feature extractor
+implement source-aware eligibility manifests
+implement counterfactual generator design
 ```
 
 ## October 1–10, 2026
 
 ```text
-pilot available core devices
-estimate W and per-device settling latency
-freeze timestamp tolerance
-freeze NO_ACTION background strata
-freeze constrained-random action scheduler
+audit raw B/E coverage
+freeze candidate dataset-specific W_d procedures
+freeze source-group split rules
+freeze NO_ACTION reconstruction rules where feasible
 freeze shared-normalization protocol
-freeze counterfactual matching metric, boundary descriptor and physical-timeline feasibility procedures
-begin clean collection where devices pass pilot
+freeze counterfactual matching metric and boundary descriptor
+run preprocessing smoke tests
 ```
 
 ## October 11–23, 2026
 
 ```text
-complete enough controlled collection for feasibility evidence
-run replacement/translation and EXCESS-composition artifact-control smoke tests
+complete primary-dataset eligibility decision before model results
+build initial derived clean corpus
+run replacement/translation artifact-control smoke tests
+run EXCESS composition smoke tests where feasible
 run model smoke experiments
 prepare figures
 write 1,000–2,000 word proposal
@@ -4059,14 +3859,11 @@ submit chapter proposal
 ## October 25–November 20, 2026
 
 ```text
-complete all core-device pilots if any remained
-complete >=6-device multi-session clean dataset
-freeze benchmark
+freeze clean train/calibration/test manifests
 compute training-only B-context calipers and timing envelopes
-run replacement/translation artifact audit
-run EXCESS composition artifact audit for every device intended to support a Level-A EXCESS claim; otherwise record ARTIFACT_AUDIT_INSUFFICIENT
+run transformation-specific artifact audits
 freeze donor/source-dependency manifests
-freeze artifact-controlled violation benchmark
+freeze source-feasible violation suite
 complete baseline experiments
 complete primary local/centralized/federated runs
 ```
@@ -4077,12 +3874,12 @@ complete primary local/centralized/federated runs
 complete all 10 training seeds
 complete data-scarcity curve
 leave-one-device-out
-protocol-feature and topology-stratified transfer analysis
-leave-one-manufacturer-out where feasible
+protocol-feature/source-stratified transfer analysis
+leave-one-manufacturer-out where eligible
 intent-provenance robustness
-external dataset experiments
-mandatory physical violation experiments
-hierarchical statistics
+independent second-dataset replication
+optional attack-aligned evaluation if eligibility passes
+dependence-aware statistics
 ```
 
 ## December 16–31, 2026
@@ -4100,7 +3897,7 @@ complete >=10,000-word chapter
 limitations
 related work
 reproducibility appendix
-observability-boundary discussion
+source-feasibility and observability-boundary discussion
 ```
 
 ## January 11–15, 2027
@@ -4109,9 +3906,10 @@ observability-boundary discussion
 final novelty audit through submission date
 citation audit
 claim-gate audit
-transformation-specific counterfactual artifact-audit review
+counterfactual artifact-audit review
 zero-shot leakage audit
 statistical-unit audit
+public-source provenance audit
 language cleanup
 double-anonymization audit
 submission-format audit
@@ -4153,31 +3951,32 @@ Define:
 
 ```text
 intent provenance
+public-source trust boundary
 pre/post context
 contract
-trust assumptions
 observability boundary
+source-feasibility boundary
 violation taxonomy
 ```
 
-## 4. FedIEC-Contracts Benchmark
+## 4. Public Datasets and Derived FedIEC Evaluation Corpus
 
 Describe:
 
 ```text
-devices/manufacturers/categories/topologies
-Android harness
-capture topology
-settling-integrity rule
-stratified NO_ACTION collection
-constrained-random action schedule
-sessions/days
-splits
+PingPong
+CIC IoT 2022
+TU Wien Philips Hue
+source versions and licensing
+intent-provenance audit
+device eligibility
+raw capture coverage
+source-aware splits
+NO_ACTION reconstruction where feasible
+observation-window rules
 counterfactual matching/calipers and boundary controls
-replacement/translation artifact audit
-EXCESS composition/physical-timeline artifact audit
-physical violations
-reproducibility
+artifact audits
+reproducibility manifests
 ```
 
 ## 5. Federated Contract Learning
@@ -4192,7 +3991,7 @@ shared training-client normalization, local/centralized/federated regimes and da
 
 ## 6. Experimental Methodology
 
-Describe baselines, metrics, seeds, hierarchical statistics, provenance robustness and claim gates.
+Describe baselines, metrics, seeds, dependence-aware statistics, provenance robustness and claim gates.
 
 ## 7. Results
 
@@ -4200,51 +3999,60 @@ Present:
 
 ```text
 intent value
-pre-context value
+pre-context value where source-feasible
 federated performance
 data-scarcity collaboration curve
 heterogeneity
 violation-specific results
 background false alarms
-transformation-specific counterfactual artifact audits
+transformation-specific artifact audits
 ```
 
-## 8. Cross-Device and External Validation
+## 8. Cross-Device and Cross-Dataset Validation
 
 Present:
 
 ```text
 leave-one-device-out
-topology-stratified transfer
 protocol-feature ablation
-leave-one-manufacturer-out where feasible
-PingPong
-other eligible public data
+manufacturer/topology analysis where metadata support it
+independent replication dataset
 ```
 
 ## 9. Security-Relevance Evaluation
 
-Present mandatory physical violations and real attacks only where evidence supports them.
+Present:
+
+```text
+artifact-controlled contract counterfactuals
+observed control failures if public ground truth exists
+real attacks only where alignment gate passes
+```
+
+Keep these evidence levels separate.
 
 ## 10. Discussion and Limitations
 
 Discuss:
 
 ```text
-trusted mobile intent
+trusted source provenance
 provenance jitter sensitivity
+public-dataset selection boundaries
 device/manufacturer scope
 ON/OFF semantic scope
+missing pre-action/background data
 counterfactual realism
 pure-replay observability limit
-protocol/topology transfer boundary
+protocol/source transfer boundary
 federation scale
+simulation-vs-deployment boundary
 formal privacy limitations
 ```
 
 ## 11. Reproducibility and Future Research
 
-Discuss dataset/code release and extension to richer actions and richer temporal/sequence observables.
+Discuss code/manifests, dataset acquisition instructions and future extension to new physical collection only as optional later work.
 
 ## 12. Conclusion
 
@@ -4258,15 +4066,15 @@ The final chapter should prioritize contributions in this order.
 
 ### Contribution 1 — Problem Formulation
 
-**Probabilistic intent–execution contract verification for mobile-controlled IoT using independently observed intent and pre-action context.**
+**Probabilistic intent–execution contract verification for mobile-controlled IoT using independently observed intent and available pre-action context.**
 
-### Contribution 2 — Benchmark
+### Contribution 2 — Public-Data Provenance and Evaluation Protocol
 
-**A synchronized multi-device, multi-manufacturer mobile-intent / IoT-execution benchmark with settling-controlled contexts, activity-stratified background data and reproducible transition- and boundary-compatible violations.**
+**A reproducible eligibility, provenance, split and harmonization protocol that turns existing real-device mobile-control traces into device-partitioned intent–execution contract observations without deriving intent from target traffic.**
 
-### Contribution 3 — Counterfactual and Physical Security Protocol
+### Contribution 3 — Artifact-Controlled Violation Protocol
 
-**A transformation-specific artifact-controlled violation-generation methodology—with physical-timeline validation for composite executions—paired with physically realized control-path anomalies and explicit representation-observability limits.**
+**A source-aware transformation methodology with common-support matching, boundary/timeline validation, donor-dependence control and explicit source-feasibility/observability limits.**
 
 ### Contribution 4 — Federated Methodology
 
@@ -4274,15 +4082,13 @@ The final chapter should prioritize contributions in this order.
 
 ### Contribution 5 — Generalization Evidence
 
-**Leakage-safe leave-one-device-out, topology-stratified and, where feasible, leave-one-manufacturer-out protocols establishing how far contract semantics transfer.**
+**Leakage-safe leave-one-device-out and protocol-feature sensitivity analysis, plus manufacturer/topology analysis where metadata permit and independent cross-dataset replication.**
 
 ### Contribution 6 — Empirical Security Findings
 
-**A violation-specific characterization identifying which classes of execution divergence are detectable, provenance-sensitive, protocol-dependent, representation-unobservable or difficult to generalize.**
+**A violation-specific characterization identifying which classes of execution divergence are detectable, provenance-sensitive, source-infeasible, representation-unobservable or difficult to generalize.**
 
-The contribution order is intentional.
-
-The chapter's novelty therefore does not rest exclusively on the conditional flow outperforming a baseline.
+The chapter's novelty therefore does not rest exclusively on the conditional flow outperforming a baseline or on creating new hardware data.
 
 ---
 
@@ -4290,9 +4096,9 @@ The chapter's novelty therefore does not rest exclusively on the conditional flo
 
 If the relevant claim gates pass, the strongest permitted contribution is:
 
-> **FedIEC formulates mobile-controlled IoT security as federated probabilistic intent–execution contract learning rather than claiming novelty for the already-studied link between user actions and network behavior. It links independently recorded mobile intent, steady pre-action behavioral context, and post-action network execution; constructs a synchronized heterogeneous physical-device benchmark with artifact-controlled and physically realized violation mechanisms; learns contracts locally, centrally and federatively; quantifies when federation helps under local data scarcity; and evaluates leakage-safe unseen-device/manufacturer transfer while separating semantic generalization from protocol/topology mismatch.**
+> **FedIEC formulates mobile-controlled IoT security as federated probabilistic intent–execution contract learning rather than claiming novelty for the already-studied link between user actions and network behavior. It links independently recorded mobile intent, available pre-action network context and post-action device execution from public real-device traces; constructs a reproducible provenance- and eligibility-controlled evaluation corpus; evaluates source-feasible artifact-controlled contract violations; learns contracts locally, centrally and federatively; quantifies when federation helps under local data scarcity; and tests leakage-safe unseen-device transfer with independent cross-dataset replication.**
 
-If model-performance gates fail, the contribution is narrowed to the benchmark, formulation, artifact-controlled protocol, physical evaluation where completed, and empirical limits demonstrated by the study.
+If model-performance gates fail, the contribution is narrowed to the formulation, public-data protocol, artifact-controlled evaluation methodology and empirically demonstrated feasibility/transfer boundaries.
 
 ---
 
@@ -4307,11 +4113,13 @@ another device fingerprinting method
 another Android static-analysis framework
 another semantic smart-home rule checker
 a claim that mobile actions have never been linked to IoT traffic
+a new physical IoT testbed
+a live federated deployment
 ```
 
 FedIEC investigates a narrower systems question:
 
-> **Can independently observed mobile intent and pre-action state define a probabilistic runtime contract against which heterogeneous IoT execution is verified collaboratively; when does federation add value under limited local data; and which parts of that contract remain transferable across devices, manufacturers and network topologies without target-domain leakage?**
+> **Can independently recorded mobile intent and available pre-action state define a probabilistic runtime contract against which heterogeneous IoT execution is verified collaboratively using natural device partitions from public real-device traces; when does federation add value under limited local data; and which parts of that contract remain transferable to unseen devices and independent datasets without target-domain leakage?**
 
 That is the research identity around which the proposal, implementation, experiments and final chapter should remain aligned.
 
@@ -4319,7 +4127,7 @@ That is the research identity around which the proposal, implementation, experim
 
 # 106. Final Protocol-Lock Audit
 
-Before the first confirmatory result is inspected, the roadmap is considered locked only if every item below is PASS.
+Before the first confirmatory result is interpreted, every applicable item below must be PASS.
 
 ## Novelty Integrity
 
@@ -4327,21 +4135,22 @@ Before the first confirmatory result is inspected, the roadmap is considered loc
 closest UI/user-action-to-network prior work named explicitly
 current-through-submission-date literature search complete
 novelty wording does not rely on action→network linkage alone
+no newly collected physical benchmark claim
 federated contribution includes data-scarcity question
 ```
 
-## Collection Integrity
+## Public-Source Integrity
 
 ```text
-K >= 6, >= 3 manufacturers, >= 3 categories
-network topology recorded
->= 5 sessions and >= 3 days per device
-W frozen
-L_settle frozen per device
-inter-command interval >= 2W + L_settle
-constrained-random action schedules frozen
-NO_ACTION 50/50/50 activity strata satisfied per device
-clock synchronization within tolerance
+candidate source versions/checksums frozen
+primary-dataset selection based on pre-model eligibility only
+intent provenance grade frozen for every retained interaction
+device identity auditable
+raw B/E capture coverage audited
+source capture/session grouping frozen
+NO_ACTION reconstruction independently justified where used
+source-aware train/calibration/test split has no overlap
+missing metadata are not inferred from target traffic
 ```
 
 ## Counterfactual Integrity
@@ -4349,55 +4158,67 @@ clock synchronization within tolerance
 ```text
 raw-window transformations only
 training-only B-context calipers computed and frozen
-deterministic Tier-1/Tier-2/Tier-3 session/day hierarchy enforced with no farther fallback
-transition semantics matched to recipient physical pre-state
-B→E boundary-continuity checks pass
+source-aware donor hierarchy frozen
+transition semantics required only where independently verifiable
+B→E boundary-continuity checks pass where required
 internal timing and packet order preserved
 no epsilon-jitter repair of infeasible timestamps
-EXCESS uses legitimate active NO_ACTION burst, not random noise
+EXCESS uses legitimate active background material where source-feasible
 EXCESS raw-timeline collision/short-gap/shared-flow checks pass
-replacement/translation artifact audit passes
-EXCESS composition artifact audit passes wherever Level-A EXCESS is claimed
+replacement/translation artifact audit passes for every claimed family
+EXCESS composition artifact audit passes wherever EXCESS is claimed
 artifact equivalence tolerance frozen before main results
 donor reuse cap and source_dependency_cluster manifests frozen
-late execution evaluated in a matched later NO_ACTION context
 pure replay observability limit disclosed
+source-infeasible families remain unavailable rather than relaxed
 ```
 
 ## Federated / Transfer Integrity
 
 ```text
+at least four eligible physical-device clients for main federated claim
 shared scaler derived only from current training clients
 held-out device contributes no normalization statistics
 held-out device contributes no main zero-shot threshold data
-data-scarcity curve manifests frozen
-leave-one-device-out complete
+data-scarcity manifests frozen
+leave-one-device-out complete where claim is made
 protocol-feature ablation complete
-topology-stratified reporting complete
-leave-one-manufacturer-out executed where eligibility permits
+manufacturer/topology claims made only with independently documented metadata
+independent dataset replication kept separate from primary training unless pre-registered otherwise
+```
+
+## Simulation / Privacy Integrity
+
+```text
+public datasets acknowledged as centrally stored by the researcher
+federated experiment described as simulation over device partitions
+no claim that raw traces physically stayed on independent devices
+no formal privacy claim
+no live deployment claim
+no hardware feasibility claim
 ```
 
 ## Security-Relevance Integrity
 
 ```text
->= 3 physical mechanisms pre-registered
->= 2 mechanisms analyzable on >= 3 devices for physical-security claim
-frozen model/scaler/threshold used for physical violations
-real attacks kept separate and claimed only with valid ground truth
+counterfactual violations never called real attacks
+observed public control failures claimed only with independent ground truth
+real attacks claimed only when intent + attack interval + device execution alignment pass
+no physically induced failure claim
 ```
 
 ## Statistical Integrity
 
 ```text
-seeds treated as optimization variability, not independent experiments
-session/device dependence preserved
+seeds treated as optimization variability, not independent physical experiments
+source/device/capture dependence preserved
 all generated observations retain recipient/donor source IDs
 shared-source generated observations grouped into source_dependency_clusters
-hierarchical paired bootstrap resamples source_dependency_clusters for Level-A counterfactual results
-cluster-aware paired significance procedure implemented
-artifact audits use equivalence-style A* criterion, not failure-to-reject reasoning
+paired dependence-aware bootstrap/permutation procedure implemented
+artifact audits use equivalence-style A* criterion
 Holm family fixed to the three confirmatory comparisons
 per-device effects and unique-source counts always reported
+small client counts handled conservatively
 ```
 
 ## Claim Integrity
@@ -4405,9 +4226,10 @@ per-device effects and unique-source counts always reported
 ```text
 all claim gates evaluated mechanically
 negative results retained
-protocol/topology confounds separated from semantic conclusions
+source/protocol confounds separated from semantic conclusions
 representation-unobservable failures reported as limits
-no post-hoc rescue of model, features, devices, actions or violation definitions
+source-infeasible analyses reported as unavailable
+no post-hoc rescue of model, features, datasets, devices, actions or violation definitions
 ```
 
 Any PARTIAL or FAIL item must be resolved before the corresponding confirmatory claim is made. If it cannot be resolved, the claim is narrowed rather than the protocol weakened.
