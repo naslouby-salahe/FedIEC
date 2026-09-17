@@ -43,3 +43,29 @@ DOWNLOAD_STATUS*.md
 *cookies*.txt
 *.session
 *.log
+
+# Python virtual environments / packaging
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.pyright/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Graphify temporary/generated output (never committed by default)
+graphify-out/
+
+# Reproducible workspace — regenerable from raw data + config + code
+outputs/
+!outputs/.gitkeep
+
+# OS/editor
+.DS_Store
+*.swp

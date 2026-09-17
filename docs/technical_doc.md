@@ -73,8 +73,13 @@ FedIEC/
 │   ├── FedIEC_Roadmap.md
 │   │   # Scientific source of truth.
 │   │
-│   └── technical_doc.md
-│       # This document: architecture, tree, tooling, coding, testing, and artifact rules.
+│   ├── technical_doc.md
+│   │   # This document: architecture, tree, tooling, coding, testing, and artifact rules.
+│   │
+│   └── implementation/
+│       # Human-authored implementation tracking: checklist, requirement
+│       # traceability, dataset inventory/schema map, wiring map, decisions
+│       # and blockers, verification status. Not a second architecture spec.
 │
 ├── data/
 │   └── raw/
@@ -88,8 +93,10 @@ FedIEC/
 │       ├── TU Wien Philips Hue/
 │       │   # Untouched TU Wien Philips Hue source material.
 │       │
-│       └── CIC IoT 2022/
-│           # Optional real-attack source material when present.
+│       └── cic-iot-2022/
+│           # Optional real-attack source material when present. On-disk name
+│           # is lowercase-hyphen (verified), not the "CIC IoT 2022" spelling
+│           # used in prose elsewhere in this document and the roadmap.
 │           # It may support real-attack evaluation only if roadmap eligibility is established.
 │
 ├── src/
@@ -114,6 +121,11 @@ FedIEC/
 │       ├── types.py
 │       │   # Central home for validated identifiers, constrained scalar types,
 │       │   # domain records, typed aliases, and boundary-level value objects.
+│       │
+│       ├── paths.py
+│       │   # Sole resolver from a RepositoryPathKey (enums.py) to a filesystem
+│       │   # path. No other module constructs a known repository/dataset/
+│       │   # output/result location by string concatenation.
 │       │
 │       ├── artifacts.py
 │       │   # Shared compact artifact IO, checksums, provenance metadata, manifests,
