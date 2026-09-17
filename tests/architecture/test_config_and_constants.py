@@ -6,15 +6,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src" / "fediec"
 CONFIG_MODULE = SRC_ROOT / "config.py"
+_COMMITTED_YAML_FILES = {"config.yaml", ".semgrep.yml"}
 
 
 def test_only_config_yaml_is_committed() -> None:
     yaml_files = [
         path
         for path in REPO_ROOT.rglob("*.y*ml")
-        if ".venv" not in path.parts and path.name != "config.yaml"
+        if ".venv" not in path.parts and path.name not in _COMMITTED_YAML_FILES
     ]
-    assert not yaml_files, f"config.yaml must be the only committed YAML file: {yaml_files}"
+    assert not yaml_files, f"unexpected committed YAML file: {yaml_files}"
 
 
 def test_only_config_py_parses_yaml() -> None:

@@ -65,7 +65,7 @@ FedIEC/
 │   # generated Graphify/Semgrep temporary files, and other reproducible workspace material.
 │
 ├── config.yaml
-│   # The ONLY committed YAML/YML file in the repository.
+│   # The only committed scientific configuration YAML/YML file.
 │   # Contains all configurable public-source, model, training,
 │   # federated, experiment, evaluation, statistics, and reporting parameters.
 │
@@ -334,7 +334,7 @@ FedIEC/
 │   │   ├── test_dependencies.py
 │   │   │   # Enforces allowed package dependency directions and prevents circular architecture.
 │   │   ├── test_config_and_constants.py
-│   │   │   # Enforces one YAML, central configuration access, and absence of hidden research constants.
+│   │   │   # Enforces the YAML policy, central configuration access, and absence of hidden research constants.
 │   │   ├── test_enums_and_types.py
 │   │   │   # Enforces enum boundaries, typed service IO, and primitive-leak restrictions.
 │   │   └── test_hygiene.py
@@ -495,22 +495,22 @@ No production code may exist solely to generate or enforce prose claims.
 
 ## 6. Configuration Rules
 
-### 6.1 One YAML Rule
+### 6.1 YAML Policy
 
-`config.yaml` is the **only committed `.yaml` or `.yml` file** in the repository.
+`config.yaml` is the only committed scientific configuration YAML/YML file.
+`.semgrep.yml` is the sole permitted tooling-rule YAML file.
 
 Therefore:
 
 - no second experiment YAML;
 - no dataset YAML;
 - no test YAML;
-- no `.semgrep.yml`;
 - no duplicate local/default YAML;
 - no YAML under `tests/`;
 - no YAML under `docs/`;
 - no CI YAML while this rule remains in force.
 
-If a future tool absolutely requires committed YAML, the one-YAML rule must be explicitly reconsidered rather than silently violated.
+No other committed YAML/YML file is permitted without an explicit architecture decision.
 
 ### 6.2 Configuration Ownership
 
@@ -821,11 +821,11 @@ Examples include:
 - forbidden duplicate legacy paths;
 - forbidden claim/report-generation production code.
 
-Because the repository permits only one committed YAML file:
+The committed `.semgrep.yml` is the canonical home for project Semgrep rules.
 
-1. Do not commit `.semgrep.yml`.
+1. Keep it limited to static-analysis policy; it must not contain runtime or scientific configuration.
 2. Built-in/registry Semgrep rules may be invoked directly where appropriate.
-3. Custom project rules should be represented in Python and materialized to a temporary rule file during architecture tests when needed.
+3. Architecture tests run Semgrep against the committed rule file.
 4. Temporary Semgrep files must not be committed.
 5. Semgrep failures must be fixed rather than globally suppressed without justification.
 
@@ -1132,7 +1132,7 @@ Architecture tests verify repository correctness:
 - Graphify reachability;
 - dead code;
 - module dependency direction;
-- one-YAML rule;
+- YAML policy;
 - central config access;
 - enum policy;
 - type/primitive boundary policy;
@@ -1221,7 +1221,7 @@ Must enforce architectural import direction and absence of prohibited cycles.
 
 Must verify:
 
-- exactly one committed YAML/YML;
+- only `config.yaml` and `.semgrep.yml` are committed YAML/YML files;
 - only `config.py` parses it;
 - no duplicated research parameters;
 - no hidden experiment seed lists;

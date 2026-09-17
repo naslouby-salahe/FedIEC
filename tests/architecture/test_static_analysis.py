@@ -3,14 +3,11 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
-import yaml
-
-from tests.architecture.semgrep_rules import RULES
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SEMGREP_RULES = REPO_ROOT / ".semgrep.yml"
+SEMGREP_EXECUTABLE = Path(sys.executable).with_name("semgrep")
 
 
 def test_ruff_passes() -> None:
@@ -36,31 +33,21 @@ def test_pyright_passes() -> None:
 
 
 def test_semgrep_custom_rules_pass() -> None:
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as rules_file:
-        yaml.safe_dump(RULES, rules_file)
-        rules_path = Path(rules_file.name)
-    try:
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "semgrep",
-                "scan",
-                "--config",
-                str(rules_path),
-                "--json",
-                "--error",
-                "src",
-            ],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        findings_json: str = result.stdout or '{"results": []}'
-        finding_count = len(json.loads(findings_json)["results"])
-        assert finding_count == 0, findings_json
-    finally:
-        rules_path.unlink(missing_ok=True)
+    result = subprocess.run(
+        [
+            str(SEMGREP_EXECUTABLE),
+            "scan",
+            "--config",
+            str(SEMGREP_RULES),
+            "--json",
+            "--error",
+            "src",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    findings_json: str = result.stdout or '{"results": []}'
+    finding_count = len(json.loads(findings_json)["results"])
+    assert finding_count == 0, findings_json

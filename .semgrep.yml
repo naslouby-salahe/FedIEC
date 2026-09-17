@@ -1,0 +1,91 @@
+rules:
+  - id: no-raw-dict-domain-io
+    languages: [python]
+    message: Raw dict values must not cross function boundaries outside types.py.
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: "def $F(...) -> dict: ..."
+          - pattern: "def $F(...) -> dict[...]: ..."
+          - pattern: "def $F($X: dict, ...): ..."
+          - pattern: "def $F($X: dict[...], ...): ..."
+    paths:
+      exclude:
+        - /src/fediec/types.py
+  - id: no-duplicate-yaml-parsing
+    languages: [python]
+    message: Only config.py may parse config.yaml.
+    severity: ERROR
+    pattern: "yaml.safe_load(...)"
+    paths:
+      exclude:
+        - /src/fediec/config.py
+  - id: no-broad-cast
+    languages: [python]
+    message: Fix the underlying type instead of using typing.cast.
+    severity: ERROR
+    pattern: "cast(...)"
+  - id: no-primitive-function-boundary
+    languages: [python]
+    message: Use a semantic type from types.py instead of a primitive function input or output.
+    severity: ERROR
+    paths:
+      exclude:
+        - /src/fediec/types.py
+    patterns:
+      - pattern-either:
+          - pattern: "def $F(..., $X: int, ...): ..."
+          - pattern: "def $F(..., $X: float, ...): ..."
+          - pattern: "def $F(..., $X: str, ...): ..."
+          - pattern: "def $F(..., $X: object, ...): ..."
+          - pattern: "def $F(..., $X: Any, ...): ..."
+          - pattern: "def $F(..., $X: typing.Any, ...): ..."
+          - pattern: "async def $F(..., $X: int, ...): ..."
+          - pattern: "async def $F(..., $X: float, ...): ..."
+          - pattern: "async def $F(..., $X: str, ...): ..."
+          - pattern: "async def $F(..., $X: object, ...): ..."
+          - pattern: "async def $F(..., $X: Any, ...): ..."
+          - pattern: "async def $F(..., $X: typing.Any, ...): ..."
+          - pattern: "def $F(...) -> int: ..."
+          - pattern: "def $F(...) -> float: ..."
+          - pattern: "def $F(...) -> str: ..."
+          - pattern: "def $F(...) -> object: ..."
+          - pattern: "def $F(...) -> Any: ..."
+          - pattern: "def $F(...) -> typing.Any: ..."
+          - pattern: "async def $F(...) -> int: ..."
+          - pattern: "async def $F(...) -> float: ..."
+          - pattern: "async def $F(...) -> str: ..."
+          - pattern: "async def $F(...) -> object: ..."
+          - pattern: "async def $F(...) -> Any: ..."
+          - pattern: "async def $F(...) -> typing.Any: ..."
+  - id: no-generic-constrained-alias-outside-types
+    languages: [python]
+    message: Generic constrained aliases may only be defined and used in types.py.
+    severity: ERROR
+    paths:
+      exclude:
+        - /src/fediec/types.py
+    pattern-regex: '\b(NonNegativeInt|PositiveInt|SignedInt|NonNegativeFloat|PositiveFloat|FiniteFloat|UnitInterval|OpenUnitInterval)\b'
+  - id: no-nested-primitive-function-boundary
+    languages: [python]
+    message: Nested primitive annotations must not cross a function boundary.
+    severity: ERROR
+    paths:
+      exclude:
+        - /src/fediec/types.py
+    pattern-regex: '(?m)^\s*(?:async\s+)?def\s+\w+\([^)]*\b(int|float|str|object|Any)\b[^)]*\)\s*(?:->\s*[^:\n]+)?\s*:|^\s*(?:async\s+)?def\s+\w+\([^)]*\)\s*->\s*[^:\n]*\b(int|float|str|object|Any)\b'
+  - id: no-runtime-source-introspection
+    languages: [python]
+    message: Production code must use explicit configuration, not source-code introspection.
+    severity: ERROR
+    pattern-regex: '(?m)\b__file__\b|^\s*(?:from\s+(?:ast|inspect)\s+import|import\s+(?:ast|inspect)\b)'
+  - id: no-physical-collection-scaffold
+    languages: [python]
+    message: Physical acquisition scaffolding is forbidden in the public-source study.
+    severity: ERROR
+    pattern-regex: '\b(fediec_contracts|android_uiautomator|android_appium|gateway_capture|live_capture|device_scheduler|physical_violation|physical_attack)\b'
+  - id: no-type-ignore-suppression
+    languages: [python]
+    message: Fix the type model instead of suppressing diagnostics.
+    severity: ERROR
+    pattern-regex: '#\s*(type|pyright):\s*ignore\b'

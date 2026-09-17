@@ -10,7 +10,8 @@
 - [x] Dataset role, eligibility, provenance, replay/late subtype, and
   source-group matching enums centralized.
 - [x] `doctor` remains read-only and audits public-source readiness only.
-- [x] Configuration remains one YAML parsed only by `config.py`.
+- [x] Only `config.yaml` provides runtime/scientific configuration; committed
+  `.semgrep.yml` is limited to static-analysis rules.
 - [x] Architecture test suite, Ruff, and Pyright pass after the migration.
 - [x] Fresh Graphify AST extraction completed; generated output is ignored.
 - [ ] Freeze checksums/source manifests and complete eligibility gates before

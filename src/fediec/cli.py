@@ -25,9 +25,6 @@ from fediec.workflows import smoke as smoke_workflow
 from fediec.workflows import status as status_workflow
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
-_EXPERIMENT_ARGUMENT = typer.Argument(  # pyright: ignore[reportUnknownMemberType]
-    ..., help="Named experiment to run."
-)
 console = Console()
 logger = structlog.get_logger()
 
@@ -102,7 +99,7 @@ def smoke() -> None:
 
 @app.command(name="run")
 def run_command(
-    experiment: ExperimentName = _EXPERIMENT_ARGUMENT,
+    experiment: ExperimentName,
 ) -> None:
     logger.info(LogEvent.RUN_START, experiment=experiment.value)
     run_workflow.run_experiment(experiment)
