@@ -203,6 +203,10 @@ class RepositoryPathKey(StrEnum):
     CONFIG_FILE = "config_file"
 
 
+class EnvironmentVariable(StrEnum):
+    REPOSITORY_ROOT = "FEDIEC_REPOSITORY_ROOT"
+
+
 class CliCommand(StrEnum):
 
     DOCTOR = "doctor"

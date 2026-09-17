@@ -126,6 +126,8 @@ FedIEC/
 │       │   # Sole resolver from a RepositoryPathKey (enums.py) to a filesystem
 │       │   # path. No other module constructs a known repository/dataset/
 │       │   # output/result location by string concatenation.
+│       │   # The root comes from FEDIEC_REPOSITORY_ROOT or an explicit working
+│       │   # directory containing config.yaml; it never inspects source-file paths.
 │       │
 │       ├── artifacts.py
 │       │   # Shared compact artifact IO, checksums, provenance metadata, manifests,

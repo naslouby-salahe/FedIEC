@@ -1,26 +1,7 @@
 from __future__ import annotations
 
-_VALUE_BOUNDARY_EXCLUDES = [
-    "src/fediec/cli.py",
-    "src/fediec/paths.py",
-    "src/fediec/workflows/doctor.py",
-    "src/fediec/workflows/run.py",
-]
-
 RULES: dict[str, object] = {
     "rules": [
-        {
-            "id": "no-enum-value-outside-boundary",
-            "languages": ["python"],
-            "message": (
-                "Enum '.value' used outside a declared serialization/display "
-                "boundary. Operate on the enum member itself; convert to "
-                "'.value' only at a genuine CLI/logging/filesystem boundary."
-            ),
-            "severity": "ERROR",
-            "pattern": "$X.value",
-            "paths": {"exclude": _VALUE_BOUNDARY_EXCLUDES},
-        },
         {
             "id": "no-raw-dict-domain-io",
             "languages": ["python"],

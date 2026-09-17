@@ -14,6 +14,7 @@ from fediec.enums import (
     TableColumn,
     TerminalColor,
 )
+from fediec.types import CheckDetail
 from fediec.workflows import doctor as doctor_workflow
 from fediec.workflows import plan as plan_workflow
 from fediec.workflows import prepare as prepare_workflow
@@ -54,7 +55,14 @@ def doctor() -> None:
     table.add_column(TableColumn.DETAIL)
     for check in report.checks:
         style = _CHECK_STATUS_STYLE[check.status]
-        table.add_row(check.label, f"[{style}]{check.status.value}[/{style}]", check.detail)
+        detail = check.detail
+        if check.availability is not None and check.assessment is not None:
+            detail = CheckDetail(
+                f"{check.availability.value}; role={check.assessment.role.value}; "
+                f"eligibility={check.assessment.eligibility.value}; "
+                f"provenance={check.assessment.intent_provenance_grade.value}"
+            )
+        table.add_row(check.label, f"[{style}]{check.status.value}[/{style}]", detail or "")
     console.print(table)
     logger.info(LogEvent.DOCTOR_DONE, overall_status=report.overall_status.value)
     if report.overall_status == CheckStatus.FAIL:

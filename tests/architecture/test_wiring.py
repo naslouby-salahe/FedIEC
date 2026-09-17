@@ -9,6 +9,16 @@ from fediec.enums import CliCommand
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI_MODULE = REPO_ROOT / "src" / "fediec" / "cli.py"
 WORKFLOWS_ROOT = REPO_ROOT / "src" / "fediec" / "workflows"
+_COMMAND_WORKFLOW_MAP = {
+    "doctor": "doctor_workflow",
+    "preprocess": "preprocess_workflow",
+    "prepare": "prepare_workflow",
+    "plan": "plan_workflow",
+    "smoke": "smoke_workflow",
+    "run_command": "run_workflow",
+    "status": "status_workflow",
+    "report": "report_workflow",
+}
 
 
 def _registered_command_names() -> set[str]:
@@ -60,6 +70,17 @@ def test_each_cli_command_delegates_to_exactly_one_workflow() -> None:
         if len(targets) != 1:
             offenders.append(f"{function_node.name}: delegates to {sorted(targets)}")
     assert not offenders, offenders
+
+
+def test_each_cli_command_uses_its_required_workflow() -> None:
+    tree = ast.parse(CLI_MODULE.read_text(encoding="utf-8"), filename=str(CLI_MODULE))
+    actual = {
+        node.name: _workflow_call_targets(node)
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name in _COMMAND_WORKFLOW_MAP
+    }
+    expected = {name: {workflow} for name, workflow in _COMMAND_WORKFLOW_MAP.items()}
+    assert actual == expected
 
 
 def test_every_workflow_module_is_imported_and_called_by_cli() -> None:

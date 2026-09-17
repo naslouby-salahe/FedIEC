@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from functools import lru_cache
+from os import environ
 from pathlib import Path
 
 from fediec.enums import (
     DatasetRawDirectoryName,
     DatasetRawSubpath,
     DatasetSource,
+    EnvironmentVariable,
     ExperimentName,
     RepositoryPathKey,
     RepositoryPathSegment,
@@ -14,9 +15,16 @@ from fediec.enums import (
 from fediec.types import RepositoryPath, Seed
 
 
-@lru_cache(maxsize=1)
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    configured_root = environ.get(EnvironmentVariable.REPOSITORY_ROOT)
+    root = Path(configured_root) if configured_root is not None else Path.cwd()
+    config_path = root / RepositoryPathSegment.CONFIG_FILE
+    if not config_path.is_file():
+        raise RuntimeError(
+            "FedIEC repository root is not configured. Run from the repository root "
+            f"or set {EnvironmentVariable.REPOSITORY_ROOT}."
+        )
+    return root.resolve()
 
 
 _DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DatasetRawDirectoryName] = {

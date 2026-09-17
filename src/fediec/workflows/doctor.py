@@ -36,7 +36,9 @@ _CHECK_KIND_FOR_DATASET: dict[DatasetSource, CheckKind] = {
 class DoctorCheckResult(DomainRecord):
     label: CheckKind
     status: CheckStatus
-    detail: CheckDetail
+    detail: CheckDetail | None = None
+    availability: DatasetAvailability | None = None
+    assessment: DatasetAssessment | None = None
 
 
 class DoctorReport(DomainRecord):
@@ -101,11 +103,8 @@ def _check_dataset(dataset: DatasetSource) -> DoctorCheckResult:
     return DoctorCheckResult(
         label=_CHECK_KIND_FOR_DATASET[dataset],
         status=status,
-        detail=CheckDetail(
-            f"{availability.value}; role={assessment.role.value}; "
-            f"eligibility={assessment.eligibility.value}; "
-            f"provenance={assessment.intent_provenance_grade.value}"
-        ),
+        availability=availability,
+        assessment=assessment,
     )
 
 
