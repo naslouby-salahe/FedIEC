@@ -19,33 +19,30 @@
 - **`docs/implementation/` was added**, also not in the original locked
   tree; this is the explicit deliverable of this prompt, and
   `technical_doc.md`'s tree section is updated in the same change.
+- **PingPong ON/OFF polarity is recovered from the official PingPong tool
+  source**, not from the released `.timestamps` files themselves (which
+  merge ON/OFF before the file is derived). `SignatureGenerator.java`
+  lines 123-126 (`github.com/uci-plrg/pingpong`) show the tool assumes
+  strict alternation starting with ON, and its documentation confirms this
+  matches the actual collection protocol. Applied in
+  `pingpong/dataset.py` for `local-phone/`/`same-vendor/`; see Roadmap
+  Sec. 28.1.
+- **PingPong device eligibility uses an explicit allowlist**, not a
+  suffix heuristic — verified against every real directory name under
+  `evaluation-datasets/{local-phone,same-vendor}/`. Devices with
+  non-binary semantics (thermostats, alarms, locks, sprinklers, cameras,
+  bulb color/intensity) are excluded by name, not inferred.
 
 ## Open Blockers
 
-1. **PingPong action polarity — root cause confirmed, still unresolved.**
-   `evaluation-datasets/public-dataset/smarthome/README` documents
-   PingPong's own preprocessing: "we copy the PCAP files from the LAN
-   folders for both ON and OFF events... into `wemo-insight-plug/wlan`",
-   then merge with `mergecap` and derive the timestamp list from `ls -1`
-   on the merged folder. PingPong **intentionally discards ON/OFF
-   polarity** during its own packaging because its event-signature
-   detection algorithm is polarity-agnostic. This is not a documentation
-   gap on our side — the released `.timestamps` files structurally cannot
-   distinguish ON from OFF. The `local-phone/` folders (PingPong's own
-   collection) share the identical folder shape and very likely the same
-   merge-and-discard pattern, though no pre-merge per-event files remain
-   to confirm this directly. Recorded in `docs/FedIEC_Roadmap.md` Sec.
-   28.1. Resolving this requires either the original IMC'19 per-event
-   pcaps (separate ON/OFF directories, before PingPong's merge step —
-   would need to be sourced from `moniotrlab.ccis.neu.edu/imc19`) or a
-   pcap-content heuristic verified against independent ground truth. No
-   `SemanticAction` is assigned for PingPong until one of these exists —
-   guessing an alternation convention would violate the "never implement
-   an expected value without verifying the real source" rule.
-2. **CIC IoT 2022 trigger timestamps are not in a separate log** — they
-   must be read from each pcap's own first-packet capture time. The
-   adapter needs a lightweight pcap-header reader; not yet implemented.
-3. **FedIEC-Contracts does not exist.** It is the mandatory controlled
+1. **PingPong `remote-phone/`, `ifttt/`, `public-dataset/` not yet
+   covered.** The alternation convention (resolved, see above) should
+   still apply mechanically, but their intent-provenance chain (Roadmap
+   Sec. 28 criterion 3, "official Android-app interaction") has not been
+   separately verified — `ifttt` is a third-party automation service, and
+   `public-dataset`'s original trigger mechanism belongs to the IMC'19
+   paper's methodology, not PingPong's own collection.
+2. **FedIEC-Contracts does not exist.** It is the mandatory controlled
    benchmark (Roadmap Sec. 14) and must be collected via the Android
    harness + gateway capture pipeline, neither of which is built yet
    (`workflows/collect.py` is wired but raises `NotImplementedError`

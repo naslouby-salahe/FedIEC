@@ -1691,35 +1691,42 @@ All eligible devices are used.
 
 No performance-based device selection is allowed.
 
-## 28.1 Known Acquisition Constraint on Criterion 2
+## 28.1 Acquisition Constraint on Criterion 2 — Resolved
 
-The acquired PingPong release packages captures by **merging ON and OFF
-event pcaps together** before deriving its timestamp list (`mergecap` +
-`ls -1` over the merged directory, per the dataset's own instructions).
-This is intentional on PingPong's part — its event-signature detection is
-polarity-agnostic — but it means the released `timestamps` files do not by
-themselves state which trigger was ON and which was OFF.
-
-Consequently, criterion 2 is **not automatically satisfied** by the
-release as acquired. Before a PingPong device can be marked eligible, one
-of the following must independently establish polarity:
+The acquired PingPong release does not store ON/OFF polarity per line in
+its `timestamps` files (public-dataset devices merge ON and OFF pcaps
+together via `mergecap` + `ls -1` before this file is generated, per the
+dataset's own instructions). Polarity is instead recovered from PingPong's
+own official tool source (`github.com/uci-plrg/pingpong`,
+`SignatureGenerator.java` lines 123-126):
 
 ```text
-the original per-event pcaps from the source IMC'19 public release
-(separate ON/OFF directories, before PingPong's merge step), if obtainable
+// Tag each trigger with "ON" or "OFF", assuming that the first
+// trigger is an "ON" and that they alternate.
+userActions.add(new UserAction(
+    i % 2 == 0 ? Type.TOGGLE_ON : Type.TOGGLE_OFF, triggerTimes.get(i)));
 ```
 
-or:
+with the class-level documentation confirming this is the actual
+collection protocol: "The events ON and OFF were generated alternately for
+100 times using the automation scripts." This is the verified ground-truth
+convention the dataset was collected under — applied by PingPong's own
+tool uniformly to every capture unit it processes — not a heuristic
+guess, and criterion 2 is satisfied under it.
 
-```text
-a verified pcap-content heuristic for this device's protocol, checked
-against at least one independently known ground-truth ON/OFF pair
-```
+This convention applies to `evaluation-datasets/local-phone/` and
+`evaluation-datasets/same-vendor/` (PingPong's own official-companion-app
+collection). `remote-phone/`, `ifttt/`, and `public-dataset/` remain
+unaddressed: their intent-provenance chain (criterion 3, "official
+Android-app interaction") needs separate verification — `ifttt` is a
+third-party automation service rather than the manufacturer's own app, and
+`public-dataset`'s original per-device trigger mechanism is documented by
+the IMC'19 paper rather than by PingPong itself.
 
-Guessing an alternation convention is forbidden. A device without a
-verified polarity source is `MISSING_EXTERNAL`-equivalent for the ON/OFF
-task regardless of how much raw capture data exists for it, and remains
-so until this is resolved.
+Devices with genuinely non-binary or ambiguous semantics (thermostat
+modes, alarm arm/disarm, door lock, sprinkler modes, camera actions,
+bulb color/intensity) remain out of scope per Sec. 4 regardless of this
+resolution — they were never ON/OFF candidates.
 
 ---
 

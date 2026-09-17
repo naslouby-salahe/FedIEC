@@ -12,6 +12,7 @@ Last run: 2026-09-17, this session.
 | CLI smoke (`fediec doctor`, `fediec plan`) | manual | **PASS** — both run end-to-end against real config + real dataset paths |
 | TU Wien Philips Hue adapter | `enumerate_raw_interactions()` | **PASS** — 10000/10000 real files, 5000/5000 ON/OFF |
 | CIC IoT 2022 adapter | `enumerate_raw_interactions()` | **PASS** — 264 real interactions, 132/132 ON/OFF, only companion-app-triggered folders |
+| PingPong adapter | `enumerate_raw_interactions()` | **PASS** — 2000 real interactions across 20 device/context units, exactly 1000/1000 ON/OFF (local-phone/same-vendor only) |
 
 ## Not yet run / not applicable at this phase
 

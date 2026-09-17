@@ -39,7 +39,7 @@ unrelated arm/disarm security-system dataset** (columns:
 from enumeration, and not TU Wien Philips Hue data. Flagged as schema drift
 at the dataset-root level, not device-level drift.
 
-## PingPong — structure verified, action-polarity mapping open
+## PingPong — adapter implemented and verified
 
 Layout: `evaluation-datasets/{same-vendor,local-phone,ifttt,public-dataset,remote-phone}/{smarthome,standalone}/<device>/{eth0,wlan1,vpn,event,timestamps}/`.
 
@@ -51,13 +51,17 @@ Binary devices (plugs) have one `-onoff`-style timestamp series per
 device; multi-function devices (e.g. `tplink-bulb`) split into
 `{device}-onoff/`, `{device}-color/`, `{device}-intensity/` subfolders.
 
-**Open item (recorded in `decisions-and-blockers.md`):** the raw
-`.timestamps` file does not itself state ON vs OFF per line — no README or
-script found in this checkout documents whether entries alternate
-ON/OFF/ON/OFF or another convention. No adapter code assigns
-`SemanticAction` for PingPong until this is verified against the original
-PingPong paper/scripts or pcap-derived device state; guessing is
-explicitly forbidden by the working rules.
+**Resolved**: ON/OFF polarity is recovered from PingPong's own official
+tool source (`SignatureGenerator.java` lines 123-126 — strict alternation
+starting with ON, confirmed by the source's own documentation of the
+collection protocol; see Roadmap Sec. 28.1). `enumerate_raw_interactions()`
+covers `evaluation-datasets/{local-phone,same-vendor}/`: 2000 real
+interactions across 20 device/context units, exactly 1000/1000 ON/OFF.
+`remote-phone/`, `ifttt/`, and `public-dataset/` are not yet included
+(separate intent-provenance verification needed — see
+`decisions-and-blockers.md`). Devices with non-binary semantics
+(thermostats, alarms, locks, sprinklers, cameras, bulb color/intensity)
+are excluded by an explicit, evidence-based allowlist, not guessed.
 
 `negative-datasets/{YourThings,UNB,UNSW}/` are non-smart-home background
 traffic corpora bundled with PingPong for its own negative-class

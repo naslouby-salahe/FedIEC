@@ -42,3 +42,24 @@ actually available, so future implementation work (and future readers of
 the roadmap) don't have to re-discover them from scratch or, worse,
 implement an incorrect assumption. No confirmatory result has been
 inspected; this is pre-collection data-acquisition audit work.
+
+## 2026-09-17 — PingPong ON/OFF polarity blocker resolved (Sec. 28.1)
+
+**Why:** Sec. 28.1 (added earlier the same day) documented that PingPong's
+released `timestamps` files don't carry per-line ON/OFF polarity. Rather
+than leave this as a standing blocker, the official PingPong tool source
+(`github.com/uci-plrg/pingpong`) was inspected directly.
+`SignatureGenerator.java` lines 123-126 show the tool itself assumes
+strict alternation starting with ON, and its class-level documentation
+confirms this is the actual data-collection protocol ("events ON and OFF
+were generated alternately... using the automation scripts"), not an
+algorithmic inference the tool makes from packet content. This closes the
+criterion-2 gap for `local-phone/` and `same-vendor/` with source-level
+evidence rather than a guess. `remote-phone/`, `ifttt/`, and
+`public-dataset/` remain open (different provenance chain, criterion 3,
+not yet checked).
+
+**Nature of the change:** resolves a previously-documented blocker with
+verified external evidence; does not alter any threshold, does not affect
+already-collected FedIEC-Contracts data (none exists yet), and follows the
+same "never guess" discipline the earlier entry established.

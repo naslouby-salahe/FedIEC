@@ -12,18 +12,18 @@
 `armstate_labeled.csv` at the dataset root: **not mapped, not FedIEC data**
 (unrelated arm/disarm dataset accidentally co-located; excluded).
 
-## PingPong — partial, blocked on action-polarity verification
+## PingPong — adapter implemented (local-phone/same-vendor), verified
 
 | raw field | raw dtype | canonical field | canonical type | mapping rule | validation | eligibility relevance | evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| device directory name (e.g. `tplink-plug`) | path segment | `device_id` | `DeviceId` | verbatim | non-empty | Roadmap Sec. 28 device identity | inspected, not yet coded |
-| `.timestamps` file line (`MM/DD/YYYY HH:MM:SS AM/PM`) | text | `trigger_timestamp` | `WallClockTimestamp` | `datetime.strptime(..., "%m/%d/%Y %I:%M:%S %p")` | must parse | intent timestamp | format verified against real file, parser not yet written |
-| — | — | `semantic_action` | `SemanticAction` | **UNRESOLVED** — no on/off polarity marker found in the timestamp file or any README in this checkout | — | Roadmap Sec. 28 criterion 2 ("trigger order/timestamps can distinguish ON from OFF") is currently **not established** for these devices | see `decisions-and-blockers.md` |
-| `eth0/*.pcap`, `wlan1/*.pcap`, `vpn/*.pcap`, `event/*.pcap` | PCAP | `capture_path` (candidate, multiple per interaction) | `RepositoryPath` | one of several capture vantage points per device | needs disambiguation of which vantage point is the gateway-equivalent capture | Roadmap Sec. 17 (gateway-only capture) | inspected, mapping rule not yet frozen |
+| device+context directory name (e.g. `tplink-plug` under `smarthome`/`standalone`) | path segment | `device_id` | `DeviceId` | `f"{device}__{context}"` | matched against an explicit evidence-based allowlist (see `pingpong/dataset.py`), not guessed | Roadmap Sec. 28 device identity | implemented, 20 real device/context units enumerated |
+| `.timestamps` file line (`MM/DD/YYYY HH:MM:SS AM/PM`) | text | `trigger_timestamp` | `WallClockTimestamp` | `datetime.strptime(..., "%m/%d/%Y %I:%M:%S %p")` | must parse; file read with a `latin-1` fallback for non-UTF-8 lines verified in real files | intent timestamp | implemented, verified against real files |
+| trigger index within its `.timestamps` file | int (0-based) | `semantic_action` | `SemanticAction` | `index % 2 == 0 -> TURN_ON else TURN_OFF`, per PingPong's own `SignatureGenerator.java` lines 123-126 (Roadmap Sec. 28.1) | none needed — this is the documented collection protocol, not an inference | Roadmap Sec. 28 criterion 2 — **satisfied** for `local-phone`/`same-vendor` | verified: 2000 interactions, exactly 1000/1000 ON/OFF |
+| `wlan1/*.pcap` (preferred), falling back to `wlan`/`eth0`/`eth1`/any other sibling directory | PCAP | `capture_path` | `RepositoryPath` | first vantage point found in priority order | AppleDouble `._*` sidecar files excluded (verified present in this checkout) | Roadmap Sec. 17 (gateway-only capture) | implemented; vantage-point choice is provisional, not yet protocol-locked |
 
-No PingPong adapter code exists yet; `describe_raw_availability()` is
-presence-only. Full field mapping and eligibility per Roadmap Sec. 28
-follow once the action-polarity blocker is resolved.
+`remote-phone/`, `ifttt/`, and `public-dataset/` are not yet covered by
+the adapter (separate intent-provenance verification needed for each —
+see `decisions-and-blockers.md`).
 
 ## CIC IoT 2022 — partial, adapter not yet built
 

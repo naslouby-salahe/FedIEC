@@ -3,10 +3,10 @@
 ```text
 [x] complete source-of-truth read (CLAUDE.md, roadmap, technical_doc)
 [x] real data/raw recursively inventoried (PingPong, TU Wien Philips Hue, cic-iot-2022)
-[x] schemas/dtypes/value domains inspected — TU Wien complete, PingPong/CIC partial
-[~] PCAP characteristics inspected where applicable — filenames/dirs yes, packet-level no
+[x] schemas/dtypes/value domains inspected — TU Wien, PingPong (local-phone/same-vendor), CIC IoT 2022 complete
+[~] PCAP characteristics inspected where applicable — filenames/dirs yes; CIC's global+first-record header read for timestamps, no full packet-level parse
 [x] dataset schema drift checked (TU Wien armstate_labeled.csv stray file found)
-[~] missing datasets resolved as far as required/possible — PingPong polarity + CIC timestamp extraction remain open, documented not guessed
+[~] missing datasets resolved as far as required/possible — PingPong remote-phone/ifttt/public-dataset intent-provenance still open, documented not guessed
 [x] FedIEC-Contracts creation path complete if raw benchmark not yet collected — directory contract frozen in paths.py/RepositoryPathKey, doctor checks it
 [x] dataset-inventory current
 [x] dataset-schema-map current
@@ -23,11 +23,11 @@
 [x] no hardcoded repository path strings outside paths.py/enums.py
 [x] config centralized (config.py, one FediecConfig object, load_config() called internally — never injected as a parameter, test_config_and_constants.py enforces this)
 [x] one YAML/YML only (config.yaml; test_config_and_constants.py enforces)
-[~] dataset adapters match real schemas — TU Wien Philips Hue and CIC IoT 2022: full adapters, verified against all real files (10000/10000 and 264 interactions respectively). PingPong: presence-check only, blocked on a confirmed root cause (Roadmap Sec. 28.1) — the release merges ON/OFF before deriving timestamps. FedIEC-Contracts: directory-contract scaffold only (no data to adapt yet)
+[~] dataset adapters match real schemas — TU Wien Philips Hue, CIC IoT 2022 and PingPong (local-phone/same-vendor): full adapters, verified against real files (10000/10000, 264, and 2000 interactions respectively). PingPong remote-phone/ifttt/public-dataset not yet covered (open intent-provenance question). FedIEC-Contracts: directory-contract scaffold only (no data to adapt yet)
 [x] doctor checks dataset/schema readiness (real, read-only, verified against actual disk state)
 [x] CLI/workflows wired (all 9 commands; unimplemented ones raise explicit NotImplementedError naming the missing module, never fake success)
 [~] five test layers present — architecture layer only; unit/integration/protocol/e2e are Prompt 2+ scope (nothing to test yet beyond what architecture tests already cover)
-[ ] schema drift tests present — not yet (needs real fixtures from a resolved PingPong/CIC schema)
+[ ] schema drift tests present — not yet (needs frozen fixtures from the now-working adapters)
 [x] architecture rule tests present (test_enums_and_types.py, test_config_and_constants.py, test_static_analysis.py)
 [x] fresh Graphify clean (140 nodes, 396 edges, 0 cycles)
 [x] duplication audit clean (no duplicate enums/types/constants found)
@@ -67,9 +67,10 @@ fresh from the final tree.
 - Counterfactual matching/generation (`workflows/prepare.py`).
 - Model, training, federated, evaluation, statistics, reporting modules
   and their corresponding CLI workflows (`run`, `smoke`, `report`).
-- PingPong action-polarity resolution and full adapter (root cause
-  confirmed — Roadmap Sec. 28.1 — resolution requires sourcing the
-  original IMC'19 per-event pcaps or a verified pcap-content heuristic).
+- PingPong `remote-phone/`, `ifttt/`, `public-dataset/` intent-provenance
+  verification and adapter extension (polarity convention itself is
+  resolved — Roadmap Sec. 28.1 — only the companion-app provenance chain
+  for these three subtrees remains open).
 - `test_wiring.py`, `test_dead_code.py`, `test_dependencies.py`,
   `test_hygiene.py`.
 - unit/integration/protocol/e2e test layers.
