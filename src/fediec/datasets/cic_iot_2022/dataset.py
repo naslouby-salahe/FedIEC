@@ -6,7 +6,16 @@ from pathlib import Path
 
 from fediec.enums import DatasetAvailability, DatasetSource, SemanticAction
 from fediec.paths import resolve_dataset_raw_root
-from fediec.types import DeviceId, DomainRecord, RepositoryPath, WallClockTimestamp
+from fediec.types import (
+    DeviceId,
+    DomainRecord,
+    PcapTimestampScale,
+    RawPolarityToken,
+    RawTriggerMethodPrefix,
+    RepositoryPath,
+    StructEndianness,
+    WallClockTimestamp,
+)
 
 # Verified against real files under
 # data/raw/cic-iot-2022/3-Interactions/<category>/<device>/: each device
@@ -15,22 +24,26 @@ from fediec.types import DeviceId, DomainRecord, RepositoryPath, WallClockTimest
 # requirement); ALEXA_/GOOGLE_ are voice-assistant triggers and are
 # excluded — a voice command is not an official Android companion-app
 # interaction.
-_ELIGIBLE_TRIGGER_METHOD_PREFIXES: tuple[str, ...] = ("LOCAL_", "LAN_", "WAN_")
+_ELIGIBLE_TRIGGER_METHOD_PREFIXES: tuple[RawTriggerMethodPrefix, ...] = (
+    RawTriggerMethodPrefix("LOCAL_"),
+    RawTriggerMethodPrefix("LAN_"),
+    RawTriggerMethodPrefix("WAN_"),
+)
 
-_POLARITY_SUFFIX_TO_ACTION: dict[str, SemanticAction] = {
-    "ON": SemanticAction.TURN_ON,
-    "OFF": SemanticAction.TURN_OFF,
+_POLARITY_SUFFIX_TO_ACTION: dict[RawPolarityToken, SemanticAction] = {
+    RawPolarityToken("ON"): SemanticAction.TURN_ON,
+    RawPolarityToken("OFF"): SemanticAction.TURN_OFF,
 }
 
 # Classic (non-pcapng) libpcap global-header magic numbers: little/big
 # endian, microsecond/nanosecond resolution. pcapng is not present in this
 # dataset (verified via `file` on real captures) and is intentionally
 # unsupported here rather than guessed at.
-_PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[str, float]] = {
-    b"\xd4\xc3\xb2\xa1": ("<", 1e-6),
-    b"\xa1\xb2\xc3\xd4": (">", 1e-6),
-    b"\x4d\x3c\xb2\xa1": ("<", 1e-9),
-    b"\xa1\xb2\x3c\x4d": (">", 1e-9),
+_PCAP_MAGIC_TO_FORMAT: dict[bytes, tuple[StructEndianness, PcapTimestampScale]] = {
+    b"\xd4\xc3\xb2\xa1": (StructEndianness("<"), 1e-6),
+    b"\xa1\xb2\xc3\xd4": (StructEndianness(">"), 1e-6),
+    b"\x4d\x3c\xb2\xa1": (StructEndianness("<"), 1e-9),
+    b"\xa1\xb2\x3c\x4d": (StructEndianness(">"), 1e-9),
 }
 
 
@@ -75,10 +88,12 @@ def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
                 p for p in device_directory.iterdir() if p.is_dir()
             ):
                 prefix, _, polarity = trigger_directory.name.partition("_")
-                trigger_method = f"{prefix}_"
+                trigger_method = RawTriggerMethodPrefix(f"{prefix}_")
                 if trigger_method not in _ELIGIBLE_TRIGGER_METHOD_PREFIXES:
                     continue
-                semantic_action = _POLARITY_SUFFIX_TO_ACTION.get(polarity)
+                semantic_action = _POLARITY_SUFFIX_TO_ACTION.get(
+                    RawPolarityToken(polarity)
+                )
                 if semantic_action is None:
                     continue
                 for capture_path in sorted(trigger_directory.glob("*.pcap")):

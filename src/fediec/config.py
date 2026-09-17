@@ -16,41 +16,63 @@ from fediec.enums import (
 )
 from fediec.paths import resolve_path
 from fediec.types import (
+    ArtifactDetectabilityBound,
+    BatchSize,
+    BlockCount,
+    CategoryCount,
+    DayCount,
+    DeviceCount,
     DeviceId,
+    Dimension,
     DomainRecord,
     Duration,
-    NonNegativeFloat,
-    OpenUnitInterval,
-    PositiveInt,
+    EpochCount,
+    FeatureCount,
+    FeatureName,
+    GradientNormClip,
+    InteractionCount,
+    LayerCount,
+    LearningRate,
+    ManufacturerCount,
+    PassiveMonitoringMinutes,
+    Quantile,
+    ReplicateCount,
+    RoundCount,
     SampleCount,
     Seed,
-    UnitInterval,
+    SessionCount,
+    SignificanceLevel,
+    SplitSampleCount,
+    Tolerance,
+    UnitCount,
+    WeightDecay,
+    WindowCount,
 )
 
 
 class ProjectSection(DomainRecord):
-    target_device_count: PositiveInt
-    minimum_device_count: PositiveInt
-    minimum_manufacturer_count: PositiveInt
-    minimum_category_count: PositiveInt
+    target_device_count: DeviceCount
+    minimum_device_count: DeviceCount
+    minimum_manufacturer_count: ManufacturerCount
+    minimum_category_count: CategoryCount
 
 
 class NoActionStrataQuota(DomainRecord):
-    background_silent: PositiveInt
-    background_low_activity: PositiveInt
-    background_active_burst: PositiveInt
+    background_silent: WindowCount
+    background_low_activity: WindowCount
+    background_active_burst: WindowCount
 
 
 class CollectionSection(DomainRecord):
-    turn_on_interactions_per_device: PositiveInt
-    turn_off_interactions_per_device: PositiveInt
-    no_action_windows_per_device: PositiveInt
+    turn_on_interactions_per_device: InteractionCount
+    turn_off_interactions_per_device: InteractionCount
+    no_action_windows_per_device: WindowCount
     no_action_strata_quota: NoActionStrataQuota
-    minimum_sessions_per_device: PositiveInt
-    minimum_days_per_device: PositiveInt
-    pilot_turn_on_interactions_per_device: PositiveInt
-    pilot_turn_off_interactions_per_device: PositiveInt
-    pilot_minimum_passive_monitoring_minutes: PositiveInt
+    minimum_sessions_per_device: SessionCount
+    minimum_days_per_device: DayCount
+    pilot_turn_on_interactions_per_device: InteractionCount
+    pilot_turn_off_interactions_per_device: InteractionCount
+    pilot_minimum_passive_monitoring_minutes: PassiveMonitoringMinutes
     observation_window_seconds: Duration | None = None
     settling_latency_seconds_per_device: dict[DeviceId, Duration] = Field(
         default_factory=dict[DeviceId, Duration]
@@ -59,62 +81,62 @@ class CollectionSection(DomainRecord):
 
 
 class SplitSection(DomainRecord):
-    training_samples_per_device_context: PositiveInt
-    calibration_samples_per_device_context: PositiveInt
-    test_samples_per_device_context: PositiveInt
+    training_samples_per_device_context: SplitSampleCount
+    calibration_samples_per_device_context: SplitSampleCount
+    test_samples_per_device_context: SplitSampleCount
 
 
 class FeaturesSection(DomainRecord):
-    feature_count: PositiveInt
-    log1p_magnitude_features: tuple[str, ...]
-    rate_features: tuple[str, ...]
+    feature_count: FeatureCount
+    log1p_magnitude_features: tuple[FeatureName, ...]
+    rate_features: tuple[FeatureName, ...]
 
 
 class CounterfactualsSection(DomainRecord):
-    common_support_caliper_quantile: UnitInterval
-    artifact_audit_tolerance: OpenUnitInterval
-    artifact_audit_max_individual_device_a_star: UnitInterval
-    artifact_audit_max_per_feature_a_star: UnitInterval
+    common_support_caliper_quantile: Quantile
+    artifact_audit_tolerance: Tolerance
+    artifact_audit_max_individual_device_a_star: ArtifactDetectabilityBound
+    artifact_audit_max_per_feature_a_star: ArtifactDetectabilityBound
 
 
 class ModelSection(DomainRecord):
     architecture: ModelArchitectureKind
-    execution_dimension: PositiveInt
-    context_dimension: PositiveInt
-    coupling_blocks: PositiveInt
-    hidden_layers_per_conditioner: PositiveInt
-    hidden_units_per_layer: PositiveInt
+    execution_dimension: Dimension
+    context_dimension: Dimension
+    coupling_blocks: BlockCount
+    hidden_layers_per_conditioner: LayerCount
+    hidden_units_per_layer: UnitCount
     activation: ActivationFunction
 
 
 class TrainingSection(DomainRecord):
     optimizer: Optimizer
-    learning_rate: OpenUnitInterval
-    batch_size: PositiveInt
-    weight_decay: NonNegativeFloat
-    gradient_norm_clip: NonNegativeFloat
+    learning_rate: LearningRate
+    batch_size: BatchSize
+    weight_decay: WeightDecay
+    gradient_norm_clip: GradientNormClip
     dtype: TensorDType
     seeds: tuple[Seed, ...]
-    local_epochs_full_data: PositiveInt
-    centralized_epochs_full_data: PositiveInt
+    local_epochs_full_data: EpochCount
+    centralized_epochs_full_data: EpochCount
 
 
 class FederatedSection(DomainRecord):
     aggregation: AggregationRule
     weighting: ClientWeighting
-    local_epochs: PositiveInt
-    communication_rounds: PositiveInt
-    batch_size: PositiveInt
+    local_epochs: EpochCount
+    communication_rounds: RoundCount
+    batch_size: BatchSize
     scarcity_budgets: tuple[SampleCount, ...]
 
 
 class CalibrationSection(DomainRecord):
-    threshold_quantile: UnitInterval
+    threshold_quantile: Quantile
 
 
 class StatisticsSection(DomainRecord):
-    alpha: OpenUnitInterval
-    bootstrap_replicates: PositiveInt
+    alpha: SignificanceLevel
+    bootstrap_replicates: ReplicateCount
 
 
 class FediecConfig(DomainRecord):

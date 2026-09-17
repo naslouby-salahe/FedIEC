@@ -5,7 +5,13 @@ from datetime import datetime
 
 from fediec.enums import DatasetAvailability, DatasetSource, SemanticAction
 from fediec.paths import resolve_dataset_raw_root
-from fediec.types import DeviceId, DomainRecord, RepositoryPath, WallClockTimestamp
+from fediec.types import (
+    DeviceId,
+    DomainRecord,
+    RawPolarityToken,
+    RepositoryPath,
+    WallClockTimestamp,
+)
 
 # Verified against the real files under data/raw/TU Wien Philips Hue/<device
 # folder>/: "{index}_{yyyymmdd}_{hhmmss}_<device label>_Turn_{On|Off}.pcap".
@@ -16,9 +22,9 @@ _TRIGGER_FILENAME_PATTERN = re.compile(
     r"^\d+_(?P<date>\d{8})_(?P<time>\d{6})_.*_Turn_(?P<polarity>On|Off)\.pcap$"
 )
 
-_POLARITY_TO_ACTION: dict[str, SemanticAction] = {
-    "On": SemanticAction.TURN_ON,
-    "Off": SemanticAction.TURN_OFF,
+_POLARITY_TO_ACTION: dict[RawPolarityToken, SemanticAction] = {
+    RawPolarityToken("On"): SemanticAction.TURN_ON,
+    RawPolarityToken("Off"): SemanticAction.TURN_OFF,
 }
 
 
@@ -50,7 +56,9 @@ def enumerate_raw_interactions() -> tuple[RawTriggerInteraction, ...]:
             interactions.append(
                 RawTriggerInteraction(
                     device_id=DeviceId(device_directory.name),
-                    semantic_action=_POLARITY_TO_ACTION[match["polarity"]],
+                    semantic_action=_POLARITY_TO_ACTION[
+                        RawPolarityToken(match["polarity"])
+                    ],
                     trigger_timestamp=WallClockTimestamp(trigger_timestamp),
                     capture_path=RepositoryPath(capture_path),
                 )

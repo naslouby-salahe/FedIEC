@@ -196,3 +196,53 @@ class RepositoryPathKey(StrEnum):
     RESULTS_TABLES_ROOT = "results_tables_root"
     RESULTS_FIGURES_ROOT = "results_figures_root"
     CONFIG_FILE = "config_file"
+
+
+class CliCommand(StrEnum):
+    """Public CLI command identity (technical_doc.md Sec. 12)."""
+
+    DOCTOR = "doctor"
+    COLLECT = "collect"
+    PREPROCESS = "preprocess"
+    PREPARE = "prepare"
+    PLAN = "plan"
+    SMOKE = "smoke"
+    RUN = "run"
+    STATUS = "status"
+    REPORT = "report"
+
+
+class LogEvent(StrEnum):
+    """Structured-logging event identity, emitted by cli.py."""
+
+    DOCTOR_START = "cli.doctor.start"
+    DOCTOR_DONE = "cli.doctor.done"
+    COLLECT_START = "cli.collect.start"
+    PREPROCESS_START = "cli.preprocess.start"
+    PREPARE_START = "cli.prepare.start"
+    PLAN_START = "cli.plan.start"
+    PLAN_DONE = "cli.plan.done"
+    SMOKE_START = "cli.smoke.start"
+    RUN_START = "cli.run.start"
+    STATUS_START = "cli.status.start"
+    STATUS_DONE = "cli.status.done"
+    REPORT_START = "cli.report.start"
+
+
+class TableColumn(StrEnum):
+    """CLI table column header (cli.py Rich tables)."""
+
+    CHECK = "check"
+    STATUS = "status"
+    DETAIL = "detail"
+    EXPERIMENT = "experiment"
+    SEED = "seed"
+
+
+class TerminalColor(StrEnum):
+    """Rich terminal style name used for CLI table cell coloring."""
+
+    GREEN = "green"
+    YELLOW = "yellow"
+    RED = "red"
+    BLUE = "blue"

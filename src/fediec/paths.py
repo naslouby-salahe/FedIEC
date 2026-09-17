@@ -4,7 +4,14 @@ from functools import lru_cache
 from pathlib import Path
 
 from fediec.enums import DatasetSource, ExperimentName, RepositoryPathKey
-from fediec.types import CaptureId, RepositoryPath, Seed, SessionId
+from fediec.types import (
+    CaptureId,
+    DirectoryName,
+    FileName,
+    RepositoryPath,
+    Seed,
+    SessionId,
+)
 
 
 @lru_cache(maxsize=1)
@@ -12,14 +19,14 @@ def _repository_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-_DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, str] = {
-    DatasetSource.FEDIEC_CONTRACTS: "FedIEC-Contracts",
-    DatasetSource.PINGPONG: "PingPong",
-    DatasetSource.TU_WIEN_PHILIPS_HUE: "TU Wien Philips Hue",
+_DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DirectoryName] = {
+    DatasetSource.FEDIEC_CONTRACTS: DirectoryName("FedIEC-Contracts"),
+    DatasetSource.PINGPONG: DirectoryName("PingPong"),
+    DatasetSource.TU_WIEN_PHILIPS_HUE: DirectoryName("TU Wien Philips Hue"),
     # Real on-disk name in the shared data pool differs from the roadmap's
     # prose spelling ("CIC IoT 2022") — verified against the actual
     # directory rather than assumed.
-    DatasetSource.CIC_IOT_2022: "cic-iot-2022",
+    DatasetSource.CIC_IOT_2022: DirectoryName("cic-iot-2022"),
 }
 
 
@@ -88,7 +95,7 @@ def resolve_dataset_raw_root(dataset: DatasetSource) -> RepositoryPath:
     return RepositoryPath(_repository_root() / "data" / "raw" / directory_name)
 
 
-_RUN_MANIFEST_FILENAME = "manifest.json"
+_RUN_MANIFEST_FILENAME = FileName("manifest.json")
 
 _FEDIEC_CONTRACTS_REQUIRED_RAW_PATH_KEYS: tuple[RepositoryPathKey, ...] = (
     RepositoryPathKey.DATA_RAW_FEDIEC_CONTRACTS_CAPTURES,
