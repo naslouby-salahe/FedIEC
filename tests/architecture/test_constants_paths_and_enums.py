@@ -136,7 +136,11 @@ def test_no_suspicious_scientific_magic_numbers() -> None:
 
 
 def test_no_hardcoded_repository_path_fragments() -> None:
-    paths = [path for path in _source_files() if path.name not in {"paths.py", "enums.py"}]
+    # paths.py is the path authority, not an exemption from this rule —
+    # it must compose from RepositoryPathSegment/DatasetRawSubpath enum
+    # members like every other module. enums.py is where those values are
+    # legitimately defined once.
+    paths = [path for path in _source_files() if path.name != "enums.py"]
     assert not find_hardcoded_path_fragments(paths)
 
 

@@ -330,3 +330,37 @@ class StructByteOrder(StrEnum):
 
     LITTLE = "<"
     BIG = ">"
+
+
+class RepositoryPathSegment(StrEnum):
+    """Every path-segment literal used by paths.py's resolve_path(). One
+    definition per segment name so no segment string is ever retyped."""
+
+    DOCS = "docs"
+    IMPLEMENTATION = "implementation"
+    DATA = "data"
+    RAW = "raw"
+    OUTPUTS = "outputs"
+    PROCESSED = "processed"
+    BENCHMARK = "benchmark"
+    RUNS = "runs"
+    ANALYSES = "analyses"
+    REPORTS = "reports"
+    RESULTS = "results"
+    EXPERIMENTS = "experiments"
+    STATISTICS = "statistics"
+    TABLES = "tables"
+    FIGURES = "figures"
+    CONFIG_FILE = "config.yaml"
+    CAPTURES = "captures"
+    INTENT_LOGS = "intent-logs"
+    SESSION_MANIFESTS = "session-manifests"
+    DEVICE_METADATA = "device-metadata"
+
+
+class DatasetRawSubpath(StrEnum):
+    """Sub-paths inside a specific dataset's raw directory, named by the
+    real on-disk structure verified during dataset acquisition."""
+
+    CIC_IOT_2022_INTERACTIONS = "3-Interactions"
+    PINGPONG_EVALUATION_DATASETS = "evaluation-datasets"
