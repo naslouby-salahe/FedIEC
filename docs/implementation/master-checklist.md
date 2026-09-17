@@ -12,6 +12,7 @@
 - [x] `doctor` remains read-only and audits public-source readiness only.
 - [x] Configuration remains one YAML parsed only by `config.py`.
 - [x] Architecture test suite, Ruff, and Pyright pass after the migration.
+- [x] Fresh Graphify AST extraction completed; generated output is ignored.
 - [ ] Freeze checksums/source manifests and complete eligibility gates before
   confirmatory preprocessing.
 - [ ] Implement derived-corpus construction without fabricating unavailable

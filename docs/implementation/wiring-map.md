@@ -11,7 +11,9 @@
 | `status` | `workflows.status.resolve_status` | artifact status | implemented |
 | `report` | `workflows.report.run_report` | future structured results | intentionally unimplemented |
 
-There is no `collect` route or physical-acquisition dependency. Architecture
-reachability tests pass after the migration. A fresh Graphify report remains
-pending because no Graphify executable or installable package is available
-in this environment.
+There is no `collect` route or physical-acquisition dependency. Fresh
+Graphify AST extraction recorded 168 nodes and 743 edges; its direct CLI
+file-to-command paths include `doctor`, `preprocess`, and `run_command`.
+The architecture suite separately verifies every command delegates to one
+workflow and that no import cycle exists. Graphify output is ignored rather
+than committed.
