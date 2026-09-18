@@ -33,12 +33,10 @@ def apply_locked_transforms(values: Tensor) -> Tensor:
 def fit_training_only_scaler(training_values: Tensor) -> TrainingOnlyScaler:
     if training_values.ndim != 2 or training_values.shape[0] == 0:
         raise ValueError("training-only scaler requires at least one two-dimensional training row")
-    standard_deviation = training_values.std(dim=0, correction=0).clamp_min(
-        torch.finfo(torch.float32).eps
-    )
-    return TrainingOnlyScaler(
-        mean=training_values.mean(dim=0), standard_deviation=standard_deviation
-    )
+    training_mean = training_values.mean(dim=0)
+    population_variance = ((training_values - training_mean) ** 2).mean(dim=0)
+    standard_deviation = population_variance.sqrt().clamp_min(torch.finfo(torch.float32).eps)
+    return TrainingOnlyScaler(mean=training_mean, standard_deviation=standard_deviation)
 
 
 def transform_with_scaler(values: Tensor, scaler: TrainingOnlyScaler) -> Tensor:
