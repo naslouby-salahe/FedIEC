@@ -67,6 +67,13 @@ class InfeasibilityReason(StrEnum):
     ARTIFACT_AUDIT_INSUFFICIENT = "artifact_audit_insufficient"
 
 
+class CounterfactualFeasibility(StrEnum):
+    SOURCE_FEASIBLE = "source_feasible"
+    SOURCE_INFEASIBLE = "source_infeasible"
+    REPRESENTATION_UNOBSERVABLE = "representation_unobservable"
+    ARTIFACT_AUDIT_INSUFFICIENT = "artifact_audit_insufficient"
+
+
 class InteractionExclusionReason(StrEnum):
     INTENT_TIMESTAMP_MISSING = "intent_timestamp_missing"
     INTENT_AMBIGUOUS = "intent_ambiguous"

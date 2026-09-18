@@ -21,7 +21,7 @@ public_sources:
     intent_provenance: verified_direct
   moniotr_imc_2019:
     role: primary_interaction_contract
-    eligibility: action_contract_only
+    eligibility: full_contract_eligible
     intent_provenance: verified_protocol
 
 split:

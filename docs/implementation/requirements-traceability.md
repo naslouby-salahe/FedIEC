@@ -15,7 +15,8 @@
 | Conditional flow interface | `models.conditional_flow` | 19-D target and fixed 3-D intent-only condition | implemented; no experiment runner enabled |
 | Baseline input contracts | `baselines.contracts` | `q(X)`, `q(X|I)`, `P(I|X)`, per-action one-class | implemented; NO_ACTION source gated |
 | Primary protocol freeze | `datasets.freeze`, `workflows.preprocess` | physical clients, source groups, action/split counts, 19-feature schema, scarcity cohort, normalization, holdout, interfaces, seeds, statistics, and unavailable families | implemented for approved Mon(IoT)r primary tier |
-| Counterfactuals, FL, statistics | future owners | no confirmatory runs | not started |
+| Counterfactual feasibility and artifact controls | `datasets.freeze` | per-family feasibility reasons and frozen audit pass rules in the primary manifest | source-feasibility freeze implemented; confirmatory generation remains disabled |
+| FL, statistics | future owners | no confirmatory runs | not started |
 | No physical collection dependency | CLI/workflows/config/path/enums | migration audit | implemented |
 
 The remaining deferred work is confirmatory execution and its source-gated

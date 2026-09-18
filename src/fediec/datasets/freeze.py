@@ -4,10 +4,18 @@ from collections import Counter
 
 from fediec.config import load_config
 from fediec.datasets.representation import interaction_feature_order
-from fediec.enums import DatasetSource, SplitPartition
+from fediec.enums import (
+    ArtifactAuditFamily,
+    CounterfactualFeasibility,
+    DatasetSource,
+    SplitPartition,
+    ViolationFamily,
+)
 from fediec.types import (
+    ArtifactControlRecord,
     CheckDetail,
     CleanSplitManifest,
+    CounterfactualFeasibilityRecord,
     FrozenClientActionCount,
     ProtocolFreezeManifest,
     RepresentationConfoundAudit,
@@ -97,6 +105,66 @@ def build_protocol_freeze(
             CheckDetail("per-action one-class q_a(X_interaction), NO_ACTION source-gated"),
         ),
         supported_violation_families=(),
+        counterfactual_feasibility=(
+            CounterfactualFeasibilityRecord(
+                violation_family=ViolationFamily.OMISSION,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
+                reason=CheckDetail("requires independently matched NO_ACTION, unavailable"),
+            ),
+            CounterfactualFeasibilityRecord(
+                violation_family=ViolationFamily.SUBSTITUTION,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
+                reason=CheckDetail(
+                    "source transition compatibility is not independently documented"
+                ),
+            ),
+            CounterfactualFeasibilityRecord(
+                violation_family=ViolationFamily.UNCOMMANDED_EXECUTION,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
+                reason=CheckDetail("requires independently matched NO_ACTION, unavailable"),
+            ),
+            CounterfactualFeasibilityRecord(
+                violation_family=ViolationFamily.EXCESS_EXECUTION,
+                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                reason=CheckDetail(
+                    "natural concurrency and raw-timeline composition controls are not "
+                    "source-verified"
+                ),
+            ),
+            CounterfactualFeasibilityRecord(
+                violation_family=ViolationFamily.REPLAY_OR_LATE_EXECUTION,
+                feasibility=CounterfactualFeasibility.REPRESENTATION_UNOBSERVABLE,
+                reason=CheckDetail(
+                    "no independent trigger boundary supports late-execution alignment; "
+                    "pure replay is unobservable"
+                ),
+            ),
+        ),
+        artifact_control_plan=(
+            ArtifactControlRecord(
+                artifact_audit_family=ArtifactAuditFamily.REPLACEMENT_TRANSLATION,
+                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                pass_rule=CheckDetail(
+                    "A*=max(AUROC,1-AUROC); upper dependence-aware 95% CI <=0.60; "
+                    "no device >0.70; no feature >0.65"
+                ),
+                reason=CheckDetail(
+                    "no source-feasible replacement or translation family is frozen"
+                ),
+            ),
+            ArtifactControlRecord(
+                artifact_audit_family=ArtifactAuditFamily.EXCESS_COMPOSITION,
+                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                pass_rule=CheckDetail(
+                    "raw no-op round-trip exactly reproduces features and all collision, "
+                    "timing, shared-flow, and TCP diagnostics pass"
+                ),
+                reason=CheckDetail(
+                    "natural-concurrency evidence is not yet sufficient for a source-feasible "
+                    "composition audit"
+                ),
+            ),
+        ),
         unavailable_analysis_reasons=(
             CheckDetail("NO_ACTION is not independently reconstructable"),
             CheckDetail("strict B/I/E requires a verified trigger boundary"),

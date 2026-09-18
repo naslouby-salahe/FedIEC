@@ -20,7 +20,8 @@
   approximately 60/20/20 clean-split manifests.
 - [x] Freeze selected-input source identities and aggregate checksums before
   confirmatory preprocessing.
-- [ ] Complete eligibility gates before confirmatory preprocessing.
+- [x] Complete eligibility gates before confirmatory preprocessing; Mon(IoT)r is
+  `FULL_CONTRACT_ELIGIBLE` for the active capture-level tier only.
 - [x] Implement the active capture-level derived representation without
   fabricating unavailable intent, state, transition, trigger, B/E, or NO_ACTION metadata.
 - [x] Add the pre-model representation-confound gate and frozen 19-D/3-D model
@@ -29,5 +30,7 @@
   source-backed procedure exists; do not fabricate missing intervals.
 - [x] Audit source order and mark pre-context comparisons unavailable or
   descriptive where alternation/boundary provenance confounds interpretation.
+- [x] Freeze the per-family counterfactual source-feasibility matrix and
+  artifact-control pass rules; no source-infeasible family is generated.
 
 No confirmatory experiment has been run in this phase.

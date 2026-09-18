@@ -20,6 +20,14 @@
 - The active formulation is `p(X_interaction | I)`. Mon(IoT)r's lack of an
   in-capture trigger instant excludes only the future strict B/E tier; its
   `unctrl`/`ctrl1` idle labels remain insufficient for `NO_ACTION`.
+- Mon(IoT)r is `FULL_CONTRACT_ELIGIBLE` only for the active two-action,
+  complete-capture tier. This does not imply eligibility for strict B/E,
+  NO_ACTION-dependent, timing-alignment, transition-dependent, or
+  raw-composition counterfactual claims.
+- The primary freeze records every counterfactual family as source-infeasible,
+  representation-unobservable, or artifact-audit-insufficient until independent
+  source evidence permits a raw-timeline transformation. This is a protocol
+  boundary, not a model-performance decision.
 
 ## Open scientific gates
 

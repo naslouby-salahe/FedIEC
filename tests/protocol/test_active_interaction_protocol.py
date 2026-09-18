@@ -4,9 +4,15 @@ import torch
 
 from fediec.baselines.contracts import active_baseline_contracts
 from fediec.config import load_config
-from fediec.datasets.moniotr_imc_2019.dataset import physical_device_id
-from fediec.datasets.representation import constant_feature_indices
-from fediec.enums import SemanticAction
+from fediec.datasets.freeze import build_protocol_freeze
+from fediec.datasets.moniotr_imc_2019.dataset import enumerate_raw_interactions, physical_device_id
+from fediec.datasets.representation import (
+    audit_representation,
+    constant_feature_indices,
+    extract_interaction_features,
+)
+from fediec.datasets.splits import build_clean_split
+from fediec.enums import CounterfactualFeasibility, DatasetSource, SemanticAction
 from fediec.models.conditional_flow import build_conditional_interaction_flow, encode_intent
 from fediec.types import DirectoryName
 
@@ -53,3 +59,26 @@ def test_moniotr_physical_identity_keeps_sites_and_collapses_vpn_only() -> None:
     uk = physical_device_id(DirectoryName("uk"), DirectoryName("tplink-bulb"))
     assert us == us_vpn
     assert us != uk
+
+
+def test_primary_freeze_records_the_source_feasibility_boundary() -> None:
+    interactions = enumerate_raw_interactions()
+    split = load_config().split
+    manifest = build_clean_split(
+        DatasetSource.MONIOTR_IMC_2019,
+        interactions,
+        (split.training_proportion, split.calibration_proportion, split.test_proportion),
+    )
+    audit = audit_representation(
+        interactions,
+        tuple(extract_interaction_features(item) for item in interactions),
+    )
+    frozen = build_protocol_freeze(manifest, audit)
+    statuses = {
+        item.violation_family: item.feasibility for item in frozen.counterfactual_feasibility
+    }
+    assert all(
+        status is not CounterfactualFeasibility.SOURCE_FEASIBLE
+        for status in statuses.values()
+    )
+    assert len(frozen.artifact_control_plan) == 2

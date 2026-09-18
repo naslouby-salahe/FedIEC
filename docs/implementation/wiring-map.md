@@ -12,7 +12,7 @@
 | `report` | `workflows.report.run_report` | future structured results | intentionally unimplemented |
 
 There is no `collect` route or physical-acquisition dependency. Fresh Graphify
-AST extraction on the reconciled tree reports 798 nodes and 1,967 links. The
+AST extraction on the reconciled tree reports 808 nodes and 2,056 edges. The
 architecture suite verifies every command delegates to one workflow and that no
 import cycle, active strict-B/E route, or physical-collection route exists.
 Graphify output is ignored rather than committed.

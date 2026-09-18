@@ -7,6 +7,8 @@ from typing import Annotated, NewType
 from pydantic import BaseModel, ConfigDict, Field
 
 from fediec.enums import (
+    ArtifactAuditFamily,
+    CounterfactualFeasibility,
     DatasetEligibility,
     DatasetRole,
     DatasetSource,
@@ -172,6 +174,19 @@ class FrozenClientActionCount(DomainRecord):
     test_count: SampleCount
 
 
+class CounterfactualFeasibilityRecord(DomainRecord):
+    violation_family: ViolationFamily
+    feasibility: CounterfactualFeasibility
+    reason: CheckDetail
+
+
+class ArtifactControlRecord(DomainRecord):
+    artifact_audit_family: ArtifactAuditFamily
+    feasibility: CounterfactualFeasibility
+    pass_rule: CheckDetail
+    reason: CheckDetail
+
+
 class ProtocolFreezeManifest(DomainRecord):
     dataset_source: DatasetSource
     role: DatasetRole
@@ -191,6 +206,8 @@ class ProtocolFreezeManifest(DomainRecord):
     model_interface: CheckDetail
     baseline_interfaces: tuple[CheckDetail, ...]
     supported_violation_families: tuple[ViolationFamily, ...]
+    counterfactual_feasibility: tuple[CounterfactualFeasibilityRecord, ...]
+    artifact_control_plan: tuple[ArtifactControlRecord, ...]
     unavailable_analysis_reasons: tuple[CheckDetail, ...]
     seeds: tuple[Seed, ...]
     statistical_protocol: CheckDetail

@@ -4,9 +4,9 @@
 | --- | --- |
 | Ruff | pass: final implementation-alignment check |
 | Pyright | pass: 0 errors, 0 warnings |
-| Pytest | pass: 58 checks across unit, integration, protocol, architecture, and E2E layers; includes capture-level interface, intent encoding, source identity, confound-gate coverage, typed role freeze, derived-artifact smoke, and CLI plan coverage |
+| Pytest | pass: 59 checks across unit, integration, protocol, architecture, and E2E layers; includes capture-level interface, intent encoding, source identity, confound-gate coverage, typed role freeze, source-feasibility freeze, derived-artifact smoke, and CLI plan coverage |
 | Semgrep | pass through committed `.semgrep.yml` and `tests/architecture/test_static_analysis.py` |
-| Graphify | fresh AST extraction on the reconciled tree: 798 nodes and 1,967 links; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
+| Graphify | fresh AST extraction on the reconciled tree: 808 nodes and 2,056 edges; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
 | Engineering smoke | pass: regenerated freeze records `primary_interaction_contract`, 9,986 eligible raw captures, and a synthetic 19-D/3-D conditional-flow shape; no scientific score was inspected. |
 | `doctor` | pass: configuration and all three public sources present and valid |
 | Adapter enumeration | pass: PingPong 2,000; CIC 264; TU Wien 10,000; Mon(IoT)r 9,986 non-empty Android ON/OFF typed interactions |
