@@ -125,7 +125,7 @@ def build_protocol_freeze(
             ),
             CounterfactualFeasibilityRecord(
                 violation_family=ViolationFamily.EXCESS_EXECUTION,
-                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
                 reason=CheckDetail(
                     "natural concurrency and raw-timeline composition controls are not "
                     "source-verified"
@@ -143,7 +143,7 @@ def build_protocol_freeze(
         artifact_control_plan=(
             ArtifactControlRecord(
                 artifact_audit_family=ArtifactAuditFamily.REPLACEMENT_TRANSLATION,
-                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
                 pass_rule=CheckDetail(
                     "A*=max(AUROC,1-AUROC); upper dependence-aware 95% CI <=0.60; "
                     "no device >0.70; no feature >0.65"
@@ -154,7 +154,7 @@ def build_protocol_freeze(
             ),
             ArtifactControlRecord(
                 artifact_audit_family=ArtifactAuditFamily.EXCESS_COMPOSITION,
-                feasibility=CounterfactualFeasibility.ARTIFACT_AUDIT_INSUFFICIENT,
+                feasibility=CounterfactualFeasibility.SOURCE_INFEASIBLE,
                 pass_rule=CheckDetail(
                     "raw no-op round-trip exactly reproduces features and all collision, "
                     "timing, shared-flow, and TCP diagnostics pass"
