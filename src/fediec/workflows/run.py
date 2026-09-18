@@ -1,16 +1,24 @@
 from __future__ import annotations
 
 from fediec.baselines.contracts import active_baseline_contracts
+from fediec.config import load_config
 from fediec.enums import ExperimentName
 from fediec.models.conditional_flow import build_conditional_interaction_flow
 
 
 def run_experiment(experiment: ExperimentName) -> None:
+    configured_model = load_config().model
     model = build_conditional_interaction_flow()
     baselines = active_baseline_contracts()
-    if model.target_dimension != 19 or model.context_dimension != 3:
-        raise RuntimeError("active model contract is not 19-D target / 3-D intent")
-    if any(contract.target_dimension != 19 for contract in baselines):
+    if (
+        model.target_dimension != configured_model.interaction_dimension
+        or model.context_dimension != configured_model.context_dimension
+    ):
+        raise RuntimeError("active model contract does not match config.yaml's model dimensions")
+    if any(
+        contract.target_dimension != configured_model.interaction_dimension
+        for contract in baselines
+    ):
         raise RuntimeError("baseline target contracts do not match the active representation")
     raise RuntimeError(
         f"confirmatory execution for '{experiment}' is not started by protocol freeze; "

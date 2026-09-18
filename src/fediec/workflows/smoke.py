@@ -192,7 +192,7 @@ def run_smoke() -> None:
     )
     federated_model = build_conditional_interaction_flow()
     train_fedavg(federated_model, clients, load_config().smoke.federated_rounds)
-    baselines = fit_baselines(standardized, actions)
+    baselines = fit_baselines(standardized, actions, smoke_settings.seed)
     if not has_only_locked_log_transforms():
         raise RuntimeError("configured log transforms include a locked rate feature")
     baseline_scores = (

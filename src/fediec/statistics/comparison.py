@@ -9,6 +9,7 @@ from fediec.config import load_config
 from fediec.evaluation.metrics import area_under_roc
 from fediec.statistics.resampling import device_sign_flip, resample_interaction_weights
 from fediec.types import (
+    PERCENTAGE_SCALE,
     CheckDetail,
     DeviceId,
     EffectSize,
@@ -126,7 +127,11 @@ def paired_effect_estimate(
         except ValueError:
             continue
     if bootstrap_deltas:
-        confidence_low, confidence_high = numpy.percentile(bootstrap_deltas, (2.5, 97.5))
+        interval_tail_percentage = statistics_config.alpha / 2 * PERCENTAGE_SCALE
+        upper_tail_percentage = PERCENTAGE_SCALE - interval_tail_percentage
+        confidence_low, confidence_high = numpy.percentile(
+            bootstrap_deltas, (interval_tail_percentage, upper_tail_percentage)
+        )
     else:
         confidence_low = confidence_high = point_estimate
 

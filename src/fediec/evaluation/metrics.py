@@ -8,7 +8,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
 
 from fediec.config import load_config
-from fediec.types import MetricValue, SampleWeight, Score
+from fediec.types import MINIMUM_DENOMINATOR, MetricValue, SampleWeight, Score
 
 
 def area_under_roc(
@@ -69,9 +69,9 @@ def threshold_metrics(
     false_positive = (predictions & negatives).sum()
     false_negative = ((~predictions) & positives).sum()
     true_negative = ((~predictions) & negatives).sum()
-    positive_denominator = (true_positive + false_negative).clamp_min(1)
-    negative_denominator = (true_negative + false_positive).clamp_min(1)
-    precision_denominator = (true_positive + false_positive).clamp_min(1)
+    positive_denominator = (true_positive + false_negative).clamp_min(MINIMUM_DENOMINATOR)
+    negative_denominator = (true_negative + false_positive).clamp_min(MINIMUM_DENOMINATOR)
+    precision_denominator = (true_positive + false_positive).clamp_min(MINIMUM_DENOMINATOR)
     true_positive_rate = true_positive / positive_denominator
     false_positive_rate = false_positive / negative_denominator
     precision = true_positive / precision_denominator

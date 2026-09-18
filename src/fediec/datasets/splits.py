@@ -4,18 +4,20 @@ from collections import defaultdict
 
 from fediec.enums import DatasetSource, SemanticAction, SplitFeasibility, SplitPartition
 from fediec.types import (
+    ZERO_SAMPLE_COUNT,
     CleanSplitAssignment,
     CleanSplitContextSummary,
     CleanSplitManifest,
     DeviceId,
     Probability,
     PublicSourceInteraction,
+    SampleCount,
     SourceContextId,
     SourceGroupId,
     WallClockTimestamp,
 )
 
-_CURRENT_SOURCE_GROUP_COUNT = len((SplitPartition.TRAINING,))
+_SINGLE_GROUP_BEING_ASSIGNED: SampleCount = 1
 
 
 def _source_ordering_timestamp(interaction: PublicSourceInteraction) -> WallClockTimestamp:
@@ -77,7 +79,8 @@ def build_clean_split(
     }
     remaining_group_counts = {context: len(groups) for context, groups in contexts.items()}
     context_counts = {
-        context: {partition: len(()) for partition, _ in proportions} for context in contexts
+        context: {partition: ZERO_SAMPLE_COUNT for partition, _ in proportions}
+        for context in contexts
     }
     context_totals = {
         context: sum(len(group) for group in groups) for context, groups in contexts.items()
@@ -92,7 +95,7 @@ def build_clean_split(
             empty_partitions = {
                 partition for partition, _ in proportions if not context_counts[context][partition]
             }
-            if remaining_group_counts[context] + _CURRENT_SOURCE_GROUP_COUNT != len(
+            if remaining_group_counts[context] + _SINGLE_GROUP_BEING_ASSIGNED != len(
                 empty_partitions
             ):
                 continue
@@ -112,7 +115,7 @@ def build_clean_split(
                 (
                     (
                         context_counts[context][selected_partition]
-                        + (count if selected_partition == candidate else len(()))
+                        + (count if selected_partition == candidate else ZERO_SAMPLE_COUNT)
                     )
                     / context_totals[context]
                     - proportion

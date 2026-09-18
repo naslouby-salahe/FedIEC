@@ -8,6 +8,7 @@ from fediec.enums import (
     DatasetAvailability,
     DatasetSource,
     IntentProvenanceGrade,
+    MoniotrPolarityToken,
     RawCaptureFileSuffix,
     SemanticAction,
     SourceGroupKind,
@@ -158,6 +159,11 @@ _OFFICIAL_TARGET_MACS = {
 
 _ANDROID_ONOFF_DIRECTORY = re.compile(r"^android_(?P<transport>lan|wan)_(?P<polarity>on|off)$")
 
+_POLARITY_TOKEN_TO_ACTION: dict[MoniotrPolarityToken, SemanticAction] = {
+    MoniotrPolarityToken.ON: SemanticAction.TURN_ON,
+    MoniotrPolarityToken.OFF: SemanticAction.TURN_OFF,
+}
+
 
 def physical_device_id(region_name: DirectoryName, device_name: DirectoryName) -> DeviceId:
     return DeviceId(f"{region_name.removesuffix('-vpn')}_{device_name}")
@@ -230,9 +236,11 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
                 match = _ANDROID_ONOFF_DIRECTORY.fullmatch(action_directory.name)
                 if match is None:
                     continue
-                action = (
-                    SemanticAction.TURN_ON if match["polarity"] == "on" else SemanticAction.TURN_OFF
-                )
+                try:
+                    polarity_token = MoniotrPolarityToken(match["polarity"])
+                except ValueError:
+                    continue
+                action = _POLARITY_TOKEN_TO_ACTION[polarity_token]
                 context = SourceContextId(f"{region_directory.name}_{match['transport']}")
                 for capture_path in sorted(action_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")):
                     record = _interaction_record(

@@ -300,6 +300,11 @@ class TuWienPolarityToken(StrEnum):
     OFF = "Off"
 
 
+class MoniotrPolarityToken(StrEnum):
+    ON = "on"
+    OFF = "off"
+
+
 class DatasetRawDirectoryName(StrEnum):
     PINGPONG = "PingPong"
     TU_WIEN_PHILIPS_HUE = "TU Wien Philips Hue"

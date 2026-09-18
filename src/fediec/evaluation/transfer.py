@@ -2,22 +2,23 @@ from __future__ import annotations
 
 from torch import Tensor
 
+from fediec.config import load_config
 from fediec.enums import TransferAnalysis
 from fediec.evaluation.heterogeneity import protocol_identity_feature_indices
 from fediec.types import (
     ZERO_FEATURE_VALUE,
-    DeviceCount,
     DeviceId,
     MetricValue,
     SampleCount,
     TransferResult,
 )
 
-MINIMUM_HELD_OUT_DEVICE_FOLD_SUPPORT: DeviceCount = 4
-
 
 def eligible_leave_one_device_out_devices(devices: tuple[DeviceId, ...]) -> tuple[DeviceId, ...]:
-    if len(devices) < MINIMUM_HELD_OUT_DEVICE_FOLD_SUPPORT:
+    minimum_fold_support = (
+        load_config().project.minimum_eligible_device_clients_for_main_federated_claim
+    )
+    if len(devices) < minimum_fold_support:
         return ()
     return tuple(sorted(set(devices)))
 

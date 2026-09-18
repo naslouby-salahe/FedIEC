@@ -10,6 +10,9 @@ from sklearn.svm import OneClassSVM
 from torch import Tensor
 
 from fediec.enums import SemanticAction
+from fediec.types import Seed
+
+_LOGISTIC_REGRESSION_MAX_ITER = 1000
 
 
 @dataclass(frozen=True)
@@ -20,11 +23,15 @@ class FittedBaselines:
     per_action_covariance: dict[SemanticAction, LedoitWolf]
 
 
-def fit_baselines(features: Tensor, actions: tuple[SemanticAction, ...]) -> FittedBaselines:
+def fit_baselines(
+    features: Tensor, actions: tuple[SemanticAction, ...], seed: Seed
+) -> FittedBaselines:
     rows = features.detach().cpu().numpy()
     labels = numpy.asarray(tuple(tuple(SemanticAction).index(action) for action in actions))
-    action_agnostic = IsolationForest(random_state=0).fit(rows)
-    classifier = LogisticRegression(max_iter=1000, random_state=0).fit(rows, labels)
+    action_agnostic = IsolationForest(random_state=seed).fit(rows)
+    classifier = LogisticRegression(
+        max_iter=_LOGISTIC_REGRESSION_MAX_ITER, random_state=seed
+    ).fit(rows, labels)
     one_class: dict[SemanticAction, OneClassSVM] = {}
     covariance: dict[SemanticAction, LedoitWolf] = {}
     for action in (SemanticAction.TURN_ON, SemanticAction.TURN_OFF):
