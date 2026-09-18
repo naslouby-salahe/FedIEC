@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import torch
+
 from fediec.config import load_config
 from fediec.datasets.moniotr_imc_2019.dataset import enumerate_raw_interactions
 from fediec.datasets.normalization import (
@@ -19,6 +21,7 @@ from fediec.enums import (
     SemanticAction,
     SplitPartition,
 )
+from fediec.evaluation.metrics import calibration_threshold
 from fediec.models.baselines import (
     action_agnostic_scores,
     direct_action_scores,
@@ -84,6 +87,27 @@ def _load_smoke_training_rows(
     )
 
 
+def _load_smoke_calibration_rows(
+    interactions: tuple[PublicSourceInteraction, ...],
+    vectors: tuple[InteractionFeatureVector, ...],
+    manifest: CleanSplitManifest,
+    devices: tuple[DeviceId, ...],
+) -> tuple[tuple[InteractionFeatureVector, ...], tuple[SemanticAction, ...]]:
+    assignments = {assignment.interaction_id: assignment for assignment in manifest.assignments}
+    selected = tuple(
+        (interaction, vector)
+        for interaction, vector in zip(interactions, vectors, strict=True)
+        if assignments[interaction.interaction_id].partition is SplitPartition.CALIBRATION
+        and interaction.device_id in devices
+    )
+    if not selected:
+        raise RuntimeError("real-data smoke requires clean calibration captures")
+    return (
+        tuple(vector for _, vector in selected),
+        tuple(interaction.semantic_action for interaction, _ in selected),
+    )
+
+
 def run_smoke() -> None:
     freeze_path = (
         Path(resolve_processed_dataset_directory(DatasetSource.MONIOTR_IMC_2019))
@@ -129,6 +153,17 @@ def run_smoke() -> None:
     )
     centralized_model = build_conditional_interaction_flow()
     train_conditional_flow(centralized_model, standardized, actions, smoke_settings.training_epochs)
+    calibration_vectors, calibration_actions = _load_smoke_calibration_rows(
+        interactions, vectors, splits, tuple(sorted(set(devices)))
+    )
+    calibration_features = transform_with_scaler(
+        apply_locked_transforms(feature_tensor(calibration_vectors)), scaler
+    )
+    calibration_scores = centralized_model.anomaly_score(
+        calibration_features,
+        torch.stack(tuple(encode_intent(action) for action in calibration_actions)),
+    )
+    calibration_threshold(calibration_scores)
     clients = tuple(
         FederatedClientData(
             features=standardized[

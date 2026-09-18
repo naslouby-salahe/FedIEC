@@ -64,6 +64,7 @@ PassiveMonitoringMinutes = PositiveInt
 Probability = UnitInterval
 Score = FiniteFloat
 Threshold = FiniteFloat
+MetricValue = UnitInterval
 Duration = NonNegativeFloat
 WindowLength = PositiveFloat
 Quantile = UnitInterval
