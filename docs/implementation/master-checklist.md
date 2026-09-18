@@ -13,6 +13,8 @@
 - [x] Only `config.yaml` provides runtime/scientific configuration; committed
   `.semgrep.yml` is limited to static-analysis rules.
 - [x] Architecture test suite, Ruff, and Pyright pass after the migration.
+- [x] Unit, integration, protocol, architecture, and E2E test layers exercise
+  the current public-source foundation.
 - [x] Fresh Graphify AST extraction completed; generated output is ignored.
 - [x] Replace stale fixed split counts with deterministic source-aware
   approximately 60/20/20 clean-split manifests.
