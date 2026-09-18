@@ -93,37 +93,56 @@ def parse_source_timestamps_file(path: Path) -> list[datetime]:
     return timestamps
 
 
-def _enumerate_capture_units() -> list[tuple[DeviceId, SourceContextId, Path]]:
+def _resolve_capture_unit_device_id(capture_unit_directory: Path) -> DeviceId | None:
+    name = DirectoryName(capture_unit_directory.name)
+    if name.endswith(_ONOFF_SUFFIX):
+        return DeviceId(name[: -len(_ONOFF_SUFFIX)])
+    try:
+        PingPongEligibleDevice(name)
+    except ValueError:
+        return None
+    return DeviceId(name)
+
+
+def _iter_capture_unit_directories(capture_context_root: Path) -> tuple[Path, ...]:
+    return tuple(
+        candidate.parent
+        for candidate in sorted(
+            capture_context_root.rglob(NetworkCaptureSubdirectory.TIMESTAMPS)
+        )
+        if candidate.is_dir()
+    )
+
+
+def _capture_units_in_context(
+    capture_context_root: Path,
+) -> tuple[tuple[DeviceId, SourceContextId, Path], ...]:
+    source_context_id = SourceContextId(capture_context_root.name)
     units: list[tuple[DeviceId, SourceContextId, Path]] = []
+    for capture_unit_directory in _iter_capture_unit_directories(capture_context_root):
+        device_id = _resolve_capture_unit_device_id(capture_unit_directory)
+        if device_id is None:
+            continue
+        units.append((device_id, source_context_id, capture_unit_directory))
+    return tuple(units)
+
+
+def _iter_capture_context_roots() -> tuple[Path, ...]:
+    roots: list[Path] = []
     for subtree in _ELIGIBLE_EVALUATION_SUBTREES:
         subtree_root = resolve_pingpong_evaluation_root() / subtree
         if not subtree_root.exists():
             continue
-        for capture_context_root in sorted(p for p in subtree_root.iterdir() if p.is_dir()):
-            for candidate in sorted(
-                capture_context_root.rglob(NetworkCaptureSubdirectory.TIMESTAMPS)
-            ):
-                if not candidate.is_dir():
-                    continue
-                capture_unit_directory = candidate.parent
-                name = DirectoryName(capture_unit_directory.name)
-                if name.endswith(_ONOFF_SUFFIX):
-                    device_base = name[: -len(_ONOFF_SUFFIX)]
-                else:
-                    try:
-                        PingPongEligibleDevice(name)
-                    except ValueError:
-                        continue
-                    device_base = name
-                device_id = DeviceId(device_base)
-                units.append(
-                    (
-                        device_id,
-                        SourceContextId(capture_context_root.name),
-                        capture_unit_directory,
-                    )
-                )
-    return units
+        roots.extend(sorted(p for p in subtree_root.iterdir() if p.is_dir()))
+    return tuple(roots)
+
+
+def _enumerate_capture_units() -> tuple[tuple[DeviceId, SourceContextId, Path], ...]:
+    return tuple(
+        unit
+        for capture_context_root in _iter_capture_context_roots()
+        for unit in _capture_units_in_context(capture_context_root)
+    )
 
 
 def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:

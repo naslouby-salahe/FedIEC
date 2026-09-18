@@ -221,42 +221,65 @@ def _interaction_record(
     )
 
 
+def _iter_child_directories(directory: Path) -> tuple[Path, ...]:
+    return tuple(sorted(path for path in directory.iterdir() if path.is_dir()))
+
+
+def _iter_action_directories(
+    interactions_root: Path,
+) -> tuple[tuple[Path, Path, Path], ...]:
+    return tuple(
+        (region_directory, device_directory, action_directory)
+        for region_directory in _iter_child_directories(interactions_root)
+        for device_directory in _iter_child_directories(region_directory)
+        for action_directory in _iter_child_directories(device_directory)
+    )
+
+
+def _resolve_action_context(
+    region_directory: Path, action_directory: Path
+) -> tuple[SemanticAction, SourceContextId] | None:
+    match = _ANDROID_ONOFF_DIRECTORY.fullmatch(action_directory.name)
+    if match is None:
+        return None
+    try:
+        polarity_token = MoniotrPolarityToken(match["polarity"])
+    except ValueError:
+        return None
+    context = SourceContextId(f"{region_directory.name}_{match['transport']}")
+    return _POLARITY_TOKEN_TO_ACTION[polarity_token], context
+
+
+def _records_for_action_directory(
+    interactions_root: Path, region_directory: Path, device_directory: Path, action_directory: Path
+) -> tuple[PublicSourceInteraction, ...]:
+    resolved = _resolve_action_context(region_directory, action_directory)
+    if resolved is None:
+        return ()
+    action, context = resolved
+    region_name = DirectoryName(region_directory.name)
+    device_name = DirectoryName(device_directory.name)
+    device_id = physical_device_id(region_name, device_name)
+    target_device_mac = official_target_mac(region_name, device_name)
+    records = (
+        _interaction_record(
+            capture_path, interactions_root, device_id, context, action, target_device_mac
+        )
+        for capture_path in sorted(action_directory.glob(f"*{RawCaptureFileSuffix.PCAP}"))
+    )
+    return tuple(record for record in records if record is not None)
+
+
 def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
     interactions_root = Path(resolve_moniotr_interactions_root())
     if not interactions_root.exists():
         return ()
-    records: list[PublicSourceInteraction] = []
-    for region_directory in sorted(path for path in interactions_root.iterdir() if path.is_dir()):
-        for device_directory in sorted(
-            path for path in region_directory.iterdir() if path.is_dir()
-        ):
-            for action_directory in sorted(
-                path for path in device_directory.iterdir() if path.is_dir()
-            ):
-                match = _ANDROID_ONOFF_DIRECTORY.fullmatch(action_directory.name)
-                if match is None:
-                    continue
-                try:
-                    polarity_token = MoniotrPolarityToken(match["polarity"])
-                except ValueError:
-                    continue
-                action = _POLARITY_TOKEN_TO_ACTION[polarity_token]
-                context = SourceContextId(f"{region_directory.name}_{match['transport']}")
-                for capture_path in sorted(action_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")):
-                    record = _interaction_record(
-                        capture_path,
-                        interactions_root,
-                        physical_device_id(
-                            DirectoryName(region_directory.name),
-                            DirectoryName(device_directory.name),
-                        ),
-                        context,
-                        action,
-                        official_target_mac(
-                            DirectoryName(region_directory.name),
-                            DirectoryName(device_directory.name),
-                        ),
-                    )
-                    if record is not None:
-                        records.append(record)
-    return tuple(records)
+    return tuple(
+        record
+        for region_directory, device_directory, action_directory in _iter_action_directories(
+            interactions_root
+        )
+        for record in _records_for_action_directory(
+            interactions_root, region_directory, device_directory, action_directory
+        )
+    )

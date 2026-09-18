@@ -44,7 +44,9 @@ def area_under_precision_recall(
 def calibration_threshold(clean_calibration_scores: Tensor) -> Tensor:
     if clean_calibration_scores.ndim != 1 or clean_calibration_scores.shape[0] == 0:
         raise ValueError("threshold calibration requires clean one-dimensional score observations")
-    return torch.quantile(clean_calibration_scores, load_config().calibration.threshold_quantile)
+    return torch.quantile(
+        clean_calibration_scores, load_config().calibration.threshold_quantile, dim=0
+    )
 
 
 @dataclass(frozen=True)

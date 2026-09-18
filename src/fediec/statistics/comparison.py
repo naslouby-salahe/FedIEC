@@ -22,6 +22,8 @@ from fediec.types import (
     SignificanceLevel,
 )
 
+_DeviceDeltas = tuple[tuple[DeviceId, EffectSize], ...]
+
 
 def _weighted_auroc(
     records: tuple[PredictionRecord, ...], weights: Counter[InteractionId] | None = None
@@ -74,49 +76,55 @@ def holm_correction(p_values: tuple[SignificanceLevel, ...]) -> tuple[Significan
     return tuple(adjusted)
 
 
-def paired_effect_estimate(
-    left: tuple[PredictionRecord, ...],
-    right: tuple[PredictionRecord, ...],
-    comparison_label: CheckDetail,
-) -> PairedEffectEstimate:
-    if not left or not right:
-        raise ValueError("a paired effect estimate requires non-empty prediction sets")
-    left_method = left[0].scoring_method
-    right_method = right[0].scoring_method
-    seeds = tuple(sorted({record.seed for record in left}))
-    if seeds != tuple(sorted({record.seed for record in right})):
-        raise ValueError("a paired comparison requires identical seed sets for both methods")
-
-    point_estimate: EffectSize = _weighted_auroc(left) - _weighted_auroc(right)
-
+def _seed_effects(
+    left: tuple[PredictionRecord, ...], right: tuple[PredictionRecord, ...], seeds: tuple[Seed, ...]
+) -> tuple[EffectSize, ...]:
     left_by_seed = dict(_group_by_seed(left))
     right_by_seed = dict(_group_by_seed(right))
-    seed_effects = tuple(
+    return tuple(
         _weighted_auroc(left_by_seed[seed]) - _weighted_auroc(right_by_seed[seed])
         for seed in seeds
     )
 
+
+def _device_deltas(
+    left: tuple[PredictionRecord, ...], right: tuple[PredictionRecord, ...]
+) -> _DeviceDeltas:
     left_by_device = dict(_group_by_device(left))
     right_by_device = dict(_group_by_device(right))
-    device_deltas: dict[DeviceId, EffectSize] = {}
-    for device in tuple(sorted(set(left_by_device) & set(right_by_device))):
+    deltas: list[tuple[DeviceId, EffectSize]] = []
+    for device in sorted(set(left_by_device) & set(right_by_device)):
         try:
-            device_deltas[device] = _weighted_auroc(left_by_device[device]) - _weighted_auroc(
-                right_by_device[device]
+            deltas.append(
+                (
+                    device,
+                    _weighted_auroc(left_by_device[device])
+                    - _weighted_auroc(right_by_device[device]),
+                )
             )
         except ValueError:
             continue
-    per_device_effects = tuple(
-        PerDeviceEffect(
-            device_id=device,
-            effect=delta,
-            sample_count=len(left_by_device[device]),
-        )
-        for device, delta in sorted(device_deltas.items())
+    return tuple(deltas)
+
+
+def _per_device_effects(
+    left: tuple[PredictionRecord, ...], device_deltas: _DeviceDeltas
+) -> tuple[PerDeviceEffect, ...]:
+    left_by_device = dict(_group_by_device(left))
+    return tuple(
+        PerDeviceEffect(device_id=device, effect=delta, sample_count=len(left_by_device[device]))
+        for device, delta in device_deltas
     )
 
+
+def _bootstrap_confidence_interval(
+    left: tuple[PredictionRecord, ...],
+    right: tuple[PredictionRecord, ...],
+    point_estimate: EffectSize,
+    seed: Seed,
+) -> tuple[EffectSize, EffectSize]:
     statistics_config = load_config().statistics
-    rng = default_rng(int(seeds[0]))
+    rng = default_rng(int(seed))
     bootstrap_deltas: list[EffectSize] = []
     for _ in range(statistics_config.bootstrap_replicates):
         weights = resample_interaction_weights(left, rng)
@@ -126,47 +134,67 @@ def paired_effect_estimate(
             )
         except ValueError:
             continue
-    if bootstrap_deltas:
-        interval_tail_percentage = statistics_config.alpha / 2 * PERCENTAGE_SCALE
-        upper_tail_percentage = PERCENTAGE_SCALE - interval_tail_percentage
-        confidence_low, confidence_high = numpy.percentile(
-            bootstrap_deltas, (interval_tail_percentage, upper_tail_percentage)
-        )
-    else:
-        confidence_low = confidence_high = point_estimate
-
-    observed_cluster_statistic = (
-        float(numpy.mean(tuple(device_deltas.values()))) if device_deltas else point_estimate
+    if not bootstrap_deltas:
+        return point_estimate, point_estimate
+    interval_tail_percentage = statistics_config.alpha / 2 * PERCENTAGE_SCALE
+    upper_tail_percentage = PERCENTAGE_SCALE - interval_tail_percentage
+    confidence_low, confidence_high = numpy.percentile(
+        bootstrap_deltas, (interval_tail_percentage, upper_tail_percentage)
     )
-    permutation_rng = default_rng(int(seeds[0]) + 1)
-    devices = tuple(sorted(device_deltas))
-    exceed_total = 0
-    permutation_replicates = statistics_config.bootstrap_replicates
-    if devices:
-        for _ in range(permutation_replicates):
-            signs_by_device = dict(device_sign_flip(devices, permutation_rng))
-            permuted = float(
-                numpy.mean(
-                    tuple(device_deltas[device] * signs_by_device[device] for device in devices)
-                )
-            )
-            if abs(permuted) >= abs(observed_cluster_statistic):
-                exceed_total += 1
-        permutation_p_value = min(1.0, (exceed_total + 1) / (permutation_replicates + 1))
-    else:
-        permutation_p_value = 1.0
+    return float(confidence_low), float(confidence_high)
 
+
+def _permutation_p_value(device_deltas: _DeviceDeltas, seed: Seed) -> SignificanceLevel:
+    if not device_deltas:
+        return 1.0
+    deltas_by_device = dict(device_deltas)
+    devices = tuple(sorted(deltas_by_device))
+    observed_cluster_statistic = float(numpy.mean(tuple(deltas_by_device.values())))
+    permutation_rng = default_rng(int(seed) + 1)
+    permutation_replicates = load_config().statistics.bootstrap_replicates
+    exceed_total = 0
+    for _ in range(permutation_replicates):
+        signs_by_device = dict(device_sign_flip(devices, permutation_rng))
+        permuted = float(
+            numpy.mean(
+                tuple(deltas_by_device[device] * signs_by_device[device] for device in devices)
+            )
+        )
+        if abs(permuted) >= abs(observed_cluster_statistic):
+            exceed_total += 1
+    return min(1.0, (exceed_total + 1) / (permutation_replicates + 1))
+
+
+def paired_effect_estimate(
+    left: tuple[PredictionRecord, ...],
+    right: tuple[PredictionRecord, ...],
+    comparison_label: CheckDetail,
+) -> PairedEffectEstimate:
+    if not left or not right:
+        raise ValueError("a paired effect estimate requires non-empty prediction sets")
+    seeds = tuple(sorted({record.seed for record in left}))
+    if seeds != tuple(sorted({record.seed for record in right})):
+        raise ValueError("a paired comparison requires identical seed sets for both methods")
+
+    point_estimate: EffectSize = _weighted_auroc(left) - _weighted_auroc(right)
+    seed_effects = _seed_effects(left, right, seeds)
+    device_deltas = _device_deltas(left, right)
+    per_device_effects = _per_device_effects(left, device_deltas)
+    confidence_low, confidence_high = _bootstrap_confidence_interval(
+        left, right, point_estimate, seeds[0]
+    )
+    permutation_p_value = _permutation_p_value(device_deltas, seeds[0])
     unique_interaction_ids = {
         record.source_dependency_cluster or record.interaction_id for record in (*left, *right)
     }
 
     return PairedEffectEstimate(
         comparison_label=comparison_label,
-        left_method=left_method,
-        right_method=right_method,
+        left_method=left[0].scoring_method,
+        right_method=right[0].scoring_method,
         point_estimate=point_estimate,
-        confidence_interval_low=float(confidence_low),
-        confidence_interval_high=float(confidence_high),
+        confidence_interval_low=confidence_low,
+        confidence_interval_high=confidence_high,
         permutation_p_value=permutation_p_value,
         seed_effects=seed_effects,
         per_device_effects=per_device_effects,

@@ -88,6 +88,7 @@ Distance = NonNegativeFloat
 EffectSize = FiniteFloat
 SampleWeight = NonNegativeFloat
 PermutationSign = SignedInt
+SplitBalancingError = NonNegativeFloat
 TierRank = NonNegativeInt
 
 MonotonicTimestamp = FiniteFloat

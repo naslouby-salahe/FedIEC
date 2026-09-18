@@ -37,9 +37,9 @@ def train_conditional_flow(
     if features.shape[0] == 0:
         raise ValueError("conditional-flow training requires clean source interactions")
     parameters = tuple(model.parameters())
-    exp_averages = tuple(torch.zeros_like(parameter) for parameter in parameters)
-    exp_average_squares = tuple(torch.zeros_like(parameter) for parameter in parameters)
-    step_tensors = tuple(torch.zeros((), dtype=torch.float32) for _ in parameters)
+    exp_averages = [torch.zeros_like(parameter) for parameter in parameters]
+    exp_average_squares = [torch.zeros_like(parameter) for parameter in parameters]
+    step_tensors = [torch.zeros((), dtype=torch.float32) for _ in parameters]
     started = perf_counter()
     contexts = intent_tensor(actions)
     steps = 0
@@ -55,10 +55,10 @@ def train_conditional_flow(
             adam(
                 list(parameters),
                 [gradient for gradient in gradients if gradient is not None],
-                list(exp_averages),
-                list(exp_average_squares),
+                exp_averages,
+                exp_average_squares,
                 [],
-                list(step_tensors),
+                step_tensors,
                 foreach=False,
                 capturable=False,
                 differentiable=False,

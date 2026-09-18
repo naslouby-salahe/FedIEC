@@ -69,47 +69,82 @@ def read_pcap_first_packet_timestamp(capture_path: RepositoryPath) -> WallClockT
         return WallClockTimestamp(datetime.fromtimestamp(epoch_seconds, tz=UTC))
 
 
+def _resolve_trigger_action(
+    trigger_directory: Path,
+) -> tuple[SemanticAction, SourceContextId] | None:
+    prefix, _, polarity = trigger_directory.name.partition("_")
+    try:
+        trigger_method = CicTriggerMethod(f"{prefix}_")
+    except ValueError:
+        return None
+    if trigger_method not in _ELIGIBLE_TRIGGER_METHODS:
+        return None
+    try:
+        polarity_token = CicPolarityToken(polarity)
+    except ValueError:
+        return None
+    return (
+        _POLARITY_TOKEN_TO_ACTION[polarity_token],
+        SourceContextId(prefix.removesuffix("_").lower()),
+    )
+
+
+def _interaction_for_capture(
+    interactions_root: Path,
+    device_directory: Path,
+    capture_path: Path,
+    semantic_action: SemanticAction,
+    source_context_id: SourceContextId,
+) -> PublicSourceInteraction:
+    typed_capture_path = RepositoryPath(capture_path)
+    relative_capture = capture_path.relative_to(interactions_root).as_posix()
+    return PublicSourceInteraction(
+        dataset_source=DatasetSource.CIC_IOT_2022,
+        interaction_id=InteractionId(relative_capture),
+        device_id=DeviceId(device_directory.name),
+        source_capture_id=SourceCaptureId(relative_capture),
+        source_group_id=SourceGroupId(relative_capture),
+        source_group_kind=SourceGroupKind.INDIVIDUAL_CAPTURE,
+        source_context_id=source_context_id,
+        semantic_action=semantic_action,
+        capture_start_timestamp=read_pcap_first_packet_timestamp(typed_capture_path),
+        intent_provenance_grade=IntentProvenanceGrade.PARTIAL,
+        capture_path=typed_capture_path,
+    )
+
+
+def _records_for_trigger_directory(
+    interactions_root: Path, device_directory: Path, trigger_directory: Path
+) -> tuple[PublicSourceInteraction, ...]:
+    resolved = _resolve_trigger_action(trigger_directory)
+    if resolved is None:
+        return ()
+    semantic_action, source_context_id = resolved
+    return tuple(
+        _interaction_for_capture(
+            interactions_root, device_directory, capture_path, semantic_action, source_context_id
+        )
+        for capture_path in sorted(trigger_directory.glob(f"*{RawCaptureFileSuffix.PCAP}"))
+    )
+
+
+def _iter_device_trigger_directories(interactions_root: Path) -> tuple[tuple[Path, Path], ...]:
+    return tuple(
+        (device_directory, trigger_directory)
+        for category_directory in sorted(p for p in interactions_root.iterdir() if p.is_dir())
+        for device_directory in sorted(p for p in category_directory.iterdir() if p.is_dir())
+        for trigger_directory in sorted(p for p in device_directory.iterdir() if p.is_dir())
+    )
+
+
 def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
     interactions_root = resolve_cic_iot_2022_interactions_root()
-    interactions: list[PublicSourceInteraction] = []
-    for category_directory in sorted(p for p in interactions_root.iterdir() if p.is_dir()):
-        for device_directory in sorted(p for p in category_directory.iterdir() if p.is_dir()):
-            for trigger_directory in sorted(p for p in device_directory.iterdir() if p.is_dir()):
-                prefix, _, polarity = trigger_directory.name.partition("_")
-                try:
-                    trigger_method = CicTriggerMethod(f"{prefix}_")
-                except ValueError:
-                    continue
-                if trigger_method not in _ELIGIBLE_TRIGGER_METHODS:
-                    continue
-                try:
-                    polarity_token = CicPolarityToken(polarity)
-                except ValueError:
-                    continue
-                semantic_action = _POLARITY_TOKEN_TO_ACTION[polarity_token]
-                for capture_path in sorted(trigger_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")):
-                    typed_capture_path = RepositoryPath(capture_path)
-                    interactions.append(
-                        PublicSourceInteraction(
-                            dataset_source=DatasetSource.CIC_IOT_2022,
-                            interaction_id=InteractionId(
-                                capture_path.relative_to(interactions_root).as_posix()
-                            ),
-                            device_id=DeviceId(device_directory.name),
-                            source_capture_id=SourceCaptureId(
-                                capture_path.relative_to(interactions_root).as_posix()
-                            ),
-                            source_group_id=SourceGroupId(
-                                capture_path.relative_to(interactions_root).as_posix()
-                            ),
-                            source_group_kind=SourceGroupKind.INDIVIDUAL_CAPTURE,
-                            source_context_id=SourceContextId(prefix.removesuffix("_").lower()),
-                            semantic_action=semantic_action,
-                            capture_start_timestamp=read_pcap_first_packet_timestamp(
-                                typed_capture_path
-                            ),
-                            intent_provenance_grade=IntentProvenanceGrade.PARTIAL,
-                            capture_path=typed_capture_path,
-                        )
-                    )
-    return tuple(interactions)
+    return tuple(
+        record
+        for device_directory, trigger_directory in _iter_device_trigger_directories(
+            interactions_root
+        )
+        for record in _records_for_trigger_directory(
+            interactions_root, device_directory, trigger_directory
+        )
+    )

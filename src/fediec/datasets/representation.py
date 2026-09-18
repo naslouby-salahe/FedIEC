@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import struct
 from collections import defaultdict
+from collections.abc import Iterator
+from dataclasses import dataclass
 from datetime import datetime
 from itertools import pairwise
 from pathlib import Path
+from typing import BinaryIO
 
 from fediec.enums import NetworkExecutionFeature, RepresentationConfoundAxis, StructByteOrder
 from fediec.types import (
@@ -18,6 +21,7 @@ from fediec.types import (
     ZERO_BYTE_COUNT,
     ZERO_FEATURE_VALUE,
     ZERO_PACKET_COUNT,
+    ByteCount,
     CheckDetail,
     Duration,
     FeatureIndex,
@@ -25,8 +29,10 @@ from fediec.types import (
     FeatureVariance,
     FeatureVectors,
     InteractionFeatureVector,
+    InteractionId,
     MonotonicTimestamp,
     NetworkFeatureName,
+    PacketCount,
     PcapTimestampScale,
     PublicSourceInteraction,
     RemoteTransportPortCount,
@@ -66,94 +72,145 @@ def _quantile(values: tuple[FeatureValue, ...], quantile: FeatureValue) -> Featu
     return ordered[index]
 
 
-def extract_interaction_features(
-    interaction: PublicSourceInteraction,
-) -> InteractionFeatureVector:
-    if interaction.target_device_mac is None:
-        raise ValueError(f"{interaction.interaction_id}: target device MAC is unavailable")
-    with Path(interaction.capture_path).open("rb") as handle:
-        global_header = handle.read(24)
-        if len(global_header) != 24 or global_header[:4] not in _PCAP_FORMATS:
-            raise ValueError(f"{interaction.interaction_id}: unsupported classic PCAP")
-        byte_order, scale = _PCAP_FORMATS[global_header[:4]]
-        timestamps: list[MonotonicTimestamp] = []
-        outbound_sizes: list[FeatureValue] = []
-        inbound_sizes: list[FeatureValue] = []
-        remote_endpoints: set[bytes] = set()
-        remote_ports: set[RemoteTransportPortCount] = set()
-        tcp_count = ZERO_PACKET_COUNT
-        udp_count = ZERO_PACKET_COUNT
-        total_bytes = ZERO_BYTE_COUNT
-        while record_header := handle.read(16):
-            if len(record_header) != 16:
-                raise ValueError(f"{interaction.interaction_id}: truncated PCAP record header")
-            seconds, fraction, captured_length, _ = struct.unpack(
-                f"{byte_order}IIII", record_header
-            )
-            frame = handle.read(captured_length)
-            if len(frame) != captured_length:
-                raise ValueError(f"{interaction.interaction_id}: truncated PCAP frame")
-            timestamp = seconds + fraction * scale
-            if len(frame) < 14:
-                continue
-            destination, source, ethertype = frame[:6], frame[6:12], frame[12:14]
-            target = interaction.target_device_mac
-            if _mac_text(source) != target and _mac_text(destination) != target:
-                continue
-            timestamps.append(timestamp)
-            total_bytes += captured_length
-            outbound = _mac_text(source) == target
-            (outbound_sizes if outbound else inbound_sizes).append(captured_length)
-            if ethertype != b"\x08\x00" or len(frame) < 34:
-                continue
-            ip_start = 14
-            ihl = (frame[ip_start] & 0x0F) * 4
-            if ihl < 20 or len(frame) < ip_start + ihl:
-                continue
-            protocol = frame[ip_start + 9]
-            source_ip = frame[ip_start + 12 : ip_start + 16]
-            destination_ip = frame[ip_start + 16 : ip_start + 20]
-            remote_endpoints.add(destination_ip if outbound else source_ip)
-            if protocol == 6:
-                tcp_count += 1
-            if protocol == 17:
-                udp_count += 1
-            transport_start = ip_start + ihl
-            if protocol in {6, 17} and len(frame) >= transport_start + 4:
-                source_port, destination_port = struct.unpack(
-                    "!HH", frame[transport_start : transport_start + 4]
-                )
-                remote_ports.add(destination_port if outbound else source_port)
-    packet_count = len(timestamps)
-    inter_arrival = tuple(later - earlier for earlier, later in pairwise(timestamps))
+@dataclass
+class _PacketAccumulator:
+    timestamps: list[MonotonicTimestamp]
+    outbound_sizes: list[FeatureValue]
+    inbound_sizes: list[FeatureValue]
+    remote_endpoints: set[bytes]
+    remote_ports: set[RemoteTransportPortCount]
+    tcp_count: PacketCount
+    udp_count: PacketCount
+    total_bytes: ByteCount
+
+
+def _new_packet_accumulator() -> _PacketAccumulator:
+    return _PacketAccumulator(
+        timestamps=[],
+        outbound_sizes=[],
+        inbound_sizes=[],
+        remote_endpoints=set(),
+        remote_ports=set(),
+        tcp_count=ZERO_PACKET_COUNT,
+        udp_count=ZERO_PACKET_COUNT,
+        total_bytes=ZERO_BYTE_COUNT,
+    )
+
+
+def _read_pcap_global_header(
+    handle: BinaryIO, interaction_id: InteractionId
+) -> tuple[StructByteOrder, PcapTimestampScale]:
+    global_header = handle.read(24)
+    if len(global_header) != 24 or global_header[:4] not in _PCAP_FORMATS:
+        raise ValueError(f"{interaction_id}: unsupported classic PCAP")
+    return _PCAP_FORMATS[global_header[:4]]
+
+
+def _iter_pcap_records(
+    handle: BinaryIO,
+    byte_order: StructByteOrder,
+    scale: PcapTimestampScale,
+    interaction_id: InteractionId,
+) -> Iterator[tuple[MonotonicTimestamp, bytes]]:
+    while record_header := handle.read(16):
+        if len(record_header) != 16:
+            raise ValueError(f"{interaction_id}: truncated PCAP record header")
+        seconds, fraction, captured_length, _ = struct.unpack(f"{byte_order}IIII", record_header)
+        frame = handle.read(captured_length)
+        if len(frame) != captured_length:
+            raise ValueError(f"{interaction_id}: truncated PCAP frame")
+        yield seconds + fraction * scale, frame
+
+
+def _process_ip_packet(accumulator: _PacketAccumulator, frame: bytes, outbound: bool) -> None:
+    ip_start = 14
+    ihl = (frame[ip_start] & 0x0F) * 4
+    if ihl < 20 or len(frame) < ip_start + ihl:
+        return
+    protocol = frame[ip_start + 9]
+    source_ip = frame[ip_start + 12 : ip_start + 16]
+    destination_ip = frame[ip_start + 16 : ip_start + 20]
+    accumulator.remote_endpoints.add(destination_ip if outbound else source_ip)
+    if protocol == 6:
+        accumulator.tcp_count += 1
+    if protocol == 17:
+        accumulator.udp_count += 1
+    transport_start = ip_start + ihl
+    if protocol in {6, 17} and len(frame) >= transport_start + 4:
+        source_port, destination_port = struct.unpack(
+            "!HH", frame[transport_start : transport_start + 4]
+        )
+        accumulator.remote_ports.add(destination_port if outbound else source_port)
+
+
+def _process_packet(
+    accumulator: _PacketAccumulator,
+    frame: bytes,
+    timestamp: MonotonicTimestamp,
+    target_device_mac: TargetDeviceMac,
+) -> None:
+    if len(frame) < 14:
+        return
+    destination, source, ethertype = frame[:6], frame[6:12], frame[12:14]
+    if _mac_text(source) != target_device_mac and _mac_text(destination) != target_device_mac:
+        return
+    accumulator.timestamps.append(timestamp)
+    accumulator.total_bytes += len(frame)
+    outbound = _mac_text(source) == target_device_mac
+    (accumulator.outbound_sizes if outbound else accumulator.inbound_sizes).append(len(frame))
+    if ethertype != b"\x08\x00" or len(frame) < 34:
+        return
+    _process_ip_packet(accumulator, frame, outbound)
+
+
+def _build_feature_vector(accumulator: _PacketAccumulator) -> InteractionFeatureVector:
+    packet_count = len(accumulator.timestamps)
+    inter_arrival = tuple(
+        later - earlier for earlier, later in pairwise(accumulator.timestamps)
+    )
     duration = (
-        timestamps[LAST_PACKET_INDEX] - timestamps[FIRST_PACKET_INDEX]
-        if timestamps
+        accumulator.timestamps[LAST_PACKET_INDEX] - accumulator.timestamps[FIRST_PACKET_INDEX]
+        if accumulator.timestamps
         else ZERO_FEATURE_VALUE
     )
     return InteractionFeatureVector(
         values=(
             packet_count,
-            len(outbound_sizes),
-            len(inbound_sizes),
-            total_bytes,
-            sum(outbound_sizes),
-            sum(inbound_sizes),
-            _mean(tuple(outbound_sizes)),
-            _standard_deviation(tuple(outbound_sizes)),
-            _mean(tuple(inbound_sizes)),
-            _standard_deviation(tuple(inbound_sizes)),
+            len(accumulator.outbound_sizes),
+            len(accumulator.inbound_sizes),
+            accumulator.total_bytes,
+            sum(accumulator.outbound_sizes),
+            sum(accumulator.inbound_sizes),
+            _mean(tuple(accumulator.outbound_sizes)),
+            _standard_deviation(tuple(accumulator.outbound_sizes)),
+            _mean(tuple(accumulator.inbound_sizes)),
+            _standard_deviation(tuple(accumulator.inbound_sizes)),
             _mean(inter_arrival),
             _standard_deviation(inter_arrival),
             _quantile(inter_arrival, MEDIAN_QUANTILE),
             _quantile(inter_arrival, P95_QUANTILE),
-            tcp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
-            udp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
-            len(remote_endpoints),
-            len(remote_ports),
+            accumulator.tcp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
+            accumulator.udp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
+            len(accumulator.remote_endpoints),
+            len(accumulator.remote_ports),
             duration,
         )
     )
+
+
+def extract_interaction_features(
+    interaction: PublicSourceInteraction,
+) -> InteractionFeatureVector:
+    if interaction.target_device_mac is None:
+        raise ValueError(f"{interaction.interaction_id}: target device MAC is unavailable")
+    accumulator = _new_packet_accumulator()
+    with Path(interaction.capture_path).open("rb") as handle:
+        byte_order, scale = _read_pcap_global_header(handle, interaction.interaction_id)
+        for timestamp, frame in _iter_pcap_records(
+            handle, byte_order, scale, interaction.interaction_id
+        ):
+            _process_packet(accumulator, frame, timestamp, interaction.target_device_mac)
+    return _build_feature_vector(accumulator)
 
 
 def interaction_feature_order() -> tuple[NetworkExecutionFeature, ...]:
@@ -259,7 +316,6 @@ def audit_representation(
     timestamps = tuple(item.capture_start_timestamp for item in interactions)
     contexts = tuple(sorted({item.source_context_id for item in interactions}))
     sources = tuple(sorted({item.dataset_source for item in interactions}))
-    actions = tuple(item.semantic_action for item in interactions)
     chronology = tuple(
         CheckDetail(timestamp.date().isoformat())
         if isinstance(timestamp, datetime)
@@ -309,7 +365,10 @@ def audit_representation(
         chronology_available=all(timestamp is not None for timestamp in timestamps),
         site_or_lab_identities=contexts,
         network_conditions=contexts,
-        action_collection_ordering_available=len(set(actions)) > 1,
+        action_collection_ordering_available=len(
+            {item.semantic_action for item in interactions}
+        )
+        > 1,
         source_identities=sources,
         stratified_variation=stratified_variation,
         passed=not constant and not near_constant,
