@@ -98,6 +98,36 @@
     additional optimal-transport dependency and is not required by the
     roadmap's descriptive heterogeneity language.
 
+11. The counterfactual/NO_ACTION feasibility search is closed for this
+    project phase. Beyond the original 4-dataset audit (decision 9), this
+    round checked the official upstream repos/papers for Mon(IoT)r, PingPong,
+    and CIC, and two additional independent candidates (UNSW-IoTraffic 2025,
+    Sivanathan 2020 Belkin/LiFX boot/active/idle traces). Neither candidate
+    is usable: UNSW-IoTraffic's release explicitly ships no ground-truth
+    event/interaction annotations (idle windows are only inferable by
+    scripts the user would run against raw traffic, not independently
+    documented); Sivanathan 2020 has no public dataset release at all. The
+    frozen counterfactual-feasibility manifest (`datasets/freeze.py`)
+    remains correct: every family is `SOURCE_INFEASIBLE` or
+    `REPRESENTATION_UNOBSERVABLE`. This does not block Prompt 4; it narrows
+    the confirmatory claim family to Comparison 1 (intent value, now via the
+    Sec. 55 Direct Contract Metric per `roadmap_changes.md`) and Comparison 3
+    (federated collaboration), with the artifact-controlled
+    violation-detection claim (Sections 80-81) and Contribution D unavailable
+    this round.
+12. Comparison 1's primary outcome is amended (roadmap Sec. 67, see
+    `roadmap_changes.md`) to the Sec. 55 Direct Contract Metric under the
+    current zero-feasible-families state: for each genuine clean
+    `(X_interaction, I)`, compare the model's score under the true intent
+    against its score under a swapped incorrect intent. This requires no
+    raw-timeline modification and is not evidence of violation detection —
+    Sections 80-81's claim gates are unchanged. `evaluation.robustness`
+    already contains the intent-swap scoring mechanics
+    (`missing_intent_diagnostic` swaps to `NO_ACTION` specifically); a
+    generalized version usable for this metric across all intent pairs, and
+    its wiring into `statistics.comparison`, is Prompt 4 confirmatory-
+    execution work, not implemented this phase.
+
 ## Source-of-truth cleanup still required
 
 The roadmap remains scientifically authoritative, but it contains residual

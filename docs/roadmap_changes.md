@@ -78,3 +78,70 @@ silently upgraded to the full three-context protocol.
 **Nature of the change:** adds a source-specific application of existing
 eligibility gates. It does not change any requirement, select a primary source,
 or rely on model performance.
+
+## 2026-09-18 — Holm correction family scope for pre-context (Sec. 66)
+
+**Why:** Sec. 66 said Holm correction applies "across the three confirmatory
+hypothesis comparisons," while Sec. 68 has always said pre-context value is
+unavailable in the current empirical tier. Confirmatory-trial multiplicity
+practice (FDA/EMA gatekeeping-procedure guidance) treats the corrected family
+as the hypotheses actually tested; a hypothesis excluded before any result is
+inspected, by a pre-specified data-feasibility criterion, is not a member of
+that family and is not assigned a correction slot. Re-audited all four raw
+datasets (including official upstream repos/papers for Mon(IoT)r, PingPong,
+and CIC) for a missed NO_ACTION/idle-segmentation signal that could activate
+pre-context; none exists — Mon(IoT)r's `unctrl` idle traffic is confirmed
+(via the same bounded-duration filename convention the interaction captures
+use) to be an unsegmented continuous daily trace, not a set of discrete
+capture instances, so building NO_ACTION from it would require inventing a
+window boundary the source does not provide.
+
+**Nature of the change:** clarifies Sec. 66's family scope to match Sec. 68's
+existing (unchanged) unavailability statement; does not add, remove, or
+weaken any statistical procedure, and does not affect any already-computed
+result since no confirmatory execution has occurred.
+
+## 2026-09-18 — Comparison 1 primary outcome under zero-feasible-families (Sec. 67)
+
+**Why:** Sec. 67 tied Comparison 1's primary outcome exclusively to "the
+locked source-feasible artifact-controlled contract-violation suite," which
+requires at least one of the 5 raw-timeline violation families (OMISSION,
+SUBSTITUTION, UNCOMMANDED_EXECUTION, EXCESS_EXECUTION, REPLAY/LATE) to be
+source-feasible. The frozen primary manifest records all 5 as
+`SOURCE_INFEASIBLE`/`REPRESENTATION_UNOBSERVABLE`, so Comparison 1 as
+literally worded was unrunnable, not merely untested. Sec. 55 (Direct
+Contract Metric) already defines a separate, genuine-data-only test of the
+same underlying claim — intent conditioning changes the model's score — by
+scoring one real capture under its true intent versus a swapped incorrect
+intent. No raw traffic is modified; no evidence is fabricated. Amending Sec.
+67 to use this as the primary outcome under the current tier keeps
+Comparison 1 in the confirmatory family instead of dropping it to two total
+comparisons, while explicitly not claiming it as evidence of violation
+detection (Sec. 67 now states the two formulations are not interchangeable,
+and the violation-detection claim gates in Sections 80–81 are unchanged).
+
+**Nature of the change:** activates an already-specified, previously-inert
+roadmap section (Sec. 55) as a substitute primary outcome for one
+comparison, gated on the same source-feasibility state the roadmap already
+tracks. Does not lower the AUROC bar, does not fabricate a violation
+population, does not touch Sections 80/81's claim gates, and does not affect
+any already-computed result since no confirmatory execution has occurred.
+
+## 2026-09-18 — Counterfactual/NO_ACTION search closed (no roadmap edit)
+
+**Why:** Beyond the original 4-dataset audit (Sec. 13 decision record), this
+round re-checked all 4 datasets' full raw trees, their official upstream
+repositories/papers (Mon(IoT)r's `NEU-SNS/intl-iot`, PingPong's
+`uci-plrg/pingpong`, CIC's official UNB page), and two additional
+independent public datasets (UNSW-IoTraffic 2025, and Sivanathan 2020's
+Belkin/LiFX boot/active/idle traces). UNSW-IoTraffic's own release notes
+state "No ground-truth annotations of events or interactions are provided";
+Sivanathan 2020 has no public dataset release (thesis-derived, no
+repository/download link in the paper). None of the 6 candidates supports
+an independently-documented per-device/per-context idle segmentation or
+transition boundary. This closes the search for this project phase; the
+counterfactual-feasibility freeze in `datasets/freeze.py` is confirmed
+correct on the broadest evidence gathered so far.
+
+**Nature of the change:** none — no roadmap wording changed by this entry.
+Recorded so the search isn't silently re-litigated from scratch next phase.

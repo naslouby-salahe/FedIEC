@@ -54,3 +54,16 @@ generation/artifact-control smoke requirement remains correctly blocked by
 public source feasibility (every family is `SOURCE_INFEASIBLE` or
 `REPRESENTATION_UNOBSERVABLE` in the frozen primary manifest); smoke proves
 the fail-closed gate instead of fabricating a family.
+
+- [x] Counterfactual/NO_ACTION feasibility search closed for this phase: the
+  original 4 datasets, their official upstream repos/papers, and 2
+  additional independent candidates (UNSW-IoTraffic 2025, Sivanathan 2020)
+  all checked; none supports a source-feasible family. See decisions 11-12.
+- [x] Comparison 1's primary outcome amended to the Sec. 55 Direct Contract
+  Metric (genuine-data-only, no counterfactuals) for the current tier;
+  Comparison 3 unaffected; the artifact-controlled violation-detection claim
+  (Sections 80-81) and Contribution D remain unavailable this round.
+
+Prompt 4 is unblocked on this evidence: the confirmatory hypothesis family
+for this round is Comparison 1 (intent value, via Sec. 55) and Comparison 3
+(federated collaboration), Holm-corrected across those two.

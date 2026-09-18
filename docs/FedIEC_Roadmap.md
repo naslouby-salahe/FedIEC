@@ -2573,7 +2573,7 @@ Use:
 \alpha=0.05
 ```
 
-Holm correction is applied across the three confirmatory hypothesis comparisons.
+Holm correction is applied across the confirmatory hypothesis comparisons that are actually tested under the current empirical tier. Pre-context value (Section 68) is not a member of this family: it is excluded by a pre-specified data-feasibility criterion established before any confirmatory result is inspected, not by a non-significant outcome, so it is not assigned a correction slot. Should a future source activate the pre-context tier, it re-enters the corrected family from that point forward under its own pre-registration.
 
 Artifact audits use the same dependence-aware principle but apply the pre-registered equivalence-style `A*` criterion from Section 25.
 
@@ -2585,17 +2585,28 @@ No new significance test is introduced after results are inspected.
 
 Compare \(q(X_{\text{interaction}}\mid I)\) versus \(q_0(X_{\text{interaction}})\).
 
-Primary outcome:
+**Primary outcome under the current empirical tier** (no violation family is
+source-feasible): the Section 55 Direct Contract Metric, computed entirely
+from genuine held-out clean captures with no raw-timeline modification. For
+each genuine clean \((X_{\text{interaction}}, I)\), score the same
+\(X_{\text{interaction}}\) under its true recorded \(I\) and under a swapped
+incorrect \(\tilde I\); report the paired \(\Delta AUROC\) treating the
+true-intent score as the clean class and the wrong-intent score as the
+contrasting class, with the hierarchical procedure in Section 66.
 
-```math
-\Delta AUROC
-```
+**Primary outcome once a violation family is source-feasible:** \(\Delta
+AUROC\) using the locked source-feasible artifact-controlled
+contract-violation suite, re-activating the original formulation below.
+Where source-feasible, background-active `NO_ACTION` observations,
+replacement/translation controls and—where `EXCESS_EXECUTION` is
+included—composition controls must be included so the result cannot be
+explained by silence/activity or transformation artifacts.
 
-using the locked source-feasible artifact-controlled contract-violation suite.
-
-The primary effect and uncertainty are computed with the hierarchical procedure in Section 66.
-
-Where source-feasible, background-active `NO_ACTION` observations, replacement/translation controls and—where `EXCESS_EXECUTION` is included—composition controls must be included so the result cannot be explained by silence/activity or transformation artifacts.
+The two formulations are not interchangeable evidence for the same claim: the
+Direct Contract Metric establishes that intent conditioning changes the
+model's score, not that the model detects an execution-level violation. A
+manuscript claim about violation detection still requires the
+artifact-controlled suite and remains gated by Sections 80–81.
 
 ---
 
