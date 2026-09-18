@@ -30,6 +30,15 @@ def _is_cli_command(function_node: ast.FunctionDef | ast.AsyncFunctionDef) -> bo
     )
 
 
+def _is_pydantic_validator(function_node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return any(
+        isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Name)
+        and decorator.func.id == "model_validator"
+        for decorator in function_node.decorator_list
+    )
+
+
 def _defined_functions(paths: list[Path]) -> list[tuple[str, str, int]]:
     definitions: list[tuple[str, str, int]] = []
     for path in paths:
@@ -42,7 +51,7 @@ def _defined_functions(paths: list[Path]) -> list[tuple[str, str, int]]:
                 continue
             if node.name.startswith("__") and node.name.endswith("__"):
                 continue
-            if module == "cli" and _is_cli_command(node):
+            if (module == "cli" and _is_cli_command(node)) or _is_pydantic_validator(node):
                 continue
             definitions.append((module, node.name, node.lineno))
     return definitions

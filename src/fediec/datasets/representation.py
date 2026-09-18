@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import struct
+from collections import defaultdict
+from datetime import datetime
 from itertools import pairwise
 from pathlib import Path
 
-from fediec.enums import NetworkExecutionFeature, StructByteOrder
+from fediec.enums import NetworkExecutionFeature, RepresentationConfoundAxis, StructByteOrder
 from fediec.types import (
     FIRST_PACKET_INDEX,
     LAST_PACKET_INDEX,
@@ -16,6 +18,7 @@ from fediec.types import (
     ZERO_BYTE_COUNT,
     ZERO_FEATURE_VALUE,
     ZERO_PACKET_COUNT,
+    CheckDetail,
     Duration,
     FeatureIndex,
     FeatureValue,
@@ -28,6 +31,7 @@ from fediec.types import (
     PublicSourceInteraction,
     RemoteTransportPortCount,
     RepresentationConfoundAudit,
+    RepresentationStratifiedVariation,
     TargetDeviceMac,
 )
 
@@ -206,6 +210,30 @@ def _capture_duration_seconds(interaction: PublicSourceInteraction) -> Duration:
     )
 
 
+def _stratified_variation(
+    axis: RepresentationConfoundAxis,
+    labels: tuple[CheckDetail, ...],
+    vectors: FeatureVectors,
+) -> RepresentationStratifiedVariation:
+    grouped: defaultdict[CheckDetail, list[InteractionFeatureVector]] = defaultdict(list)
+    for label, vector in zip(labels, vectors, strict=True):
+        grouped[label].append(vector)
+    constant_by_stratum = tuple(
+        constant_feature_indices(tuple(group)) for group in grouped.values()
+    )
+    universally_constant = tuple(
+        NetworkFeatureName(tuple(NetworkExecutionFeature)[index])
+        for index in range(len(NetworkExecutionFeature))
+        if constant_by_stratum and all(index in constants for constants in constant_by_stratum)
+    )
+    return RepresentationStratifiedVariation(
+        axis=axis,
+        stratum_count=len(grouped),
+        strata_with_constant_features=sum(bool(item) for item in constant_by_stratum),
+        universally_constant_features=universally_constant,
+    )
+
+
 def audit_representation(
     interactions: tuple[PublicSourceInteraction, ...],
     vectors: FeatureVectors,
@@ -232,6 +260,37 @@ def audit_representation(
     contexts = tuple(sorted({item.source_context_id for item in interactions}))
     sources = tuple(sorted({item.dataset_source for item in interactions}))
     actions = tuple(item.semantic_action for item in interactions)
+    chronology = tuple(
+        CheckDetail(timestamp.date().isoformat())
+        if isinstance(timestamp, datetime)
+        else CheckDetail("unknown")
+        for timestamp in timestamps
+    )
+    stratified_variation = (
+        _stratified_variation(
+            RepresentationConfoundAxis.DATASET,
+            tuple(CheckDetail(item.dataset_source) for item in interactions),
+            vectors,
+        ),
+        _stratified_variation(
+            RepresentationConfoundAxis.PHYSICAL_DEVICE,
+            tuple(CheckDetail(item.device_id) for item in interactions),
+            vectors,
+        ),
+        _stratified_variation(
+            RepresentationConfoundAxis.SOURCE_CONTEXT,
+            tuple(CheckDetail(item.source_context_id) for item in interactions),
+            vectors,
+        ),
+        _stratified_variation(
+            RepresentationConfoundAxis.SOURCE_CHRONOLOGY, chronology, vectors
+        ),
+        _stratified_variation(
+            RepresentationConfoundAxis.SEMANTIC_ACTION,
+            tuple(CheckDetail(item.semantic_action) for item in interactions),
+            vectors,
+        ),
+    )
     return RepresentationConfoundAudit(
         dataset_source=interactions[0].dataset_source,
         feature_order=tuple(NetworkFeatureName(item) for item in feature_order),
@@ -252,6 +311,7 @@ def audit_representation(
         network_conditions=contexts,
         action_collection_ordering_available=len(set(actions)) > 1,
         source_identities=sources,
+        stratified_variation=stratified_variation,
         passed=not constant and not near_constant,
     )
 

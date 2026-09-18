@@ -73,6 +73,14 @@ class CounterfactualFeasibility(StrEnum):
     REPRESENTATION_UNOBSERVABLE = "representation_unobservable"
 
 
+class RepresentationConfoundAxis(StrEnum):
+    DATASET = "dataset"
+    PHYSICAL_DEVICE = "physical_device"
+    SOURCE_CONTEXT = "source_context"
+    SOURCE_CHRONOLOGY = "source_chronology"
+    SEMANTIC_ACTION = "semantic_action"
+
+
 class InteractionExclusionReason(StrEnum):
     INTENT_TIMESTAMP_MISSING = "intent_timestamp_missing"
     INTENT_AMBIGUOUS = "intent_ambiguous"

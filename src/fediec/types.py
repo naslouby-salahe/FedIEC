@@ -16,6 +16,7 @@ from fediec.enums import (
     IntentProvenanceGrade,
     NetworkExecutionFeature,
     NetworkTopology,
+    RepresentationConfoundAxis,
     SemanticAction,
     SourceGroupKind,
     SplitFeasibility,
@@ -192,7 +193,15 @@ class RepresentationConfoundAudit(DomainRecord):
     network_conditions: tuple[SourceContextId, ...]
     action_collection_ordering_available: bool
     source_identities: tuple[DatasetSource, ...]
+    stratified_variation: tuple[RepresentationStratifiedVariation, ...]
     passed: bool
+
+
+class RepresentationStratifiedVariation(DomainRecord):
+    axis: RepresentationConfoundAxis
+    stratum_count: SampleCount
+    strata_with_constant_features: SampleCount
+    universally_constant_features: tuple[NetworkFeatureName, ...]
 
 
 class FrozenClientActionCount(DomainRecord):
