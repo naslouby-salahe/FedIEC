@@ -13,6 +13,23 @@ _FUNCTION_LEVEL_EXEMPTIONS = {
     ("models.conditional_flow", "forward"),
     ("models.conditional_flow", "encode_intent"),
     ("models.conditional_flow", "anomaly_score"),
+    ("evaluation.metrics", "area_under_precision_recall"),
+    ("counterfactuals.matching", "compute_caliper"),
+    ("counterfactuals.matching", "rank_donor_candidates"),
+    ("counterfactuals.matching", "within_caliper"),
+    ("counterfactuals.validity", "transition_compatible"),
+    ("counterfactuals.validity", "timestamps_strictly_ordered"),
+    ("counterfactuals.validity", "physical_timeline_feasible"),
+    ("counterfactuals.artifact_control", "run_artifact_control_audit"),
+    ("evaluation.transfer", "eligible_leave_one_device_out_devices"),
+    ("evaluation.transfer", "mask_protocol_identity_features"),
+    ("evaluation.transfer", "build_transfer_result"),
+    ("statistics.comparison", "paired_effect_estimate"),
+    ("statistics.comparison", "apply_holm_correction"),
+    ("reporting.figures", "write_paired_effect_by_seed_figure"),
+    ("reporting.promotion", "promote_finalized_artifact"),
+    ("reporting.tables", "write_comparison_effects_table"),
+    ("reporting.tables", "write_per_device_effects_table"),
 }
 
 

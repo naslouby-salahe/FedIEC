@@ -2,10 +2,43 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy
 import torch
+from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
 
 from fediec.config import load_config
+from fediec.types import MetricValue, SampleWeight, Score
+
+
+def area_under_roc(
+    labels: tuple[bool, ...],
+    scores: tuple[Score, ...],
+    sample_weight: tuple[SampleWeight, ...] | None = None,
+) -> MetricValue:
+    label_array = numpy.asarray(labels, dtype=float)
+    if label_array.min() == label_array.max():
+        raise ValueError("AUROC requires both clean and violation observations")
+    weight_array = numpy.asarray(sample_weight, dtype=float) if sample_weight else None
+    return float(
+        roc_auc_score(label_array, numpy.asarray(scores, dtype=float), sample_weight=weight_array)
+    )
+
+
+def area_under_precision_recall(
+    labels: tuple[bool, ...],
+    scores: tuple[Score, ...],
+    sample_weight: tuple[SampleWeight, ...] | None = None,
+) -> MetricValue:
+    label_array = numpy.asarray(labels, dtype=float)
+    if label_array.min() == label_array.max():
+        raise ValueError("AUPRC requires both clean and violation observations")
+    weight_array = numpy.asarray(sample_weight, dtype=float) if sample_weight else None
+    return float(
+        average_precision_score(
+            label_array, numpy.asarray(scores, dtype=float), sample_weight=weight_array
+        )
+    )
 
 
 def calibration_threshold(clean_calibration_scores: Tensor) -> Tensor:

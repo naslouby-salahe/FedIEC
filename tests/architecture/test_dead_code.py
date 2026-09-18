@@ -7,6 +7,35 @@ SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
 _UNREACHABLE_BUT_JUSTIFIED = {
     "artifacts": "checksum/provenance IO for future public-source preprocessing",
+    "counterfactuals.matching": (
+        "donor caliper/tier ranking for a future source-feasible violation family"
+    ),
+    "counterfactuals.validity": (
+        "transition/timestamp/physical-timeline feasibility checks for a future "
+        "source-feasible violation family"
+    ),
+    "counterfactuals.artifact_control": (
+        "equivalence-style artifact-control audit for a future source-feasible "
+        "violation family"
+    ),
+    "evaluation.transfer": (
+        "leave-one-device-out/protocol-feature-ablation analysis; requires >=4 "
+        "eligible devices unavailable at smoke scale"
+    ),
+    "statistics.resampling": (
+        "dependence-aware bootstrap/permutation resampling for report.py once "
+        "confirmatory run artifacts exist"
+    ),
+    "statistics.comparison": (
+        "paired comparison statistics for report.py once confirmatory run "
+        "artifacts exist"
+    ),
+    "reporting.figures": (
+        "seed-effect figure rendering for report.py once paired comparisons exist"
+    ),
+    "reporting.promotion": (
+        "outputs/ to results/ promotion for report.py once finalized evidence exists"
+    ),
 }
 
 

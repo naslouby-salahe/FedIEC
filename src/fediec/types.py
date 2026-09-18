@@ -13,14 +13,21 @@ from fediec.enums import (
     DatasetRole,
     DatasetSource,
     DeviceCategory,
+    DistanceMetric,
+    HeterogeneityStratum,
     IntentProvenanceGrade,
+    LearningRegimeOutcome,
+    MatchingTier,
     NetworkExecutionFeature,
     NetworkTopology,
     RepresentationConfoundAxis,
+    RobustnessPerturbation,
+    ScoringMethod,
     SemanticAction,
     SourceGroupKind,
     SplitFeasibility,
     SplitPartition,
+    TransferAnalysis,
     TransitionClass,
     ViolationFamily,
 )
@@ -77,6 +84,11 @@ GradientNormClip = NonNegativeFloat
 AdamBeta = UnitInterval
 AdamEpsilon = PositiveFloat
 PcapTimestampScale = PositiveFloat
+Distance = NonNegativeFloat
+EffectSize = FiniteFloat
+SampleWeight = NonNegativeFloat
+PermutationSign = SignedInt
+TierRank = NonNegativeInt
 
 MonotonicTimestamp = FiniteFloat
 WallClockTimestamp = NewType("WallClockTimestamp", datetime)
@@ -101,6 +113,7 @@ ConfigText = NewType("ConfigText", str)
 DirectoryName = NewType("DirectoryName", str)
 TargetDeviceMac = NewType("TargetDeviceMac", str)
 NetworkFeatureName = NewType("NetworkFeatureName", str)
+SvgMarkup = NewType("SvgMarkup", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)
 
@@ -119,6 +132,7 @@ ONE_FEATURE_VALUE: FeatureValue = 1.0
 MEDIAN_QUANTILE: Quantile = 0.5
 P95_QUANTILE: Quantile = 0.95
 NEAR_CONSTANT_VARIANCE_THRESHOLD: FeatureVariance = 1e-12
+A_STAR_EQUIVALENCE_MIDPOINT: ArtifactDetectabilityBound = 0.5
 TOTAL_PACKET_COUNT_FEATURE_INDEX: FeatureIndex = 0
 TOTAL_BYTE_COUNT_FEATURE_INDEX: FeatureIndex = 3
 FIRST_PACKET_INDEX: FeatureIndex = 0
@@ -267,3 +281,109 @@ class DatasetAssessment(DomainRecord):
     role: DatasetRole
     eligibility: DatasetEligibility
     intent_provenance_grade: IntentProvenanceGrade
+
+
+class PredictionRecord(DomainRecord):
+    interaction_id: InteractionId
+    device_id: DeviceId
+    source_group_id: SourceGroupId
+    source_dependency_cluster: SourceDependencyClusterId | None = None
+    semantic_action: SemanticAction
+    seed: Seed
+    scoring_method: ScoringMethod
+    regime: LearningRegimeOutcome
+    is_violation: bool
+    score: Score
+
+
+class PerDeviceEffect(DomainRecord):
+    device_id: DeviceId
+    effect: FiniteFloat
+    sample_count: SampleCount
+
+
+class PairedEffectEstimate(DomainRecord):
+    comparison_label: CheckDetail
+    left_method: ScoringMethod
+    right_method: ScoringMethod
+    point_estimate: FiniteFloat
+    confidence_interval_low: FiniteFloat
+    confidence_interval_high: FiniteFloat
+    permutation_p_value: UnitInterval
+    holm_adjusted_p_value: UnitInterval | None = None
+    seed_effects: tuple[FiniteFloat, ...]
+    per_device_effects: tuple[PerDeviceEffect, ...]
+    unique_source_interaction_count: SampleCount
+
+
+class HeterogeneityDistanceRecord(DomainRecord):
+    stratum: HeterogeneityStratum
+    left_key: CheckDetail
+    right_key: CheckDetail
+    metric: DistanceMetric
+    distance: NonNegativeFloat
+    feature_subset: CheckDetail
+
+
+class TransferResult(DomainRecord):
+    analysis: TransferAnalysis
+    held_out_device: DeviceId | None
+    auroc: UnitInterval
+    auprc: UnitInterval
+    sample_count: SampleCount
+
+
+class RobustnessResult(DomainRecord):
+    perturbation: RobustnessPerturbation
+    mean_score_delta: FiniteFloat
+    sample_count: SampleCount
+
+
+class SecurityFamilyEvaluation(DomainRecord):
+    violation_family: ViolationFamily
+    feasibility: CounterfactualFeasibility
+    evaluated: bool
+    reason: CheckDetail
+
+
+class SecurityEvaluationSummary(DomainRecord):
+    families: tuple[SecurityFamilyEvaluation, ...]
+
+
+class SystemsAccounting(DomainRecord):
+    regime: LearningRegimeOutcome
+    parameter_count: ModelParameterCount
+    serialized_model_bytes: SerializedByteCount
+    uploaded_bytes: SerializedByteCount
+    downloaded_bytes: SerializedByteCount
+    round_count: RoundCount | None = None
+    local_steps: TrainingStepCount
+    wall_clock_seconds: Duration
+
+
+class ArtifactControlAudit(DomainRecord):
+    artifact_audit_family: ArtifactAuditFamily
+    a_star: UnitInterval
+    confidence_interval_high: UnitInterval
+    max_device_a_star: UnitInterval
+    max_feature_a_star: UnitInterval
+    passed: bool
+
+
+class MatchingCaliper(DomainRecord):
+    semantic_action: SemanticAction
+    caliper_quantile: Quantile
+    caliper_value: NonNegativeFloat
+
+
+class DonorCandidate(DomainRecord):
+    donor_source_capture_id: SourceCaptureId
+    matching_tier: MatchingTier
+    context_distance: NonNegativeFloat
+
+
+class ReportSummary(DomainRecord):
+    has_confirmatory_run_artifacts: bool
+    comparisons: tuple[PairedEffectEstimate, ...]
+    generated_table_paths: tuple[RepositoryPath, ...]
+    generated_figure_paths: tuple[RepositoryPath, ...]

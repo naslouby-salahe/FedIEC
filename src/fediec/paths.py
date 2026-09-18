@@ -135,3 +135,10 @@ def resolve_counterfactual_feasibility_manifest_path() -> RepositoryPath:
         / RepositoryPathSegment.MANIFESTS
         / RepositoryPathSegment.COUNTERFACTUAL_FEASIBILITY_MANIFEST_FILE
     )
+
+
+def resolve_smoke_report_tables_directory() -> RepositoryPath:
+    reports_root = resolve_path(RepositoryPathKey.OUTPUTS_REPORTS_ROOT)
+    return RepositoryPath(
+        Path(reports_root) / RepositoryPathSegment.SMOKE / RepositoryPathSegment.TABLES
+    )

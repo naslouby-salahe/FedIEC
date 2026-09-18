@@ -256,6 +256,7 @@ class LogEvent(StrEnum):
     STATUS_START = "cli.status.start"
     STATUS_DONE = "cli.status.done"
     REPORT_START = "cli.report.start"
+    REPORT_DONE = "cli.report.done"
 
 
 class TableColumn(StrEnum):
@@ -366,6 +367,7 @@ class RepositoryPathSegment(StrEnum):
     TABLES = "tables"
     FIGURES = "figures"
     MANIFESTS = "manifests"
+    SMOKE = "smoke"
     CONFIG_FILE = "config.yaml"
     RUN_MANIFEST_FILE = "manifest.json"
     CLEAN_SPLIT_MANIFEST_FILE = "clean-split-manifest.json"
@@ -403,3 +405,79 @@ class DatasetRawSubpath(StrEnum):
     PINGPONG_EVALUATION_DATASETS = "evaluation-datasets"
     MONIOTR_INTERACTION_DATA = "interaction/iot-data"
     MONIOTR_IDLE_DATA = "idle/iot-idle"
+
+
+class StatisticalUnitLevel(StrEnum):
+    PHYSICAL_DEVICE = "physical_device"
+    SOURCE_GROUP = "source_group"
+    SOURCE_DEPENDENCY_CLUSTER = "source_dependency_cluster"
+    INTERACTION = "interaction"
+
+
+class ScoringMethod(StrEnum):
+    INTENT_CONDITIONED_FLOW = "intent_conditioned_flow"
+    ACTION_AGNOSTIC_DENSITY = "action_agnostic_density"
+    DIRECT_ACTION_CLASSIFIER = "direct_action_classifier"
+    PER_ACTION_ONE_CLASS = "per_action_one_class"
+    SHRINKAGE_MAHALANOBIS = "shrinkage_mahalanobis"
+
+
+class LearningRegimeOutcome(StrEnum):
+    LOCAL = "local"
+    CENTRALIZED = "centralized"
+    FEDERATED = "federated"
+
+
+class DistanceMetric(StrEnum):
+    WASSERSTEIN = "wasserstein"
+    ENERGY = "energy"
+
+
+class HeterogeneityStratum(StrEnum):
+    PHYSICAL_DEVICE = "physical_device"
+    SEMANTIC_ACTION = "semantic_action"
+    MANUFACTURER = "manufacturer"
+    TOPOLOGY = "topology"
+
+
+class TransferAnalysis(StrEnum):
+    LEAVE_ONE_DEVICE_OUT = "leave_one_device_out"
+    PROTOCOL_FEATURE_ABLATION = "protocol_feature_ablation"
+    LEAVE_ONE_MANUFACTURER_OUT = "leave_one_manufacturer_out"
+
+
+class RobustnessPerturbation(StrEnum):
+    MISSING_INTENT = "missing_intent"
+    DUPLICATE_INTENT = "duplicate_intent"
+
+
+class ComparisonName(StrEnum):
+    INTENT_VALUE = "intent-value"
+    PRE_CONTEXT_VALUE = "pre-context-value"
+    FEDERATED_COLLABORATION = "federated-collaboration"
+
+
+class ComparisonAvailability(StrEnum):
+    AVAILABLE = "available"
+    UNAVAILABLE_FUTURE_TIER = "unavailable_future_tier"
+
+
+class SecurityEvaluationLevel(StrEnum):
+    LEVEL_A_ARTIFACT_CONTROLLED = "level_a_artifact_controlled"
+    LEVEL_B_OBSERVED_CONTROL_FAILURE = "level_b_observed_control_failure"
+    LEVEL_C_ATTACK_ALIGNED = "level_c_attack_aligned"
+
+
+class ArtifactTableKind(StrEnum):
+    COMPARISON_EFFECTS = "comparison_effects"
+    PER_DEVICE_EFFECTS = "per_device_effects"
+    HETEROGENEITY_DISTANCES = "heterogeneity_distances"
+
+
+class ArtifactFigureKind(StrEnum):
+    PAIRED_EFFECT_BY_SEED = "paired_effect_by_seed"
+
+
+class ReportRunAvailability(StrEnum):
+    NO_CONFIRMATORY_RUN_ARTIFACTS = "no_confirmatory_run_artifacts"
+    RUN_ARTIFACTS_PRESENT = "run_artifacts_present"

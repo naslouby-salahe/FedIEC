@@ -127,7 +127,12 @@ def status() -> None:
 @app.command()
 def report() -> None:
     logger.info(LogEvent.REPORT_START)
-    report_workflow.run_report()
+    summary = report_workflow.run_report()
+    logger.info(
+        LogEvent.REPORT_DONE,
+        has_confirmatory_run_artifacts=summary.has_confirmatory_run_artifacts,
+        comparison_count=len(summary.comparisons),
+    )
 
 
 if __name__ == "__main__":
