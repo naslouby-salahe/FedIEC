@@ -8,6 +8,7 @@ from fediec.enums import ArtifactAuditFamily
 from fediec.evaluation.metrics import area_under_roc
 from fediec.types import (
     A_STAR_EQUIVALENCE_MIDPOINT,
+    ARTIFACT_AUDIT_BOOTSTRAP_SEED,
     P95_QUANTILE,
     ArtifactControlAudit,
     ArtifactDetectabilityBound,
@@ -53,7 +54,7 @@ def run_artifact_control_audit(
     upper_ci_threshold = (
         A_STAR_EQUIVALENCE_MIDPOINT + counterfactuals_config.artifact_audit_tolerance
     )
-    rng = default_rng(0)
+    rng = default_rng(ARTIFACT_AUDIT_BOOTSTRAP_SEED)
     bootstrap_a_stars: list[ArtifactDetectabilityBound] = []
     for _ in range(statistics_config.bootstrap_replicates):
         resampled_devices = rng.choice(devices, size=len(devices), replace=True)

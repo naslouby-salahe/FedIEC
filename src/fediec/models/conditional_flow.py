@@ -5,7 +5,7 @@ from torch import Tensor, nn
 
 from fediec.config import load_config
 from fediec.enums import SemanticAction
-from fediec.types import BlockCount, Dimension, UnitCount
+from fediec.types import BlockCount, Dimension, Seed, UnitCount
 
 _INTENT_DIMENSION: Dimension = 3
 
@@ -56,10 +56,11 @@ class ConditionalInteractionFlow(nn.Module):
         return -self.log_probability(interaction, intent_condition)
 
 
-def build_conditional_interaction_flow() -> ConditionalInteractionFlow:
+def build_conditional_interaction_flow(seed: Seed) -> ConditionalInteractionFlow:
     configuration = load_config().model
     if configuration.context_dimension != _INTENT_DIMENSION:
         raise ValueError("active conditional flow requires a 3-dimensional intent context")
+    torch.default_generator.manual_seed(int(seed))
     return ConditionalInteractionFlow(
         target_dimension=configuration.interaction_dimension,
         coupling_blocks=configuration.coupling_blocks,

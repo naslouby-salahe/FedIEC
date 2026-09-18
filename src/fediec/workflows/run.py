@@ -7,8 +7,9 @@ from fediec.models.conditional_flow import build_conditional_interaction_flow
 
 
 def run_experiment(experiment: ExperimentName) -> None:
-    configured_model = load_config().model
-    model = build_conditional_interaction_flow()
+    configuration = load_config()
+    configured_model = configuration.model
+    model = build_conditional_interaction_flow(configuration.training.seeds[0])
     baselines = active_baseline_contracts()
     if (
         model.target_dimension != configured_model.interaction_dimension

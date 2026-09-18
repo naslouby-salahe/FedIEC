@@ -151,15 +151,15 @@ def run_smoke() -> None:
     transformed = apply_locked_transforms(feature_tensor(smoke_vectors))
     scaler = fit_training_only_scaler(transformed)
     standardized = transform_with_scaler(transformed, scaler)
-    local_model = build_conditional_interaction_flow()
+    smoke_settings = load_config().smoke
+    local_model = build_conditional_interaction_flow(smoke_settings.seed)
     local_rows = tuple(index for index, device in enumerate(devices) if device == devices[0])
     local_features = standardized[list(local_rows)]
     local_actions = tuple(actions[index] for index in local_rows)
-    smoke_settings = load_config().smoke
     train_conditional_flow(
         local_model, local_features, local_actions, smoke_settings.training_epochs
     )
-    centralized_model = build_conditional_interaction_flow()
+    centralized_model = build_conditional_interaction_flow(smoke_settings.seed)
     train_conditional_flow(centralized_model, standardized, actions, smoke_settings.training_epochs)
     calibration_vectors, calibration_actions = _load_smoke_calibration_rows(
         interactions, vectors, splits, tuple(sorted(set(devices)))
@@ -190,7 +190,7 @@ def run_smoke() -> None:
         )
         for device in tuple(sorted(set(devices)))
     )
-    federated_model = build_conditional_interaction_flow()
+    federated_model = build_conditional_interaction_flow(smoke_settings.seed)
     train_fedavg(federated_model, clients, load_config().smoke.federated_rounds)
     baselines = fit_baselines(standardized, actions, smoke_settings.seed)
     if not has_only_locked_log_transforms():

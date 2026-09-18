@@ -31,7 +31,7 @@ def test_intent_encoding_is_fixed_three_state_one_hot() -> None:
 
 
 def test_conditional_flow_accepts_only_19_d_capture_and_3_d_intent() -> None:
-    model = build_conditional_interaction_flow()
+    model = build_conditional_interaction_flow(load_config().training.seeds[0])
     captures = torch.zeros((2, 19))
     conditions = torch.stack((encode_intent(SemanticAction.TURN_ON),) * 2)
     assert model.log_probability(captures, conditions).shape == (2,)
