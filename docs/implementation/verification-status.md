@@ -6,7 +6,7 @@
 | Pyright | pass: 0 errors, 0 warnings |
 | Pytest | pass: 59 checks across unit, integration, protocol, architecture, and E2E layers; includes capture-level interface, intent encoding, source identity, confound-gate coverage, typed role freeze, source-feasibility freeze, derived-artifact smoke, and CLI plan coverage |
 | Semgrep | pass through committed `.semgrep.yml` and `tests/architecture/test_static_analysis.py` |
-| Graphify | fresh AST extraction on the reconciled tree: 872 nodes and 4,434 edges; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
+| Graphify | fresh AST extraction on the reconciled tree: 873 nodes and 6,811 edges; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
 | Engineering smoke | pass: `fediec smoke` used real derived Mon(IoT)r capture rows, locked transforms/training-only scaler, local and centralized flow training, simulated FedAvg, and all four baselines. No score or performance result was interpreted. |
 | `doctor` | pass: configuration and all three public sources present and valid |
 | Adapter enumeration | pass: PingPong 2,000; CIC 264; TU Wien 10,000; Mon(IoT)r 9,986 non-empty Android ON/OFF typed interactions |
