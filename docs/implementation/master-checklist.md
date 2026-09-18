@@ -32,5 +32,25 @@
   descriptive where alternation/boundary provenance confounds interpretation.
 - [x] Freeze the per-family counterfactual source-feasibility matrix and
   artifact-control pass rules; no source-infeasible family is generated.
+- [x] Build the `counterfactuals/` (matching, validity, artifact_control,
+  generation), `statistics/` (resampling, comparison), and `reporting/`
+  (tables, figures, promotion) packages required by the locked repository
+  structure; `generation.py` fails closed for every currently frozen family.
+- [x] Build `evaluation/heterogeneity.py`, `evaluation/transfer.py`,
+  `evaluation/robustness.py`, and `evaluation/security.py`.
+- [x] Wire `smoke` to exercise heterogeneity distances (device, action, and
+  protocol-identity-feature subsets), the missing/duplicate-intent robustness
+  diagnostics, the security-evaluation suite, and the counterfactual-gating
+  fail-closed path, all on real derived Mon(IoT)r rows.
+- [x] Wire `report` to inspect `outputs/runs/` for confirmatory prediction
+  artifacts and report their absence structurally instead of raising
+  `NotImplementedError`.
+- [x] Add unit tests for `statistics.comparison` (Holm correction, paired
+  effect estimate), `evaluation.heterogeneity`, and the `counterfactuals`
+  package (matching, validity, artifact-control pass/fail, generation gating).
 
-No confirmatory experiment has been run in this phase.
+No confirmatory experiment has been run in this phase. The counterfactual
+generation/artifact-control smoke requirement remains correctly blocked by
+public source feasibility (every family is `SOURCE_INFEASIBLE` or
+`REPRESENTATION_UNOBSERVABLE` in the frozen primary manifest); smoke proves
+the fail-closed gate instead of fabricating a family.

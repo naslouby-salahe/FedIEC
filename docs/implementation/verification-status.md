@@ -2,12 +2,13 @@
 
 | Check | Result |
 | --- | --- |
-| Ruff | pass: final implementation-alignment check |
-| Pyright | pass: 0 errors, 0 warnings |
-| Pytest | pass: 59 checks across unit, integration, protocol, architecture, and E2E layers; includes capture-level interface, intent encoding, source identity, confound-gate coverage, typed role freeze, source-feasibility freeze, derived-artifact smoke, and CLI plan coverage |
-| Semgrep | pass through committed `.semgrep.yml` and `tests/architecture/test_static_analysis.py` |
-| Graphify | fresh AST extraction on the reconciled tree: 873 nodes and 6,811 edges; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
-| Engineering smoke | pass: `fediec smoke` used real derived Mon(IoT)r capture rows, locked transforms/training-only scaler, local and centralized flow training, simulated FedAvg, and all four baselines. No score or performance result was interpreted. |
+| Ruff | pass: `ruff check src tests` clean after the statistics/evaluation/counterfactuals/reporting build-out |
+| Pyright | pass: 0 errors, 0 warnings on `src tests` |
+| Pytest | pass: 72 checks across unit, integration, protocol, architecture, and E2E layers; adds `statistics.comparison` (Holm correction, paired effect estimate), `evaluation.heterogeneity`, and `counterfactuals` (matching, validity, artifact-control pass/fail, generation gating) unit coverage |
+| Semgrep | pass through committed `.semgrep.yml` and `tests/architecture/test_static_analysis.py`: 0 findings across 55 tracked files |
+| Wiring/reachability | pass: `test_wiring.py`, `test_dead_code.py`, `test_function_reachability.py`, and `test_dependencies.py` verify CLI→workflow delegation, module reachability (with narrow, documented exemptions for pre-confirmatory-data future-tier code), and the `cli → workflows → {datasets, models, baselines, training, evaluation, counterfactuals, statistics, reporting} → {enums, types, paths, config}` import direction |
+| Engineering smoke | pass: `fediec smoke` used real derived Mon(IoT)r capture rows, locked transforms/training-only scaler, local and centralized flow training, simulated FedAvg, all four baselines, device/action/protocol-identity-feature heterogeneity distances, missing/duplicate-intent robustness diagnostics, the security-evaluation suite, and the counterfactual-generation fail-closed gate. No score or performance result was interpreted. |
+| `preprocess`/`prepare`/`status`/`report` (real run) | pass: executed against real raw data for all four public sources; `report` correctly reports `has_confirmatory_run_artifacts=False` since `run` remains intentionally blocked |
 | `doctor` | pass: configuration and all three public sources present and valid |
 | Adapter enumeration | pass: PingPong 2,000; CIC 264; TU Wien 10,000; Mon(IoT)r 9,986 non-empty Android ON/OFF typed interactions |
 | Mon(IoT)r representation-confound audit | pass after the approved pre-model `PRE_MODEL_STRUCTURAL_DEGENERACY` correction: all 19 features are nonconstant and non-near-constant across 9,986 captures. Packet count range 1–1,388, byte range 60–487,293, capture-duration range 0–155.444 seconds; chronology, site/network contexts, action ordering, and source identity are recorded. |

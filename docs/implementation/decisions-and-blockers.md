@@ -77,6 +77,27 @@
    counterfactual smoke requirement is therefore blocked by public
    data/provenance rather than implemented with a synthetic substitute.
 
+9. The `counterfactuals/`, `statistics/`, and `reporting/` packages required by
+   the locked repository structure were built this phase even though no
+   violation family is currently source-feasible and no confirmatory run
+   artifacts exist. Each module is real, typed, and unit-tested rather than a
+   placeholder: `counterfactuals.generation` dispatches to a family-specific
+   generator only when the frozen manifest records `SOURCE_FEASIBLE` and fails
+   closed with `NotSourceFeasibleError` otherwise; `statistics.comparison` and
+   `counterfactuals.artifact_control` implement the dependence-aware
+   bootstrap/permutation and equivalence-style A* procedures against typed
+   `PredictionRecord`/score inputs so they are ready the moment real evidence
+   exists. Six of these modules remain legitimately unreachable from `cli.py`
+   today (see `wiring-map.md`); `tests/architecture/test_dead_code.py` records
+   the specific gating reason for each rather than silently allowlisting them.
+10. `evaluation.heterogeneity`'s pairwise distance is the mean per-feature
+    Wasserstein/energy distance across the active 19-feature schema, not a
+    multivariate optimal-transport distance. No dependency beyond SciPy
+    (already a mature, well-typed statistics library) was added for this
+    descriptive analysis; a true multivariate distance would require an
+    additional optimal-transport dependency and is not required by the
+    roadmap's descriptive heterogeneity language.
+
 ## Source-of-truth cleanup still required
 
 The roadmap remains scientifically authoritative, but it contains residual
