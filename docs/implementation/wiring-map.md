@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | `doctor` | `workflows.doctor.run_doctor` | configuration and PingPong, TU Wien, CIC, and Mon(IoT)r source availability | read-only and implemented |
 | `preprocess` | `workflows.preprocess.run_preprocess` | writes source-group split manifests; for Mon(IoT)r extracts the 19-D `X_interaction` target, writes the confound audit, and writes the final protocol-freeze manifest only after the audit passes | implemented, active representation/freeze path |
-| `prepare` | `workflows.prepare.run_prepare` | future derived-corpus counterfactual preparation | intentionally unimplemented |
+| `prepare` | `workflows.prepare.run_prepare` | writes the frozen counterfactual-feasibility manifest and fails closed if a source-feasible family appears without its raw-timeline generator | implemented for the current all-infeasible primary freeze |
 | `plan` | `workflows.plan.resolve_plan` | configured experiment matrix | implemented |
 | `smoke` | `workflows.smoke.run_smoke` | loads real Mon(IoT)r-derived 19-D rows, applies training-only transforms/scaling, and traverses local, centralized, FedAvg, baseline, and provenance-freeze paths | implemented; no scientific score or result promotion |
 | `run <experiment>` | `workflows.run.run_experiment` | confirmatory execution remains intentionally blocked until an explicit execution instruction; no B/E route is reachable | intentionally disabled |

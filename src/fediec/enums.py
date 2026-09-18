@@ -365,6 +365,7 @@ class RepositoryPathSegment(StrEnum):
     STATISTICS = "statistics"
     TABLES = "tables"
     FIGURES = "figures"
+    MANIFESTS = "manifests"
     CONFIG_FILE = "config.yaml"
     RUN_MANIFEST_FILE = "manifest.json"
     CLEAN_SPLIT_MANIFEST_FILE = "clean-split-manifest.json"
@@ -372,6 +373,7 @@ class RepositoryPathSegment(StrEnum):
     REPRESENTATION_CONFOUND_AUDIT_FILE = "representation-confound-audit.json"
     PREPROCESS_PROVENANCE_FILE = "preprocess-provenance.json"
     PROTOCOL_FREEZE_MANIFEST_FILE = "protocol-freeze-manifest.json"
+    COUNTERFACTUAL_FEASIBILITY_MANIFEST_FILE = "counterfactual-feasibility-manifest.json"
 
 
 class NetworkExecutionFeature(StrEnum):

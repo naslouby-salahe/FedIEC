@@ -126,3 +126,12 @@ def resolve_processed_dataset_directory(dataset: DatasetSource) -> RepositoryPat
     processed_root = resolve_path(RepositoryPathKey.OUTPUTS_PROCESSED_ROOT)
     slug = _DATASET_SOURCE_DIRECTORY_NAME[dataset].lower().replace(" ", "-")
     return RepositoryPath(Path(processed_root) / slug)
+
+
+def resolve_counterfactual_feasibility_manifest_path() -> RepositoryPath:
+    benchmark_root = resolve_path(RepositoryPathKey.OUTPUTS_BENCHMARK_ROOT)
+    return RepositoryPath(
+        Path(benchmark_root)
+        / RepositoryPathSegment.MANIFESTS
+        / RepositoryPathSegment.COUNTERFACTUAL_FEASIBILITY_MANIFEST_FILE
+    )
