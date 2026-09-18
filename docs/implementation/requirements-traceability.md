@@ -16,6 +16,7 @@
 | Baseline implementations | `models.baselines`, `baselines.contracts` | action-agnostic density, direct classifier, per-action One-Class SVM, shrinkage covariance score | smoke-wired; NO_ACTION source gated |
 | Training-only transforms and shared scaler | `datasets.normalization` | configured `log1p` magnitude transforms; rate features untouched; fit only on supplied training rows | smoke-wired |
 | Local, centralized, and FedAvg paths | `training.runner`, `training.federated` | shared conditional-flow training and sample-count-weighted simulated FedAvg accounting | tiny real-data smoke wired; confirmatory matrix not run |
+| Calibration threshold and clean-FPR metric | `evaluation.metrics` | configured clean-calibration quantile and scalar locked-threshold metrics | real-data smoke wired; no violation performance interpreted |
 | Primary protocol freeze | `datasets.freeze`, `workflows.preprocess` | physical clients, source groups, action/split counts, 19-feature schema, scarcity cohort, normalization, holdout, interfaces, seeds, statistics, and unavailable families | implemented for approved Mon(IoT)r primary tier |
 | Counterfactual feasibility and artifact controls | `datasets.freeze` | per-family feasibility reasons and frozen audit pass rules in the primary manifest | source-feasibility freeze implemented; confirmatory generation remains disabled |
 | Counterfactual generation and dependence-aware final statistics | future owners | primary feasibility freeze rejects every family | blocked by source feasibility / not started |

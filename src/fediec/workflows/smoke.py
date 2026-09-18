@@ -21,7 +21,7 @@ from fediec.enums import (
     SemanticAction,
     SplitPartition,
 )
-from fediec.evaluation.metrics import calibration_threshold
+from fediec.evaluation.metrics import calibration_threshold, threshold_metrics
 from fediec.models.baselines import (
     action_agnostic_scores,
     direct_action_scores,
@@ -163,7 +163,12 @@ def run_smoke() -> None:
         calibration_features,
         torch.stack(tuple(encode_intent(action) for action in calibration_actions)),
     )
-    calibration_threshold(calibration_scores)
+    threshold = calibration_threshold(calibration_scores)
+    calibration_metrics = threshold_metrics(
+        calibration_scores, torch.zeros_like(calibration_scores), threshold
+    )
+    if calibration_metrics.false_positive_rate.ndim != 0:
+        raise RuntimeError("clean calibration false-positive rate must be scalar")
     clients = tuple(
         FederatedClientData(
             features=standardized[
