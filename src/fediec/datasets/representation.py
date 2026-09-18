@@ -20,8 +20,8 @@ from fediec.types import (
     FeatureIndex,
     FeatureValue,
     FeatureVariance,
-    FeatureVector,
     FeatureVectors,
+    InteractionFeatureVector,
     MonotonicTimestamp,
     NetworkFeatureName,
     PcapTimestampScale,
@@ -43,18 +43,18 @@ def _mac_text(value: bytes) -> TargetDeviceMac:
     return TargetDeviceMac(":".join(f"{part:x}" for part in value))
 
 
-def _mean(values: FeatureVector) -> FeatureValue:
+def _mean(values: tuple[FeatureValue, ...]) -> FeatureValue:
     return sum(values) / len(values) if values else ZERO_FEATURE_VALUE
 
 
-def _standard_deviation(values: FeatureVector) -> FeatureValue:
+def _standard_deviation(values: tuple[FeatureValue, ...]) -> FeatureValue:
     if len(values) < 2:
         return ZERO_FEATURE_VALUE
     mean = _mean(values)
     return (sum((value - mean) ** 2 for value in values) / len(values)) ** 0.5
 
 
-def _quantile(values: FeatureVector, quantile: FeatureValue) -> FeatureValue:
+def _quantile(values: tuple[FeatureValue, ...], quantile: FeatureValue) -> FeatureValue:
     if not values:
         return ZERO_FEATURE_VALUE
     ordered = sorted(values)
@@ -64,7 +64,7 @@ def _quantile(values: FeatureVector, quantile: FeatureValue) -> FeatureValue:
 
 def extract_interaction_features(
     interaction: PublicSourceInteraction,
-) -> FeatureVector:
+) -> InteractionFeatureVector:
     if interaction.target_device_mac is None:
         raise ValueError(f"{interaction.interaction_id}: target device MAC is unavailable")
     with Path(interaction.capture_path).open("rb") as handle:
@@ -127,8 +127,8 @@ def extract_interaction_features(
         if timestamps
         else ZERO_FEATURE_VALUE
     )
-    return FeatureVector(
-        (
+    return InteractionFeatureVector(
+        values=(
             packet_count,
             len(outbound_sizes),
             len(inbound_sizes),
@@ -159,12 +159,10 @@ def interaction_feature_order() -> tuple[NetworkExecutionFeature, ...]:
 def constant_feature_indices(vectors: FeatureVectors) -> tuple[FeatureIndex, ...]:
     if not vectors:
         raise ValueError("representation-confound audit requires at least one interaction vector")
-    if any(len(vector) != len(NetworkExecutionFeature) for vector in vectors):
-        raise ValueError("interaction representation does not match the active feature schema")
     return tuple(
         index
         for index in range(len(NetworkExecutionFeature))
-        if len({vector[index] for vector in vectors}) == 1
+        if len({vector.values[index] for vector in vectors}) == 1
     )
 
 
@@ -175,7 +173,7 @@ def require_nonconstant_representation(vectors: FeatureVectors) -> None:
         raise ValueError(f"representation-confound gate failed: constant features {names}")
 
 
-def _variance(values: FeatureVector) -> FeatureVariance:
+def _variance(values: tuple[FeatureValue, ...]) -> FeatureVariance:
     if len(values) < 2:
         return ZERO_FEATURE_VALUE
     mean = _mean(values)
@@ -214,11 +212,9 @@ def audit_representation(
 ) -> RepresentationConfoundAudit:
     if not interactions or len(interactions) != len(vectors):
         raise ValueError("representation-confound audit requires matched interactions and vectors")
-    if any(len(vector) != len(NetworkExecutionFeature) for vector in vectors):
-        raise ValueError("interaction representation does not match the active feature schema")
     feature_order = interaction_feature_order()
     variances = tuple(
-        _variance(tuple(vector[index] for vector in vectors))
+        _variance(tuple(vector.values[index] for vector in vectors))
         for index in range(len(NetworkExecutionFeature))
     )
     constant = tuple(
@@ -243,12 +239,12 @@ def audit_representation(
         constant_features=constant,
         near_constant_features=near_constant,
         packet_count_range=(
-            min(vector[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
-            max(vector[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
+            min(vector.values[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
+            max(vector.values[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
         ),
         byte_count_range=(
-            min(vector[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
-            max(vector[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
+            min(vector.values[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
+            max(vector.values[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
         ),
         capture_duration_range=(min(capture_durations), max(capture_durations)),
         chronology_available=all(timestamp is not None for timestamp in timestamps),

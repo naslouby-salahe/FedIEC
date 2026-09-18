@@ -14,7 +14,7 @@ from fediec.datasets.representation import (
 from fediec.datasets.splits import build_clean_split
 from fediec.enums import CounterfactualFeasibility, DatasetSource, SemanticAction
 from fediec.models.conditional_flow import build_conditional_interaction_flow, encode_intent
-from fediec.types import DirectoryName
+from fediec.types import DirectoryName, InteractionFeatureVector
 
 
 def test_active_config_has_capture_target_and_intent_only_context() -> None:
@@ -49,7 +49,10 @@ def test_baseline_contracts_share_the_active_target_dimension() -> None:
 
 
 def test_representation_confound_gate_identifies_constant_feature() -> None:
-    vectors = ((1.0,) * 19, (2.0,) + (1.0,) * 18)
+    vectors = (
+        InteractionFeatureVector(values=(1.0,) * 19),
+        InteractionFeatureVector(values=(2.0,) + (1.0,) * 18),
+    )
     assert constant_feature_indices(vectors) == tuple(range(1, 19))
 
 

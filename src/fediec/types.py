@@ -4,7 +4,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Annotated, NewType
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from fediec.enums import (
     ArtifactAuditFamily,
@@ -100,8 +100,7 @@ NetworkFeatureName = NewType("NetworkFeatureName", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)
 
-FeatureVector = tuple[FeatureValue, ...]
-FeatureVectors = tuple[FeatureVector, ...]
+FeatureVectors = tuple["InteractionFeatureVector", ...]
 
 ZERO_PACKET_COUNT: PacketCount = 0
 ZERO_BYTE_COUNT: ByteCount = 0
@@ -118,6 +117,16 @@ LAST_PACKET_INDEX: SignedInt = -1
 
 class DomainRecord(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class InteractionFeatureVector(DomainRecord):
+    values: tuple[FeatureValue, ...]
+
+    @model_validator(mode="after")
+    def require_active_schema_width(self) -> InteractionFeatureVector:
+        if len(self.values) != len(NetworkExecutionFeature):
+            raise ValueError("interaction feature vector must contain the active 19-feature schema")
+        return self
 
 
 class PublicSourceInteraction(DomainRecord):

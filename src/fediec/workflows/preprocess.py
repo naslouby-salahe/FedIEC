@@ -69,7 +69,9 @@ def run_preprocess() -> None:
         audit_target.write_text(audit.model_dump_json(indent=2), encoding="utf-8")
         require_representation_audit_pass(audit)
         feature_target = Path(directory) / RepositoryPathSegment.INTERACTION_FEATURES_FILE
-        feature_target.write_text(json.dumps(vectors), encoding="utf-8")
+        feature_target.write_text(
+            json.dumps(tuple(vector.values for vector in vectors)), encoding="utf-8"
+        )
         freeze = build_protocol_freeze(manifest, audit)
         freeze_target = Path(directory) / RepositoryPathSegment.PROTOCOL_FREEZE_MANIFEST_FILE
         freeze_target.write_text(freeze.model_dump_json(indent=2), encoding="utf-8")
