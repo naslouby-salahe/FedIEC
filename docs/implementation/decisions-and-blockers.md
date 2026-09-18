@@ -12,13 +12,50 @@
   interaction folders are candidate material.
 - TU Wien Philips Hue is a replication source and is not evidence for a
   multi-device federated claim by itself.
+- The clean-split target is approximately 60/20/20 at genuine source-group
+  granularity. No fixed per-context count is a protocol gate.
+- Mon(IoT)r is the approved primary source for the active capture-level
+  interaction-consistency tier. PingPong fails its clean-split gate, CIC has
+  sparse `PARTIAL` evidence, and TU Wien is replication-only.
+- The active formulation is `p(X_interaction | I)`. Mon(IoT)r's lack of an
+  in-capture trigger instant excludes only the future strict B/E tier; its
+  `unctrl`/`ctrl1` idle labels remain insufficient for `NO_ACTION`.
 
 ## Open scientific gates
 
-1. Determine whether each PingPong candidate exposes enough independent
-   source-group and passive-background evidence for the complete context
-   protocol; do not reconstruct missing `NO_ACTION` data.
-2. Complete CIC IoT 2022 device/source-group eligibility evidence before
-   promoting it beyond `ACTION_CONTRACT_ONLY`.
-3. Evaluate attack material only if intent, device, timing, attack interval,
+1. PingPong's continuous per-context capture groups fail the clean-split gate;
+   do not split trigger rows across that capture.
+2. CIC IoT 2022 has three independent one-PCAP groups per physical-device,
+   trigger-method, and action context. Its 1/1/1 allocation is leakage-safe
+   but does not meet the approximately 60/20/20 target and is not scientifically
+   sufficient for the roadmap's thresholded or uncertainty-sensitive analyses.
+   No smaller numerical requirement is being invented to override that result.
+3. CIC's interaction directories and device list independently support action
+   semantics and official companion-app identity. The device list supplies a
+   target-MAC mapping; its mapped MAC appears in the first Ethernet frame of
+   every selected PCAP. A future feature pipeline must still filter complete
+   captures to that target endpoint. The source does not document a control-trigger timestamp. The
+   first PCAP packet is a capture-start timestamp, not an independently valid
+   trigger boundary; CIC is `PARTIAL` and must not support B-context or
+   exact-trigger analyses until a source-backed boundary rule is established.
+4. Evaluate attack material only if intent, device, timing, attack interval,
    and execution alignment are independently documented.
+5. No source has a frozen three-context `NO_ACTION` procedure at this stage.
+   PingPong has timestamped continuous traces but fails source-group splitting;
+   CIC publishes idle material but lacks an independently documented action
+   boundary for matching it to interaction contexts; TU Wien's labeled action
+   captures do not independently label non-action intervals. All NO_ACTION-
+   dependent and B-context analyses therefore remain unavailable.
+6. The currently auditable source order is alternating for PingPong and TU
+   Wien, so pre-context cannot be interpreted as an independent predictor of
+   intent for those sources. CIC's capture-start order is not an action-order
+   substitute. No source supports a confirmatory B-context comparison.
+7. The former source-capture-start-to-first-target-packet feature was constant
+   over all 9,986 eligible captures. It was removed as
+   `PRE_MODEL_STRUCTURAL_DEGENERACY` before model execution, with user-approved
+   protocol amendment. No filename timestamp replacement is allowed without
+   authoritative source documentation.
+8. The amended 19-feature Mon(IoT)r audit passes global constant and
+   near-constant checks. Source/site/network-condition and collection-order
+   metadata remain audit/reporting strata rather than model inputs; no raw
+   identity enters the active representation.

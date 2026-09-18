@@ -149,16 +149,13 @@ FedIEC/
 │       │           # Optional real-attack dataset loading and strict alignment eligibility.
 │       │           # It must not manufacture missing intent/action alignment.
 │       │
-│       ├── preprocessing/
-│       │   ├── interactions.py
-│       │   │   # Converts raw intent/capture/session material into valid (B, I, E) observations
-│       │   │   # and applies frozen interaction-level exclusion rules.
+│       ├── datasets/
+│       │   ├── representation.py
+│       │   │   # Extracts one 19-feature X_interaction vector from each complete,
+│       │   │   # attributable source-defined capture and performs the confound audit.
 │       │   │
-│       │   ├── features.py
-│       │   │   # Extracts the locked pre-action and post-action network feature representation.
-│       │   │
-│       │   ├── splitting.py
-│       │   │   # Builds chronological train/calibration/test partitions and transfer folds.
+│       │   ├── splits.py
+│       │   │   # Builds source-group-isolated train/calibration/test manifests.
 │       │   │
 │       │   └── normalization.py
 │       │       # Training-client-only feature transforms and shared scaler construction.
@@ -173,7 +170,7 @@ FedIEC/
 │       │   │   # excess execution, and temporally misaligned execution cases.
 │       │   │
 │       │   ├── validity.py
-│       │   │   # Transition semantics, B→E boundary continuity, timestamp/order checks,
+│       │   │   # Future strict-tier transition and timestamp/order checks,
 │       │   │   # and physical-timeline feasibility.
 │       │   │
 │       │   └── artifact_control.py
@@ -181,8 +178,8 @@ FedIEC/
 │       │       # Scientific artifact control remains required even though no top-level audit/ exists.
 │       │
 │       ├── models/
-│       │   ├── contract.py
-│       │   │   # Main conditional contract model p(E | B, I).
+│       │   ├── conditional_flow.py
+│       │   │   # Main conditional contract model p(X_interaction | I).
 │       │   │
 │       │   └── baselines.py
 │       │       # Execution-only, intent-only, direct action-classification,
@@ -406,9 +403,9 @@ FedIEC/
     │
     ├── experiments/
     │   ├── intent-value/
-    │   │   # Final p(E|B,I) versus p(E|B) evidence.
+    │   │   # Final p(X_interaction|I) versus q(X_interaction) evidence.
     │   ├── pre-context-value/
-    │   │   # Final p(E|B,I) versus p(E|I) evidence.
+    │   │   # Reserved for a future source that supports strict p(E|B,I).
     │   ├── federated-collaboration/
     │   │   # Final federated versus local evidence.
     │   ├── data-scarcity/
@@ -969,16 +966,26 @@ This document does not duplicate the full roadmap. The following are architectur
 
 ### 19.1 Observation and Feature Semantics
 
-1. Preserve the `(B, I, E)` contract semantics.
-2. The main representation uses the locked pre-action and post-action network features defined by the roadmap.
+1. Preserve the active `(X_interaction, I)` contract semantics.
+2. The main representation is exactly one 19-feature vector over a complete attributable source-defined interaction capture; it does not require B, E, or a trigger boundary.
 3. Intent remains independently sourced.
 4. Device identity, manufacturer identity, IP/MAC, or vendor identity must not become learned model features merely because they are available in metadata.
 5. Metadata used for stratification/reporting must remain distinguishable from model inputs.
 6. Do not change locked feature meaning after observing confirmatory results.
 
+The active conditional-flow interface is `target=[batch,20]` and
+`intent_condition=[batch,3]`, encoding `NO_ACTION`, `TURN_ON`, and `TURN_OFF`
+in that fixed order. The former source-capture-start latency feature was removed
+before model execution as `PRE_MODEL_STRUCTURAL_DEGENERACY` after being constant
+over 9,986 Mon(IoT)r captures. Feature 19 is first-to-last attributed target
+packet span, a capture activity span rather than execution duration. The
+representation-confound audit runs before model execution and fails closed on
+constant or near-constant features while reporting capture duration,
+chronology, source/site/context, and collection-order metadata.
+
 ### 19.2 Splits and Leakage
 
-1. Preserve chronological splitting.
+1. Preserve source-group isolation; chronology is reported when the source provides it.
 2. Training/calibration/test partitions must not overlap.
 3. Calibration/test observations must not affect training normalization.
 4. Test observations must not drive model architecture/hyperparameter rescue.
@@ -1014,7 +1021,7 @@ This document does not duplicate the full roadmap. The following are architectur
 6. Do not relax matching because a convenient donor is unavailable.
 7. Preserve the frozen matching hierarchy.
 8. Transition semantics must be compatible.
-9. B→E boundary continuity must be checked.
+9. B→E boundary continuity is required only by the isolated future strict tier.
 10. Internal timing/packet order must be preserved as required.
 11. Do not repair impossible timestamp collisions with arbitrary epsilon jitter.
 12. EXCESS composition must respect physical/raw-timeline feasibility.
@@ -1047,11 +1054,16 @@ Security interpretation must not proceed as if a transformation were valid when 
 
 ### 19.8 External/Real-Attack Validation
 
-1. PingPong is the first candidate for a public-source main study.
-2. TU Wien Philips Hue is mechanism replication according to the roadmap, not proof of multi-device federation by itself.
+1. Mon(IoT)r is the approved primary multi-device action-contract source; US and UK physical instances remain distinct and VPN conditions are not clients.
+2. PingPong is a source-dependence diagnostic and cannot enter a capture-level clean split; TU Wien Philips Hue is mechanism replication, not proof of multi-device federation.
 3. CIC IoT 2022 or another real-attack dataset is used only when intent/device/time/attack/execution alignment requirements are satisfied.
 4. If required real-attack alignment is absent, no code path may manufacture it.
 5. Results remain distinguishable by source collection; incompatible sources are not pooled.
+
+`NO_ACTION` and any dependent baseline or violation family are source-gated.
+The current sources do not establish an independently reconstructable
+`NO_ACTION` population. Strict `p(E | B,I)` remains a future source-capability
+tier and is unreachable from the active CLI workflow.
 
 ### 19.9 Statistical Units
 

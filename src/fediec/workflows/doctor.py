@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from fediec.config import load_config
 from fediec.datasets.cic_iot_2022 import dataset as cic_iot_2022_dataset
+from fediec.datasets.moniotr_imc_2019 import dataset as moniotr_imc_2019_dataset
 from fediec.datasets.pingpong import dataset as pingpong_dataset
 from fediec.datasets.tu_wien_philips_hue import dataset as tu_wien_philips_hue_dataset
 from fediec.enums import CheckKind, CheckStatus, DatasetAvailability, DatasetSource
@@ -24,12 +25,14 @@ _DATASET_AVAILABILITY_CHECK: dict[DatasetSource, Callable[[], DatasetAvailabilit
     DatasetSource.PINGPONG: pingpong_dataset.describe_raw_availability,
     DatasetSource.TU_WIEN_PHILIPS_HUE: tu_wien_philips_hue_dataset.describe_raw_availability,
     DatasetSource.CIC_IOT_2022: cic_iot_2022_dataset.describe_raw_availability,
+    DatasetSource.MONIOTR_IMC_2019: moniotr_imc_2019_dataset.describe_raw_availability,
 }
 
 _CHECK_KIND_FOR_DATASET: dict[DatasetSource, CheckKind] = {
     DatasetSource.PINGPONG: CheckKind.DATASET_PINGPONG,
     DatasetSource.TU_WIEN_PHILIPS_HUE: CheckKind.DATASET_TU_WIEN_PHILIPS_HUE,
     DatasetSource.CIC_IOT_2022: CheckKind.DATASET_CIC_IOT_2022,
+    DatasetSource.MONIOTR_IMC_2019: CheckKind.DATASET_MONIOTR_IMC_2019,
 }
 
 
@@ -63,6 +66,8 @@ def _resolve_dataset_assessment(dataset_source: DatasetSource) -> DatasetAssessm
             configured = public_sources.cic_iot_2022
         case DatasetSource.TU_WIEN_PHILIPS_HUE:
             configured = public_sources.tu_wien_philips_hue
+        case DatasetSource.MONIOTR_IMC_2019:
+            configured = public_sources.moniotr_imc_2019
     return DatasetAssessment(
         dataset_source=dataset_source,
         role=configured.role,

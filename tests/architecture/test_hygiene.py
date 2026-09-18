@@ -42,9 +42,7 @@ def test_no_generic_dumping_ground_modules() -> None:
 
 
 def test_no_forbidden_top_level_packages() -> None:
-    offenders = [
-        name for name in _FORBIDDEN_TOP_LEVEL_NAMES if (SRC_ROOT / name).exists()
-    ]
+    offenders = [name for name in _FORBIDDEN_TOP_LEVEL_NAMES if (SRC_ROOT / name).exists()]
     assert not offenders, f"forbidden top-level packages present: {offenders}"
 
 

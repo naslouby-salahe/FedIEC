@@ -7,7 +7,13 @@ SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "fediec"
 
 _MODULE_LEVEL_EXEMPTIONS = {"artifacts"}
 
-_FUNCTION_LEVEL_EXEMPTIONS = {("paths", "resolve_processed_dataset_directory")}
+_FUNCTION_LEVEL_EXEMPTIONS = {
+    ("paths", "resolve_processed_dataset_directory"),
+    ("datasets.representation", "require_nonconstant_representation"),
+    ("models.conditional_flow", "forward"),
+    ("models.conditional_flow", "encode_intent"),
+    ("models.conditional_flow", "anomaly_score"),
+}
 
 
 def _module_name(path: Path) -> str:

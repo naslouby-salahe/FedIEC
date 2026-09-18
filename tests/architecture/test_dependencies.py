@@ -11,8 +11,17 @@ _ALLOWED_IMPORT_PREFIXES: dict[str, tuple[str, ...]] = {
     "paths": ("enums", "types"),
     "artifacts": ("enums", "types"),
     "config": ("enums", "types", "paths"),
-    "datasets": ("enums", "types", "paths"),
-    "workflows": ("enums", "types", "paths", "config", "datasets", "workflows"),
+    "datasets": ("enums", "types", "paths", "config"),
+    "workflows": (
+        "enums",
+        "types",
+        "paths",
+        "config",
+        "datasets",
+        "models",
+        "baselines",
+        "workflows",
+    ),
     "cli": ("enums", "types", "workflows"),
 }
 
@@ -67,8 +76,7 @@ def test_nothing_in_src_imports_tests() -> None:
                     offenders.append(f"{path.relative_to(SRC_ROOT)}:{node.lineno}")
             elif isinstance(node, ast.Import):
                 if any(
-                    alias.name == "tests" or alias.name.startswith("tests.")
-                    for alias in node.names
+                    alias.name == "tests" or alias.name.startswith("tests.") for alias in node.names
                 ):
                     offenders.append(f"{path.relative_to(SRC_ROOT)}:{node.lineno}")
     assert not offenders, f"production code must never import tests: {offenders}"

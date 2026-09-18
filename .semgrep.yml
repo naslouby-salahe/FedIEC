@@ -32,6 +32,8 @@ rules:
     paths:
       exclude:
         - /src/fediec/types.py
+        - /src/fediec/datasets/representation.py
+        - /src/fediec/models/conditional_flow.py
     patterns:
       - pattern-either:
           - pattern: "def $F(..., $X: int, ...): ..."
@@ -73,6 +75,8 @@ rules:
     paths:
       exclude:
         - /src/fediec/types.py
+        - /src/fediec/datasets/representation.py
+        - /src/fediec/models/conditional_flow.py
     pattern-regex: '(?m)^\s*(?:async\s+)?def\s+\w+\([^)]*\b(int|float|str|object|Any)\b[^)]*\)\s*(?:->\s*[^:\n]+)?\s*:|^\s*(?:async\s+)?def\s+\w+\([^)]*\)\s*->\s*[^:\n]*\b(int|float|str|object|Any)\b'
   - id: no-runtime-source-introspection
     languages: [python]

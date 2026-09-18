@@ -12,9 +12,14 @@ from fediec.enums import (
     DatasetSource,
     DeviceCategory,
     IntentProvenanceGrade,
+    NetworkExecutionFeature,
     NetworkTopology,
     SemanticAction,
+    SourceGroupKind,
+    SplitFeasibility,
+    SplitPartition,
     TransitionClass,
+    ViolationFamily,
 )
 
 NonNegativeInt = Annotated[int, Field(ge=0)]
@@ -74,6 +79,7 @@ InteractionId = NewType("InteractionId", str)
 CaptureId = NewType("CaptureId", str)
 SourceCaptureId = NewType("SourceCaptureId", str)
 SourceGroupId = NewType("SourceGroupId", str)
+SourceContextId = NewType("SourceContextId", str)
 CollectionDay = NewType("CollectionDay", date)
 AppPackage = NewType("AppPackage", str)
 ConfigHash = NewType("ConfigHash", str)
@@ -83,6 +89,7 @@ SourceDependencyClusterId = NewType("SourceDependencyClusterId", str)
 CheckDetail = NewType("CheckDetail", str)
 ConfigText = NewType("ConfigText", str)
 DirectoryName = NewType("DirectoryName", str)
+TargetDeviceMac = NewType("TargetDeviceMac", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)
 
@@ -97,15 +104,97 @@ class PublicSourceInteraction(DomainRecord):
     device_id: DeviceId
     source_capture_id: SourceCaptureId
     source_group_id: SourceGroupId
+    source_group_kind: SourceGroupKind
+    source_context_id: SourceContextId
     semantic_action: SemanticAction
-    trigger_timestamp: WallClockTimestamp
     intent_provenance_grade: IntentProvenanceGrade
+    capture_start_timestamp: WallClockTimestamp | None = None
+    trigger_timestamp: WallClockTimestamp | None = None
     capture_path: RepositoryPath
+    target_device_mac: TargetDeviceMac | None = None
     source_checksum: ArtifactChecksum | None = None
     manufacturer_id: ManufacturerId | None = None
     device_category: DeviceCategory | None = None
     network_topology: NetworkTopology | None = None
     transition_class: TransitionClass | None = None
+
+
+class CleanSplitAssignment(DomainRecord):
+    interaction_id: InteractionId
+    device_id: DeviceId
+    source_context_id: SourceContextId
+    semantic_action: SemanticAction
+    source_group_id: SourceGroupId
+    partition: SplitPartition | None = None
+
+
+class CleanSplitContextSummary(DomainRecord):
+    device_id: DeviceId
+    source_context_id: SourceContextId
+    semantic_action: SemanticAction
+    interaction_count: SampleCount
+    independent_source_group_count: SampleCount
+    source_group_sizes: tuple[SampleCount, ...]
+    training_count: SampleCount
+    calibration_count: SampleCount
+    test_count: SampleCount
+    feasibility: SplitFeasibility
+
+
+class CleanSplitManifest(DomainRecord):
+    dataset_source: DatasetSource
+    assignments: tuple[CleanSplitAssignment, ...]
+    contexts: tuple[CleanSplitContextSummary, ...]
+
+
+class RepresentationConfoundAudit(DomainRecord):
+    dataset_source: DatasetSource
+    feature_order: tuple[str, ...]
+    feature_variances: tuple[float, ...]
+    constant_features: tuple[str, ...]
+    near_constant_features: tuple[str, ...]
+    packet_count_range: tuple[float, float]
+    byte_count_range: tuple[float, float]
+    capture_duration_range: tuple[float, float]
+    chronology_available: bool
+    site_or_lab_identities: tuple[str, ...]
+    network_conditions: tuple[str, ...]
+    action_collection_ordering_available: bool
+    source_identities: tuple[str, ...]
+    passed: bool
+
+
+class FrozenClientActionCount(DomainRecord):
+    device_id: DeviceId
+    semantic_action: SemanticAction
+    training_count: SampleCount
+    calibration_count: SampleCount
+    test_count: SampleCount
+
+
+class ProtocolFreezeManifest(DomainRecord):
+    dataset_source: DatasetSource
+    role: DatasetRole
+    eligible_capture_count: SampleCount
+    eligible_physical_client_count: DeviceCount
+    client_action_counts: tuple[FrozenClientActionCount, ...]
+    source_group_count: SampleCount
+    source_group_overlap_free: bool
+    network_condition_treatment: CheckDetail
+    feature_order: tuple[NetworkExecutionFeature, ...]
+    context_dimension: Dimension
+    supported_scarcity_budgets: tuple[SampleCount, ...]
+    scarcity_eligible_client_count: DeviceCount
+    full_eligible_client_count: DeviceCount
+    holdout_definition: CheckDetail
+    normalization_protocol: CheckDetail
+    model_interface: CheckDetail
+    baseline_interfaces: tuple[CheckDetail, ...]
+    supported_violation_families: tuple[ViolationFamily, ...]
+    unavailable_analysis_reasons: tuple[CheckDetail, ...]
+    seeds: tuple[Seed, ...]
+    statistical_protocol: CheckDetail
+    representation_confound_audit_passed: bool
 
 
 class DatasetAssessment(DomainRecord):

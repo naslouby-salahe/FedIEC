@@ -9,6 +9,7 @@ from fediec.enums import (
     IntentProvenanceGrade,
     RawCaptureFileSuffix,
     SemanticAction,
+    SourceGroupKind,
     TuWienPolarityToken,
 )
 from fediec.paths import resolve_dataset_raw_root
@@ -18,6 +19,7 @@ from fediec.types import (
     PublicSourceInteraction,
     RepositoryPath,
     SourceCaptureId,
+    SourceContextId,
     SourceGroupId,
     WallClockTimestamp,
 )
@@ -55,11 +57,14 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
                     dataset_source=DatasetSource.TU_WIEN_PHILIPS_HUE,
                     interaction_id=InteractionId(capture_path.relative_to(raw_root).as_posix()),
                     device_id=DeviceId(device_directory.name),
-                    source_capture_id=SourceCaptureId(capture_path.name),
-                    source_group_id=SourceGroupId(device_directory.name),
-                    semantic_action=_POLARITY_TO_ACTION[
-                        TuWienPolarityToken(match["polarity"])
-                    ],
+                    source_capture_id=SourceCaptureId(
+                        capture_path.relative_to(raw_root).as_posix()
+                    ),
+                    source_group_id=SourceGroupId(capture_path.relative_to(raw_root).as_posix()),
+                    source_group_kind=SourceGroupKind.INDIVIDUAL_CAPTURE,
+                    source_context_id=SourceContextId("labeled_capture"),
+                    semantic_action=_POLARITY_TO_ACTION[TuWienPolarityToken(match["polarity"])],
+                    capture_start_timestamp=None,
                     trigger_timestamp=WallClockTimestamp(trigger_timestamp),
                     intent_provenance_grade=IntentProvenanceGrade.VERIFIED_DIRECT,
                     capture_path=RepositoryPath(capture_path),

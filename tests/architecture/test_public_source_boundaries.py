@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 import ast
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import get_type_hints
 
 from _pytest.monkeypatch import MonkeyPatch
 
 from fediec.datasets.cic_iot_2022.dataset import enumerate_raw_interactions as cic_interactions
+from fediec.datasets.moniotr_imc_2019.dataset import (
+    enumerate_raw_interactions as moniotr_interactions,
+)
+from fediec.datasets.moniotr_imc_2019.dataset import (
+    physical_device_id,
+)
 from fediec.datasets.pingpong.dataset import enumerate_raw_interactions as pingpong_interactions
+from fediec.datasets.pingpong.dataset import parse_source_timestamps_file
+from fediec.datasets.splits import build_clean_split
 from fediec.datasets.tu_wien_philips_hue.dataset import (
     enumerate_raw_interactions as hue_interactions,
 )
@@ -15,15 +24,29 @@ from fediec.enums import (
     CliCommand,
     DatasetEligibility,
     DatasetRole,
+    DatasetSource,
     EnvironmentVariable,
     IntentProvenanceGrade,
     MatchingTier,
     ReplayLateExecutionSubtype,
     RepositoryPathKey,
+    SemanticAction,
+    SourceGroupKind,
     ViolationFamily,
 )
 from fediec.paths import resolve_path
-from fediec.types import PublicSourceInteraction
+from fediec.types import (
+    DeviceId,
+    DirectoryName,
+    InteractionId,
+    Probability,
+    PublicSourceInteraction,
+    RepositoryPath,
+    SourceCaptureId,
+    SourceContextId,
+    SourceGroupId,
+    WallClockTimestamp,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = REPO_ROOT / "src" / "fediec"
@@ -45,7 +68,9 @@ _REQUIRED_INTERACTION_FIELDS = {
     "device_id",
     "source_capture_id",
     "source_group_id",
+    "source_context_id",
     "semantic_action",
+    "capture_start_timestamp",
     "trigger_timestamp",
     "intent_provenance_grade",
     "capture_path",
@@ -89,6 +114,7 @@ def test_required_public_source_enums_are_exact() -> None:
         DatasetEligibility.INELIGIBLE,
     }
     assert set(DatasetRole) == {
+        DatasetRole.PRIMARY,
         DatasetRole.PRIMARY_CANDIDATE,
         DatasetRole.SECONDARY_CANDIDATE,
         DatasetRole.MECHANISM_REPLICATION,
@@ -97,8 +123,8 @@ def test_required_public_source_enums_are_exact() -> None:
     assert set(IntentProvenanceGrade) == {
         IntentProvenanceGrade.VERIFIED_DIRECT,
         IntentProvenanceGrade.VERIFIED_PROTOCOL,
-        IntentProvenanceGrade.SOURCE_DOCUMENTED_PATH,
-        IntentProvenanceGrade.INSUFFICIENT,
+        IntentProvenanceGrade.PARTIAL,
+        IntentProvenanceGrade.INELIGIBLE,
     }
     assert set(MatchingTier) == {
         MatchingTier.TIER_1_SAME_SOURCE_GROUP,
@@ -109,8 +135,69 @@ def test_required_public_source_enums_are_exact() -> None:
 
 def test_public_source_interaction_retains_required_provenance_fields() -> None:
     assert set(PublicSourceInteraction.model_fields) >= _REQUIRED_INTERACTION_FIELDS
-    for adapter in (pingpong_interactions, cic_interactions, hue_interactions):
+    for adapter in (
+        pingpong_interactions,
+        cic_interactions,
+        hue_interactions,
+        moniotr_interactions,
+    ):
         assert get_type_hints(adapter)["return"] == tuple[PublicSourceInteraction, ...]
+
+
+def test_pingpong_timestamp_text_uses_the_original_los_angeles_time_basis(
+    tmp_path: Path,
+) -> None:
+    timestamp_file = tmp_path / "trigger.timestamps"
+    timestamp_file.write_text("04/23/2019 04:41:44 PM\n", encoding="utf-8")
+    parsed = parse_source_timestamps_file(timestamp_file)
+    assert len(parsed) == 1
+    assert parsed[0].isoformat() == "2019-04-23T23:41:44+00:00"
+
+
+def test_clean_split_keeps_a_continuous_capture_in_one_partition(tmp_path: Path) -> None:
+    capture_one = SourceGroupId("continuous-capture-one")
+    interactions = tuple(
+        PublicSourceInteraction(
+            dataset_source=DatasetSource.PINGPONG,
+            interaction_id=InteractionId(f"interaction-{index}"),
+            device_id=DeviceId("device"),
+            source_capture_id=SourceCaptureId(source_group_id),
+            source_group_id=SourceGroupId(source_group_id),
+            source_group_kind=SourceGroupKind.CONTINUOUS_CAPTURE,
+            source_context_id=SourceContextId("context"),
+            semantic_action=action,
+            intent_provenance_grade=IntentProvenanceGrade.VERIFIED_PROTOCOL,
+            trigger_timestamp=WallClockTimestamp(datetime(2020, 1, index + 1, tzinfo=UTC)),
+            capture_path=RepositoryPath(tmp_path / f"{source_group_id}.pcap"),
+        )
+        for index, source_group_id, action in (
+            (0, capture_one, SemanticAction.TURN_ON),
+            (1, capture_one, SemanticAction.TURN_OFF),
+            (2, SourceGroupId("continuous-capture-two"), SemanticAction.TURN_ON),
+            (3, SourceGroupId("continuous-capture-three"), SemanticAction.TURN_ON),
+        )
+    )
+    split_proportions: tuple[Probability, Probability, Probability] = (0.6, 0.2, 0.2)
+    manifest = build_clean_split(
+        DatasetSource.PINGPONG,
+        interactions,
+        split_proportions,
+    )
+    partitions = {
+        assignment.partition
+        for assignment in manifest.assignments
+        if assignment.source_group_id == capture_one
+    }
+    assert len(partitions) == 1
+
+
+def test_moniotr_physical_client_identity_keeps_labs_separate_and_vpn_together() -> None:
+    us = DirectoryName("us")
+    us_vpn = DirectoryName("us-vpn")
+    uk = DirectoryName("uk")
+    device = DirectoryName("tplink-plug")
+    assert physical_device_id(us, device) == physical_device_id(us_vpn, device)
+    assert physical_device_id(us, device) != physical_device_id(uk, device)
 
 
 def test_production_code_has_no_physical_collection_scaffold() -> None:

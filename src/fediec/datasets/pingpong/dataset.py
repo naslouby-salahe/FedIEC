@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from fediec.enums import (
     DatasetAvailability,
@@ -12,6 +13,8 @@ from fediec.enums import (
     PingPongEvaluationSubtree,
     RawCaptureFileSuffix,
     SemanticAction,
+    SourceGroupKind,
+    SourceTimeZone,
 )
 from fediec.paths import resolve_dataset_raw_root, resolve_pingpong_evaluation_root
 from fediec.types import (
@@ -21,6 +24,7 @@ from fediec.types import (
     PublicSourceInteraction,
     RepositoryPath,
     SourceCaptureId,
+    SourceContextId,
     SourceGroupId,
     WallClockTimestamp,
 )
@@ -70,7 +74,7 @@ def _resolve_capture_path(capture_unit_directory: Path) -> RepositoryPath | None
     return None
 
 
-def _parse_timestamps_file(path: Path) -> list[datetime]:
+def parse_source_timestamps_file(path: Path) -> list[datetime]:
     timestamps: list[datetime] = []
     try:
         raw_text = path.read_text(encoding="utf-8")
@@ -80,12 +84,17 @@ def _parse_timestamps_file(path: Path) -> list[datetime]:
         stripped = line.strip()
         if not stripped:
             continue
-        timestamps.append(datetime.strptime(stripped, "%m/%d/%Y %I:%M:%S %p"))
+        local_timestamp = datetime.strptime(stripped, "%m/%d/%Y %I:%M:%S %p")
+        timestamps.append(
+            local_timestamp.replace(tzinfo=ZoneInfo(SourceTimeZone.AMERICA_LOS_ANGELES)).astimezone(
+                UTC
+            )
+        )
     return timestamps
 
 
-def _enumerate_capture_units() -> list[tuple[DeviceId, Path]]:
-    units: list[tuple[DeviceId, Path]] = []
+def _enumerate_capture_units() -> list[tuple[DeviceId, SourceContextId, Path]]:
+    units: list[tuple[DeviceId, SourceContextId, Path]] = []
     for subtree in _ELIGIBLE_EVALUATION_SUBTREES:
         subtree_root = resolve_pingpong_evaluation_root() / subtree
         if not subtree_root.exists():
@@ -106,20 +115,26 @@ def _enumerate_capture_units() -> list[tuple[DeviceId, Path]]:
                     except ValueError:
                         continue
                     device_base = name
-                device_id = DeviceId(f"{device_base}__{capture_context_root.name}")
-                units.append((device_id, capture_unit_directory))
+                device_id = DeviceId(device_base)
+                units.append(
+                    (
+                        device_id,
+                        SourceContextId(capture_context_root.name),
+                        capture_unit_directory,
+                    )
+                )
     return units
 
 
 def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
     raw_root = resolve_dataset_raw_root(DatasetSource.PINGPONG)
     interactions: list[PublicSourceInteraction] = []
-    for device_id, capture_unit_directory in _enumerate_capture_units():
+    for device_id, source_context_id, capture_unit_directory in _enumerate_capture_units():
         timestamp_files = sorted(
             path
-            for path in (
-                capture_unit_directory / NetworkCaptureSubdirectory.TIMESTAMPS
-            ).glob(f"*{RawCaptureFileSuffix.TIMESTAMPS}")
+            for path in (capture_unit_directory / NetworkCaptureSubdirectory.TIMESTAMPS).glob(
+                f"*{RawCaptureFileSuffix.TIMESTAMPS}"
+            )
             if not path.name.startswith("._")
         )
         if not timestamp_files:
@@ -128,7 +143,7 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
         if capture_path is None:
             continue
         for timestamp_file in timestamp_files:
-            for index, trigger_timestamp in enumerate(_parse_timestamps_file(timestamp_file)):
+            for index, trigger_timestamp in enumerate(parse_source_timestamps_file(timestamp_file)):
                 is_on = (index % 2 == 0) == _FIRST_TRIGGER_IS_ON
                 interactions.append(
                     PublicSourceInteraction(
@@ -137,13 +152,18 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
                             f"{capture_unit_directory.relative_to(raw_root).as_posix()}:{index}"
                         ),
                         device_id=device_id,
-                        source_capture_id=SourceCaptureId(capture_path.name),
-                        source_group_id=SourceGroupId(
-                            capture_unit_directory.relative_to(raw_root).as_posix()
+                        source_capture_id=SourceCaptureId(
+                            capture_path.relative_to(raw_root).as_posix()
                         ),
+                        source_group_id=SourceGroupId(
+                            capture_path.relative_to(raw_root).as_posix()
+                        ),
+                        source_group_kind=SourceGroupKind.CONTINUOUS_CAPTURE,
+                        source_context_id=source_context_id,
                         semantic_action=(
                             SemanticAction.TURN_ON if is_on else SemanticAction.TURN_OFF
                         ),
+                        capture_start_timestamp=None,
                         trigger_timestamp=WallClockTimestamp(trigger_timestamp),
                         intent_provenance_grade=IntentProvenanceGrade.VERIFIED_PROTOCOL,
                         capture_path=capture_path,

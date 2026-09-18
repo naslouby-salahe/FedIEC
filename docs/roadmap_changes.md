@@ -63,3 +63,18 @@ not yet checked).
 verified external evidence; does not alter any threshold, does not affect
 already-collected FedIEC-Contracts data (none exists yet), and follows the
 same "never guess" discipline the earlier entry established.
+
+## 2026-09-18 — Mon(IoT)r IMC 2019 acquired-source boundary (Sec. 13)
+
+**Why:** The official IMC 2019 archives were acquired under their data-sharing
+agreement and audited locally. The raw hierarchy has individual Android
+companion-app `on`/`off` experiment PCAPs, so each non-empty PCAP is a genuine
+source group rather than an invented device-wide session. However, inspection
+also established that the artifact does not include an independent in-capture
+trigger instant, while the nominal idle hierarchy uses `unctrl`/`ctrl1` labels
+that do not prove absence of control action. The source therefore cannot be
+silently upgraded to the full three-context protocol.
+
+**Nature of the change:** adds a source-specific application of existing
+eligibility gates. It does not change any requirement, select a primary source,
+or rely on model performance.

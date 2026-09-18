@@ -12,6 +12,7 @@ from fediec.enums import (
     IntentProvenanceGrade,
     RawCaptureFileSuffix,
     SemanticAction,
+    SourceGroupKind,
     StructByteOrder,
 )
 from fediec.paths import resolve_cic_iot_2022_interactions_root, resolve_dataset_raw_root
@@ -22,6 +23,7 @@ from fediec.types import (
     PublicSourceInteraction,
     RepositoryPath,
     SourceCaptureId,
+    SourceContextId,
     SourceGroupId,
     WallClockTimestamp,
 )
@@ -85,9 +87,7 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
                 except ValueError:
                     continue
                 semantic_action = _POLARITY_TOKEN_TO_ACTION[polarity_token]
-                for capture_path in sorted(
-                    trigger_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")
-                ):
+                for capture_path in sorted(trigger_directory.glob(f"*{RawCaptureFileSuffix.PCAP}")):
                     typed_capture_path = RepositoryPath(capture_path)
                     interactions.append(
                         PublicSourceInteraction(
@@ -96,13 +96,19 @@ def enumerate_raw_interactions() -> tuple[PublicSourceInteraction, ...]:
                                 capture_path.relative_to(interactions_root).as_posix()
                             ),
                             device_id=DeviceId(device_directory.name),
-                            source_capture_id=SourceCaptureId(capture_path.name),
-                            source_group_id=SourceGroupId(
-                                trigger_directory.relative_to(interactions_root).as_posix()
+                            source_capture_id=SourceCaptureId(
+                                capture_path.relative_to(interactions_root).as_posix()
                             ),
+                            source_group_id=SourceGroupId(
+                                capture_path.relative_to(interactions_root).as_posix()
+                            ),
+                            source_group_kind=SourceGroupKind.INDIVIDUAL_CAPTURE,
+                            source_context_id=SourceContextId(prefix.removesuffix("_").lower()),
                             semantic_action=semantic_action,
-                            trigger_timestamp=read_pcap_first_packet_timestamp(typed_capture_path),
-                            intent_provenance_grade=IntentProvenanceGrade.SOURCE_DOCUMENTED_PATH,
+                            capture_start_timestamp=read_pcap_first_packet_timestamp(
+                                typed_capture_path
+                            ),
+                            intent_provenance_grade=IntentProvenanceGrade.PARTIAL,
                             capture_path=typed_capture_path,
                         )
                     )

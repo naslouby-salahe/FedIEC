@@ -31,6 +31,7 @@ _DATASET_SOURCE_DIRECTORY_NAME: dict[DatasetSource, DatasetRawDirectoryName] = {
     DatasetSource.PINGPONG: DatasetRawDirectoryName.PINGPONG,
     DatasetSource.TU_WIEN_PHILIPS_HUE: DatasetRawDirectoryName.TU_WIEN_PHILIPS_HUE,
     DatasetSource.CIC_IOT_2022: DatasetRawDirectoryName.CIC_IOT_2022,
+    DatasetSource.MONIOTR_IMC_2019: DatasetRawDirectoryName.MONIOTR_IMC_2019,
 }
 
 
@@ -54,6 +55,8 @@ def resolve_path(key: RepositoryPathKey) -> RepositoryPath:
             resolved = resolve_dataset_raw_root(DatasetSource.TU_WIEN_PHILIPS_HUE)
         case RepositoryPathKey.DATA_RAW_CIC_IOT_2022:
             resolved = resolve_dataset_raw_root(DatasetSource.CIC_IOT_2022)
+        case RepositoryPathKey.DATA_RAW_MONIOTR_IMC_2019:
+            resolved = resolve_dataset_raw_root(DatasetSource.MONIOTR_IMC_2019)
         case RepositoryPathKey.OUTPUTS_ROOT:
             resolved = root / seg.OUTPUTS
         case RepositoryPathKey.OUTPUTS_PROCESSED_ROOT:
@@ -97,6 +100,16 @@ def resolve_cic_iot_2022_interactions_root() -> RepositoryPath:
 def resolve_pingpong_evaluation_root() -> RepositoryPath:
     pingpong_root = resolve_dataset_raw_root(DatasetSource.PINGPONG)
     return RepositoryPath(Path(pingpong_root) / DatasetRawSubpath.PINGPONG_EVALUATION_DATASETS)
+
+
+def resolve_moniotr_interactions_root() -> RepositoryPath:
+    moniotr_root = resolve_dataset_raw_root(DatasetSource.MONIOTR_IMC_2019)
+    return RepositoryPath(Path(moniotr_root) / DatasetRawSubpath.MONIOTR_INTERACTION_DATA)
+
+
+def resolve_moniotr_idle_root() -> RepositoryPath:
+    moniotr_root = resolve_dataset_raw_root(DatasetSource.MONIOTR_IMC_2019)
+    return RepositoryPath(Path(moniotr_root) / DatasetRawSubpath.MONIOTR_IDLE_DATA)
 
 
 def resolve_output_run_directory(experiment: ExperimentName, seed: Seed) -> RepositoryPath:

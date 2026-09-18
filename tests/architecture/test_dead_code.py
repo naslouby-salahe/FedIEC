@@ -62,9 +62,7 @@ def test_every_module_is_reachable_from_cli_or_explicitly_justified() -> None:
     graph = _build_import_graph()
     reachable = _reachable_from(graph, "cli")
     unreachable = set(graph) - reachable - {"cli"}
-    unjustified = {
-        module for module in unreachable if module not in _UNREACHABLE_BUT_JUSTIFIED
-    }
+    unjustified = {module for module in unreachable if module not in _UNREACHABLE_BUT_JUSTIFIED}
     assert not unjustified, (
         f"modules unreachable from cli.py with no documented justification: "
         f"{unjustified}. Either wire them in or add a narrow, justified "

@@ -85,18 +85,12 @@ def test_each_cli_command_uses_its_required_workflow() -> None:
 
 def test_every_workflow_module_is_imported_and_called_by_cli() -> None:
     workflow_modules = {
-        path.stem
-        for path in WORKFLOWS_ROOT.glob("*.py")
-        if path.stem != "__init__"
+        path.stem for path in WORKFLOWS_ROOT.glob("*.py") if path.stem != "__init__"
     }
     tree = ast.parse(CLI_MODULE.read_text(encoding="utf-8"), filename=str(CLI_MODULE))
     imported_aliases: dict[str, str] = {}
     for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.ImportFrom)
-            and node.module == "fediec.workflows"
-            and node.names
-        ):
+        if isinstance(node, ast.ImportFrom) and node.module == "fediec.workflows" and node.names:
             alias = node.names[0]
             imported_aliases[alias.asname or alias.name] = alias.name
 

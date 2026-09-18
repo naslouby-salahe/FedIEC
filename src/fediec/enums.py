@@ -86,6 +86,16 @@ class SplitPartition(StrEnum):
     TEST = "test"
 
 
+class SourceGroupKind(StrEnum):
+    CONTINUOUS_CAPTURE = "continuous_capture"
+    INDIVIDUAL_CAPTURE = "individual_capture"
+
+
+class SplitFeasibility(StrEnum):
+    ALL_PARTITIONS_AVAILABLE = "all_partitions_available"
+    INSUFFICIENT_INDEPENDENT_GROUPS = "insufficient_independent_groups"
+
+
 class LearningRegime(StrEnum):
     LOCAL = "local"
     CENTRALIZED = "centralized"
@@ -96,6 +106,7 @@ class DatasetSource(StrEnum):
     PINGPONG = "pingpong"
     TU_WIEN_PHILIPS_HUE = "tu_wien_philips_hue"
     CIC_IOT_2022 = "cic_iot_2022"
+    MONIOTR_IMC_2019 = "moniotr_imc_2019"
 
 
 class DatasetAvailability(StrEnum):
@@ -116,6 +127,7 @@ class DatasetEligibility(StrEnum):
 
 
 class DatasetRole(StrEnum):
+    PRIMARY = "primary"
     PRIMARY_CANDIDATE = "primary_candidate"
     SECONDARY_CANDIDATE = "secondary_candidate"
     MECHANISM_REPLICATION = "mechanism_replication"
@@ -125,8 +137,8 @@ class DatasetRole(StrEnum):
 class IntentProvenanceGrade(StrEnum):
     VERIFIED_DIRECT = "verified_direct"
     VERIFIED_PROTOCOL = "verified_protocol"
-    SOURCE_DOCUMENTED_PATH = "source_documented_path"
-    INSUFFICIENT = "insufficient"
+    PARTIAL = "partial"
+    INELIGIBLE = "ineligible"
 
 
 class CheckStatus(StrEnum):
@@ -188,6 +200,7 @@ class RepositoryPathKey(StrEnum):
     DATA_RAW_PINGPONG = "data_raw_pingpong"
     DATA_RAW_TU_WIEN_PHILIPS_HUE = "data_raw_tu_wien_philips_hue"
     DATA_RAW_CIC_IOT_2022 = "data_raw_cic_iot_2022"
+    DATA_RAW_MONIOTR_IMC_2019 = "data_raw_moniotr_imc_2019"
     OUTPUTS_ROOT = "outputs_root"
     OUTPUTS_PROCESSED_ROOT = "outputs_processed_root"
     OUTPUTS_BENCHMARK_ROOT = "outputs_benchmark_root"
@@ -208,7 +221,6 @@ class EnvironmentVariable(StrEnum):
 
 
 class CliCommand(StrEnum):
-
     DOCTOR = "doctor"
     PREPROCESS = "preprocess"
     PREPARE = "prepare"
@@ -220,7 +232,6 @@ class CliCommand(StrEnum):
 
 
 class LogEvent(StrEnum):
-
     DOCTOR_START = "cli.doctor.start"
     DOCTOR_DONE = "cli.doctor.done"
     PREPROCESS_START = "cli.preprocess.start"
@@ -235,7 +246,6 @@ class LogEvent(StrEnum):
 
 
 class TableColumn(StrEnum):
-
     CHECK = "check"
     STATUS = "status"
     DETAIL = "detail"
@@ -244,7 +254,6 @@ class TableColumn(StrEnum):
 
 
 class TerminalColor(StrEnum):
-
     GREEN = "green"
     YELLOW = "yellow"
     RED = "red"
@@ -252,15 +261,14 @@ class TerminalColor(StrEnum):
 
 
 class CheckKind(StrEnum):
-
     CONFIGURATION = "configuration"
     DATASET_PINGPONG = "dataset:pingpong"
     DATASET_TU_WIEN_PHILIPS_HUE = "dataset:tu_wien_philips_hue"
     DATASET_CIC_IOT_2022 = "dataset:cic_iot_2022"
+    DATASET_MONIOTR_IMC_2019 = "dataset:moniotr_imc_2019"
 
 
 class CicTriggerMethod(StrEnum):
-
     LOCAL = "LOCAL_"
     LAN = "LAN_"
     WAN = "WAN_"
@@ -269,26 +277,23 @@ class CicTriggerMethod(StrEnum):
 
 
 class CicPolarityToken(StrEnum):
-
     ON = "ON"
     OFF = "OFF"
 
 
 class TuWienPolarityToken(StrEnum):
-
     ON = "On"
     OFF = "Off"
 
 
 class DatasetRawDirectoryName(StrEnum):
-
     PINGPONG = "PingPong"
     TU_WIEN_PHILIPS_HUE = "TU Wien Philips Hue"
     CIC_IOT_2022 = "cic-iot-2022"
+    MONIOTR_IMC_2019 = "moniotr_imc19"
 
 
 class PingPongEligibleDevice(StrEnum):
-
     AMAZON_PLUG = "amazon-plug"
     DLINK_PLUG = "dlink-plug"
     ST_PLUG = "st-plug"
@@ -308,7 +313,6 @@ class PingPongEvaluationSubtree(StrEnum):
 
 
 class NetworkCaptureSubdirectory(StrEnum):
-
     TIMESTAMPS = "timestamps"
     WLAN1 = "wlan1"
     WLAN = "wlan"
@@ -319,7 +323,6 @@ class NetworkCaptureSubdirectory(StrEnum):
 
 
 class RawCaptureFileSuffix(StrEnum):
-
     PCAP = ".pcap"
     TIMESTAMPS = ".timestamps"
 
@@ -327,6 +330,10 @@ class RawCaptureFileSuffix(StrEnum):
 class StructByteOrder(StrEnum):
     LITTLE = "<"
     BIG = ">"
+
+
+class SourceTimeZone(StrEnum):
+    AMERICA_LOS_ANGELES = "America/Los_Angeles"
 
 
 class RepositoryPathSegment(StrEnum):
@@ -347,10 +354,13 @@ class RepositoryPathSegment(StrEnum):
     FIGURES = "figures"
     CONFIG_FILE = "config.yaml"
     RUN_MANIFEST_FILE = "manifest.json"
+    CLEAN_SPLIT_MANIFEST_FILE = "clean-split-manifest.json"
+    INTERACTION_FEATURES_FILE = "interaction-features.json"
+    REPRESENTATION_CONFOUND_AUDIT_FILE = "representation-confound-audit.json"
+    PROTOCOL_FREEZE_MANIFEST_FILE = "protocol-freeze-manifest.json"
 
 
 class NetworkExecutionFeature(StrEnum):
-
     TOTAL_PACKET_COUNT = "total_packet_count"
     OUTBOUND_PACKET_COUNT = "outbound_packet_count"
     INBOUND_PACKET_COUNT = "inbound_packet_count"
@@ -365,14 +375,15 @@ class NetworkExecutionFeature(StrEnum):
     STD_INTER_ARRIVAL_TIME = "std_inter_arrival_time"
     MEDIAN_INTER_ARRIVAL_TIME = "median_inter_arrival_time"
     P95_INTER_ARRIVAL_TIME = "p95_inter_arrival_time"
-    UNIQUE_REMOTE_ENDPOINTS = "unique_remote_endpoints"
-    UNIQUE_REMOTE_PORTS = "unique_remote_ports"
-    FIRST_PACKET_LATENCY = "first_packet_latency"
-    ACTIVE_SPAN = "active_span"
     TCP_FRACTION = "tcp_fraction"
     UDP_FRACTION = "udp_fraction"
+    UNIQUE_REMOTE_ENDPOINTS = "unique_remote_endpoints"
+    UNIQUE_REMOTE_PORTS = "unique_remote_ports"
+    ACTIVE_SPAN = "active_span"
 
 
 class DatasetRawSubpath(StrEnum):
     CIC_IOT_2022_INTERACTIONS = "3-Interactions"
     PINGPONG_EVALUATION_DATASETS = "evaluation-datasets"
+    MONIOTR_INTERACTION_DATA = "interaction/iot-data"
+    MONIOTR_IDLE_DATA = "idle/iot-idle"

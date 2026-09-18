@@ -2,17 +2,17 @@
 
 | CLI command | Workflow | Public-source responsibility | State |
 | --- | --- | --- | --- |
-| `doctor` | `workflows.doctor.run_doctor` | configuration and PingPong, TU Wien, CIC source availability | read-only and implemented |
-| `preprocess` | `workflows.preprocess.run_preprocess` | future public-source interaction/feature preparation | intentionally unimplemented |
+| `doctor` | `workflows.doctor.run_doctor` | configuration and PingPong, TU Wien, CIC, and Mon(IoT)r source availability | read-only and implemented |
+| `preprocess` | `workflows.preprocess.run_preprocess` | writes source-group split manifests; for Mon(IoT)r extracts the 19-D `X_interaction` target, writes the confound audit, and writes the final protocol-freeze manifest only after the audit passes | implemented, active representation/freeze path |
 | `prepare` | `workflows.prepare.run_prepare` | future derived-corpus counterfactual preparation | intentionally unimplemented |
 | `plan` | `workflows.plan.resolve_plan` | configured experiment matrix | implemented |
-| `smoke` | `workflows.smoke.run_smoke` | future minimal public-source pipeline | intentionally unimplemented |
-| `run <experiment>` | `workflows.run.run_experiment` | future experiment execution | intentionally unimplemented |
+| `smoke` | `workflows.smoke.run_smoke` | validates the frozen primary artifact against raw capture count and 19-D/3-D conditional-flow shapes using a synthetic tensor only | implemented; no scientific score or experiment |
+| `run <experiment>` | `workflows.run.run_experiment` | confirmatory execution remains intentionally blocked until an explicit execution instruction; no B/E route is reachable | intentionally disabled |
 | `status` | `workflows.status.resolve_status` | artifact status | implemented |
 | `report` | `workflows.report.run_report` | future structured results | intentionally unimplemented |
 
 There is no `collect` route or physical-acquisition dependency. Fresh
-Graphify AST extraction recorded 168 nodes and 743 edges; its direct CLI
+Graphify figures are regenerated during each alignment verification; its direct CLI
 file-to-command paths include `doctor`, `preprocess`, and `run_command`.
 The architecture suite separately verifies every command delegates to one
 workflow and that no import cycle exists. Graphify output is ignored rather

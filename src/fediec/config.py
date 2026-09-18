@@ -31,13 +31,13 @@ from fediec.types import (
     GradientNormClip,
     LayerCount,
     LearningRate,
+    Probability,
     Quantile,
     ReplicateCount,
     RoundCount,
     SampleCount,
     Seed,
     SignificanceLevel,
-    SplitSampleCount,
     Tolerance,
     UnitCount,
     WeightDecay,
@@ -58,12 +58,13 @@ class PublicSourcesSection(DomainRecord):
     pingpong: PublicSourceSection
     cic_iot_2022: PublicSourceSection
     tu_wien_philips_hue: PublicSourceSection
+    moniotr_imc_2019: PublicSourceSection
 
 
 class SplitSection(DomainRecord):
-    training_samples_per_device_context: SplitSampleCount
-    calibration_samples_per_device_context: SplitSampleCount
-    test_samples_per_device_context: SplitSampleCount
+    training_proportion: Probability
+    calibration_proportion: Probability
+    test_proportion: Probability
 
 
 class FeaturesSection(DomainRecord):
@@ -81,7 +82,7 @@ class CounterfactualsSection(DomainRecord):
 
 class ModelSection(DomainRecord):
     architecture: ModelArchitectureKind
-    execution_dimension: Dimension
+    interaction_dimension: Dimension
     context_dimension: Dimension
     coupling_blocks: BlockCount
     hidden_layers_per_conditioner: LayerCount

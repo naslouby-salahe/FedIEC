@@ -3,7 +3,7 @@
 - [x] Scientific and technical sources of truth reconciled to the
   public-dataset-only roadmap.
 - [x] Shared raw-data pool scoped without altering out-of-scope bytes.
-- [x] PingPong, CIC IoT 2022, and TU Wien Philips Hue availability and
+- [x] PingPong, CIC IoT 2022, TU Wien Philips Hue, and Mon(IoT)r IMC 2019 availability and
   source-specific action mappings audited.
 - [x] Physical-acquisition scaffold removed from configuration, CLI,
   workflows, adapters, enums, paths, and documentation.
@@ -14,9 +14,18 @@
   `.semgrep.yml` is limited to static-analysis rules.
 - [x] Architecture test suite, Ruff, and Pyright pass after the migration.
 - [x] Fresh Graphify AST extraction completed; generated output is ignored.
-- [ ] Freeze checksums/source manifests and complete eligibility gates before
+- [x] Replace stale fixed split counts with deterministic source-aware
+  approximately 60/20/20 clean-split manifests.
+- [x] Freeze selected-input source identities and aggregate checksums before
   confirmatory preprocessing.
-- [ ] Implement derived-corpus construction without fabricating unavailable
-  intent, state, transition, or NO_ACTION metadata.
+- [ ] Complete eligibility gates before confirmatory preprocessing.
+- [x] Implement the active capture-level derived representation without
+  fabricating unavailable intent, state, transition, trigger, B/E, or NO_ACTION metadata.
+- [x] Add the pre-model representation-confound gate and frozen 19-D/3-D model
+  interface; model execution remains disabled pending primary-role approval.
+- [x] Mark B-context and NO_ACTION-dependent analyses unavailable where no
+  source-backed procedure exists; do not fabricate missing intervals.
+- [x] Audit source order and mark pre-context comparisons unavailable or
+  descriptive where alternation/boundary provenance confounds interpretation.
 
 No confirmatory experiment has been run in this phase.

@@ -8,25 +8,29 @@ project:
 
 public_sources:
   pingpong:
-    role: primary_candidate
-    eligibility: action_contract_only
+    role: optional_aligned_source
+    eligibility: ineligible
     intent_provenance: verified_protocol
   cic_iot_2022:
     role: secondary_candidate
     eligibility: action_contract_only
-    intent_provenance: source_documented_path
+    intent_provenance: partial
   tu_wien_philips_hue:
     role: mechanism_replication
     eligibility: replication_only
     intent_provenance: verified_direct
+  moniotr_imc_2019:
+    role: primary
+    eligibility: action_contract_only
+    intent_provenance: verified_protocol
 
 split:
-  training_samples_per_device_context: 90
-  calibration_samples_per_device_context: 30
-  test_samples_per_device_context: 30
+  training_proportion: 0.60
+  calibration_proportion: 0.20
+  test_proportion: 0.20
 
 features:
-  feature_count: 20
+  feature_count: 19
   log1p_magnitude_features:
     - total_packet_count
     - outbound_packet_count
@@ -44,7 +48,6 @@ features:
     - p95_inter_arrival_time
     - unique_remote_endpoints
     - unique_remote_ports
-    - first_packet_latency
     - active_span
   rate_features:
     - tcp_fraction
@@ -58,8 +61,8 @@ counterfactuals:
 
 model:
   architecture: conditional_normalizing_flow
-  execution_dimension: 20
-  context_dimension: 23
+  interaction_dimension: 19
+  context_dimension: 3
   coupling_blocks: 6
   hidden_layers_per_conditioner: 2
   hidden_units_per_layer: 64
@@ -82,7 +85,7 @@ federated:
   local_epochs: 1
   communication_rounds: 100
   batch_size: 64
-  scarcity_budgets: [10, 30, 60, 90]
+  scarcity_budgets: [10, 30, 60]
 
 calibration:
   threshold_quantile: 0.95
