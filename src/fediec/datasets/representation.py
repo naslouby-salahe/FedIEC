@@ -6,12 +6,32 @@ from pathlib import Path
 
 from fediec.enums import NetworkExecutionFeature, StructByteOrder
 from fediec.types import (
+    FIRST_PACKET_INDEX,
+    LAST_PACKET_INDEX,
+    MEDIAN_QUANTILE,
+    NEAR_CONSTANT_VARIANCE_THRESHOLD,
+    P95_QUANTILE,
+    TOTAL_BYTE_COUNT_FEATURE_INDEX,
+    TOTAL_PACKET_COUNT_FEATURE_INDEX,
+    ZERO_BYTE_COUNT,
+    ZERO_FEATURE_VALUE,
+    ZERO_PACKET_COUNT,
+    Duration,
+    FeatureIndex,
+    FeatureValue,
+    FeatureVariance,
+    FeatureVector,
+    FeatureVectors,
+    MonotonicTimestamp,
+    NetworkFeatureName,
+    PcapTimestampScale,
     PublicSourceInteraction,
+    RemoteTransportPortCount,
     RepresentationConfoundAudit,
     TargetDeviceMac,
 )
 
-_PCAP_FORMATS: dict[bytes, tuple[StructByteOrder, float]] = {
+_PCAP_FORMATS: dict[bytes, tuple[StructByteOrder, PcapTimestampScale]] = {
     b"\xd4\xc3\xb2\xa1": (StructByteOrder.LITTLE, 1e-6),
     b"\xa1\xb2\xc3\xd4": (StructByteOrder.BIG, 1e-6),
     b"\x4d\x3c\xb2\xa1": (StructByteOrder.LITTLE, 1e-9),
@@ -23,20 +43,20 @@ def _mac_text(value: bytes) -> TargetDeviceMac:
     return TargetDeviceMac(":".join(f"{part:x}" for part in value))
 
 
-def _mean(values: tuple[float, ...]) -> float:
-    return sum(values) / len(values) if values else 0.0
+def _mean(values: FeatureVector) -> FeatureValue:
+    return sum(values) / len(values) if values else ZERO_FEATURE_VALUE
 
 
-def _standard_deviation(values: tuple[float, ...]) -> float:
+def _standard_deviation(values: FeatureVector) -> FeatureValue:
     if len(values) < 2:
-        return 0.0
+        return ZERO_FEATURE_VALUE
     mean = _mean(values)
     return (sum((value - mean) ** 2 for value in values) / len(values)) ** 0.5
 
 
-def _quantile(values: tuple[float, ...], quantile: float) -> float:
+def _quantile(values: FeatureVector, quantile: FeatureValue) -> FeatureValue:
     if not values:
-        return 0.0
+        return ZERO_FEATURE_VALUE
     ordered = sorted(values)
     index = round((len(ordered) - 1) * quantile)
     return ordered[index]
@@ -44,7 +64,7 @@ def _quantile(values: tuple[float, ...], quantile: float) -> float:
 
 def extract_interaction_features(
     interaction: PublicSourceInteraction,
-) -> tuple[float, ...]:
+) -> FeatureVector:
     if interaction.target_device_mac is None:
         raise ValueError(f"{interaction.interaction_id}: target device MAC is unavailable")
     with Path(interaction.capture_path).open("rb") as handle:
@@ -52,14 +72,14 @@ def extract_interaction_features(
         if len(global_header) != 24 or global_header[:4] not in _PCAP_FORMATS:
             raise ValueError(f"{interaction.interaction_id}: unsupported classic PCAP")
         byte_order, scale = _PCAP_FORMATS[global_header[:4]]
-        timestamps: list[float] = []
-        outbound_sizes: list[float] = []
-        inbound_sizes: list[float] = []
+        timestamps: list[MonotonicTimestamp] = []
+        outbound_sizes: list[FeatureValue] = []
+        inbound_sizes: list[FeatureValue] = []
         remote_endpoints: set[bytes] = set()
-        remote_ports: set[int] = set()
-        tcp_count = 0
-        udp_count = 0
-        total_bytes = 0
+        remote_ports: set[RemoteTransportPortCount] = set()
+        tcp_count = ZERO_PACKET_COUNT
+        udp_count = ZERO_PACKET_COUNT
+        total_bytes = ZERO_BYTE_COUNT
         while record_header := handle.read(16):
             if len(record_header) != 16:
                 raise ValueError(f"{interaction.interaction_id}: truncated PCAP record header")
@@ -79,7 +99,7 @@ def extract_interaction_features(
             timestamps.append(timestamp)
             total_bytes += captured_length
             outbound = _mac_text(source) == target
-            (outbound_sizes if outbound else inbound_sizes).append(float(captured_length))
+            (outbound_sizes if outbound else inbound_sizes).append(captured_length)
             if ethertype != b"\x08\x00" or len(frame) < 34:
                 continue
             ip_start = 14
@@ -102,27 +122,33 @@ def extract_interaction_features(
                 remote_ports.add(destination_port if outbound else source_port)
     packet_count = len(timestamps)
     inter_arrival = tuple(later - earlier for earlier, later in pairwise(timestamps))
-    duration = timestamps[-1] - timestamps[0] if timestamps else 0.0
-    return (
-        float(packet_count),
-        float(len(outbound_sizes)),
-        float(len(inbound_sizes)),
-        float(total_bytes),
-        float(sum(outbound_sizes)),
-        float(sum(inbound_sizes)),
-        _mean(tuple(outbound_sizes)),
-        _standard_deviation(tuple(outbound_sizes)),
-        _mean(tuple(inbound_sizes)),
-        _standard_deviation(tuple(inbound_sizes)),
-        _mean(inter_arrival),
-        _standard_deviation(inter_arrival),
-        _quantile(inter_arrival, 0.5),
-        _quantile(inter_arrival, 0.95),
-        tcp_count / packet_count if packet_count else 0.0,
-        udp_count / packet_count if packet_count else 0.0,
-        float(len(remote_endpoints)),
-        float(len(remote_ports)),
-        duration,
+    duration = (
+        timestamps[LAST_PACKET_INDEX] - timestamps[FIRST_PACKET_INDEX]
+        if timestamps
+        else ZERO_FEATURE_VALUE
+    )
+    return FeatureVector(
+        (
+            packet_count,
+            len(outbound_sizes),
+            len(inbound_sizes),
+            total_bytes,
+            sum(outbound_sizes),
+            sum(inbound_sizes),
+            _mean(tuple(outbound_sizes)),
+            _standard_deviation(tuple(outbound_sizes)),
+            _mean(tuple(inbound_sizes)),
+            _standard_deviation(tuple(inbound_sizes)),
+            _mean(inter_arrival),
+            _standard_deviation(inter_arrival),
+            _quantile(inter_arrival, MEDIAN_QUANTILE),
+            _quantile(inter_arrival, P95_QUANTILE),
+            tcp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
+            udp_count / packet_count if packet_count else ZERO_FEATURE_VALUE,
+            len(remote_endpoints),
+            len(remote_ports),
+            duration,
+        )
     )
 
 
@@ -130,7 +156,7 @@ def interaction_feature_order() -> tuple[NetworkExecutionFeature, ...]:
     return tuple(NetworkExecutionFeature)
 
 
-def constant_feature_indices(vectors: tuple[tuple[float, ...], ...]) -> tuple[int, ...]:
+def constant_feature_indices(vectors: FeatureVectors) -> tuple[FeatureIndex, ...]:
     if not vectors:
         raise ValueError("representation-confound audit requires at least one interaction vector")
     if any(len(vector) != len(NetworkExecutionFeature) for vector in vectors):
@@ -142,28 +168,28 @@ def constant_feature_indices(vectors: tuple[tuple[float, ...], ...]) -> tuple[in
     )
 
 
-def require_nonconstant_representation(vectors: tuple[tuple[float, ...], ...]) -> None:
+def require_nonconstant_representation(vectors: FeatureVectors) -> None:
     if constant_indices := constant_feature_indices(vectors):
         features = tuple(NetworkExecutionFeature)
-        names = tuple(str(features[index]) for index in constant_indices)
+        names = tuple(NetworkFeatureName(features[index]) for index in constant_indices)
         raise ValueError(f"representation-confound gate failed: constant features {names}")
 
 
-def _variance(values: tuple[float, ...]) -> float:
+def _variance(values: FeatureVector) -> FeatureVariance:
     if len(values) < 2:
-        return 0.0
+        return ZERO_FEATURE_VALUE
     mean = _mean(values)
     return sum((value - mean) ** 2 for value in values) / len(values)
 
 
-def _capture_duration_seconds(interaction: PublicSourceInteraction) -> float:
+def _capture_duration_seconds(interaction: PublicSourceInteraction) -> Duration:
     with Path(interaction.capture_path).open("rb") as handle:
         global_header = handle.read(24)
         if len(global_header) != 24 or global_header[:4] not in _PCAP_FORMATS:
             raise ValueError(f"{interaction.interaction_id}: unsupported classic PCAP")
         byte_order, scale = _PCAP_FORMATS[global_header[:4]]
-        first_timestamp: float | None = None
-        last_timestamp: float | None = None
+        first_timestamp: MonotonicTimestamp | None = None
+        last_timestamp: MonotonicTimestamp | None = None
         while record_header := handle.read(16):
             if len(record_header) != 16:
                 raise ValueError(f"{interaction.interaction_id}: truncated PCAP record header")
@@ -176,13 +202,15 @@ def _capture_duration_seconds(interaction: PublicSourceInteraction) -> float:
             first_timestamp = timestamp if first_timestamp is None else first_timestamp
             last_timestamp = timestamp
     return (
-        last_timestamp - first_timestamp if first_timestamp is not None and last_timestamp else 0.0
+        last_timestamp - first_timestamp
+        if first_timestamp is not None and last_timestamp
+        else ZERO_FEATURE_VALUE
     )
 
 
 def audit_representation(
     interactions: tuple[PublicSourceInteraction, ...],
-    vectors: tuple[tuple[float, ...], ...],
+    vectors: FeatureVectors,
 ) -> RepresentationConfoundAudit:
     if not interactions or len(interactions) != len(vectors):
         raise ValueError("representation-confound audit requires matched interactions and vectors")
@@ -194,31 +222,33 @@ def audit_representation(
         for index in range(len(NetworkExecutionFeature))
     )
     constant = tuple(
-        str(feature_order[index]) for index, variance in enumerate(variances) if variance == 0.0
+        NetworkFeatureName(feature_order[index])
+        for index, variance in enumerate(variances)
+        if variance == ZERO_FEATURE_VALUE
     )
     near_constant = tuple(
-        str(feature_order[index])
+        NetworkFeatureName(feature_order[index])
         for index, variance in enumerate(variances)
-        if 0.0 < variance <= 1e-12
+        if ZERO_FEATURE_VALUE < variance <= NEAR_CONSTANT_VARIANCE_THRESHOLD
     )
     capture_durations = tuple(_capture_duration_seconds(item) for item in interactions)
     timestamps = tuple(item.capture_start_timestamp for item in interactions)
     contexts = tuple(sorted({item.source_context_id for item in interactions}))
-    sources = tuple(sorted({str(item.dataset_source) for item in interactions}))
+    sources = tuple(sorted({item.dataset_source for item in interactions}))
     actions = tuple(item.semantic_action for item in interactions)
     return RepresentationConfoundAudit(
         dataset_source=interactions[0].dataset_source,
-        feature_order=tuple(str(item) for item in feature_order),
+        feature_order=tuple(NetworkFeatureName(item) for item in feature_order),
         feature_variances=variances,
         constant_features=constant,
         near_constant_features=near_constant,
         packet_count_range=(
-            min(vector[0] for vector in vectors),
-            max(vector[0] for vector in vectors),
+            min(vector[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
+            max(vector[TOTAL_PACKET_COUNT_FEATURE_INDEX] for vector in vectors),
         ),
         byte_count_range=(
-            min(vector[3] for vector in vectors),
-            max(vector[3] for vector in vectors),
+            min(vector[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
+            max(vector[TOTAL_BYTE_COUNT_FEATURE_INDEX] for vector in vectors),
         ),
         capture_duration_range=(min(capture_durations), max(capture_durations)),
         chronology_available=all(timestamp is not None for timestamp in timestamps),

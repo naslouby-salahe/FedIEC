@@ -36,11 +36,14 @@ OpenUnitInterval = Annotated[float, Field(gt=0.0, lt=1.0, allow_inf_nan=False)]
 Seed = NonNegativeInt
 PacketCount = NonNegativeInt
 ByteCount = NonNegativeInt
+RemoteTransportPortCount = NonNegativeInt
 SampleCount = NonNegativeInt
 RoundCount = PositiveInt
 EpochCount = PositiveInt
 FeatureIndex = NonNegativeInt
 FeatureCount = PositiveInt
+FeatureValue = FiniteFloat
+FeatureVariance = NonNegativeFloat
 Dimension = PositiveInt
 BlockCount = PositiveInt
 LayerCount = PositiveInt
@@ -89,11 +92,28 @@ ArtifactChecksum = NewType("ArtifactChecksum", str)
 GitCommit = NewType("GitCommit", str)
 SourceDependencyClusterId = NewType("SourceDependencyClusterId", str)
 CheckDetail = NewType("CheckDetail", str)
+BaselineName = NewType("BaselineName", str)
 ConfigText = NewType("ConfigText", str)
 DirectoryName = NewType("DirectoryName", str)
 TargetDeviceMac = NewType("TargetDeviceMac", str)
+NetworkFeatureName = NewType("NetworkFeatureName", str)
 
 RepositoryPath = NewType("RepositoryPath", Path)
+
+FeatureVector = tuple[FeatureValue, ...]
+FeatureVectors = tuple[FeatureVector, ...]
+
+ZERO_PACKET_COUNT: PacketCount = 0
+ZERO_BYTE_COUNT: ByteCount = 0
+ZERO_FEATURE_VALUE: FeatureValue = 0.0
+ONE_FEATURE_VALUE: FeatureValue = 1.0
+MEDIAN_QUANTILE: Quantile = 0.5
+P95_QUANTILE: Quantile = 0.95
+NEAR_CONSTANT_VARIANCE_THRESHOLD: FeatureVariance = 1e-12
+TOTAL_PACKET_COUNT_FEATURE_INDEX: FeatureIndex = 0
+TOTAL_BYTE_COUNT_FEATURE_INDEX: FeatureIndex = 3
+FIRST_PACKET_INDEX: FeatureIndex = 0
+LAST_PACKET_INDEX: SignedInt = -1
 
 
 class DomainRecord(BaseModel):
@@ -151,18 +171,18 @@ class CleanSplitManifest(DomainRecord):
 
 class RepresentationConfoundAudit(DomainRecord):
     dataset_source: DatasetSource
-    feature_order: tuple[str, ...]
-    feature_variances: tuple[float, ...]
-    constant_features: tuple[str, ...]
-    near_constant_features: tuple[str, ...]
-    packet_count_range: tuple[float, float]
-    byte_count_range: tuple[float, float]
-    capture_duration_range: tuple[float, float]
+    feature_order: tuple[NetworkFeatureName, ...]
+    feature_variances: tuple[FeatureVariance, ...]
+    constant_features: tuple[NetworkFeatureName, ...]
+    near_constant_features: tuple[NetworkFeatureName, ...]
+    packet_count_range: tuple[FeatureValue, FeatureValue]
+    byte_count_range: tuple[FeatureValue, FeatureValue]
+    capture_duration_range: tuple[Duration, Duration]
     chronology_available: bool
-    site_or_lab_identities: tuple[str, ...]
-    network_conditions: tuple[str, ...]
+    site_or_lab_identities: tuple[SourceContextId, ...]
+    network_conditions: tuple[SourceContextId, ...]
     action_collection_ordering_available: bool
-    source_identities: tuple[str, ...]
+    source_identities: tuple[DatasetSource, ...]
     passed: bool
 
 

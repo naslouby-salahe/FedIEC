@@ -23,13 +23,6 @@ def _iter_source_files() -> list[Path]:
     return sorted(SRC_ROOT.rglob("*.py"))
 
 
-_LOW_LEVEL_TENSOR_OR_PCAP_MODULES = {
-    SRC_ROOT / "datasets" / "representation.py",
-    SRC_ROOT / "models" / "conditional_flow.py",
-    SRC_ROOT / "baselines" / "contracts.py",
-}
-
-
 def _location(path: Path, line: int) -> str:
     try:
         return f"{path.relative_to(SRC_ROOT)}:{line}"
@@ -161,13 +154,11 @@ def test_newtype_definitions_only_in_types_py() -> None:
 
 
 def test_no_forbidden_primitive_signatures_outside_types_py() -> None:
-    paths = [path for path in _iter_source_files() if path not in _LOW_LEVEL_TENSOR_OR_PCAP_MODULES]
-    assert not find_forbidden_primitive_signatures(paths)
+    assert not find_forbidden_primitive_signatures(_iter_source_files())
 
 
 def test_no_forbidden_primitive_variable_annotations_outside_types_py() -> None:
-    paths = [path for path in _iter_source_files() if path not in _LOW_LEVEL_TENSOR_OR_PCAP_MODULES]
-    assert not find_forbidden_primitive_variable_annotations(paths)
+    assert not find_forbidden_primitive_variable_annotations(_iter_source_files())
 
 
 def test_generic_constrained_aliases_never_referenced_outside_types_py() -> None:

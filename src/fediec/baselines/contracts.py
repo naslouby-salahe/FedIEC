@@ -2,35 +2,37 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from fediec.types import BaselineName, Dimension
+
 
 @dataclass(frozen=True)
 class BaselineInputContract:
-    name: str
-    target_dimension: int
-    condition_dimension: int | None
+    name: BaselineName
+    target_dimension: Dimension
+    condition_dimension: Dimension | None
     no_action_source_gated: bool
 
 
 ACTION_AGNOSTIC_DENSITY = BaselineInputContract(
-    name="q(X_interaction)",
+    name=BaselineName("q(X_interaction)"),
     target_dimension=19,
     condition_dimension=None,
     no_action_source_gated=False,
 )
 INTENT_CONDITIONED_DENSITY = BaselineInputContract(
-    name="q(X_interaction | I)",
+    name=BaselineName("q(X_interaction | I)"),
     target_dimension=19,
     condition_dimension=3,
     no_action_source_gated=True,
 )
 DIRECT_ACTION_CLASSIFIER = BaselineInputContract(
-    name="P(I | X_interaction)",
+    name=BaselineName("P(I | X_interaction)"),
     target_dimension=19,
     condition_dimension=None,
     no_action_source_gated=True,
 )
 PER_ACTION_ONE_CLASS = BaselineInputContract(
-    name="q_a(X_interaction)",
+    name=BaselineName("q_a(X_interaction)"),
     target_dimension=19,
     condition_dimension=None,
     no_action_source_gated=True,

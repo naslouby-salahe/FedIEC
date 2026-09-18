@@ -5,17 +5,25 @@ from torch import Tensor, nn
 
 from fediec.config import load_config
 from fediec.enums import SemanticAction
+from fediec.types import BlockCount, Dimension, UnitCount
 
-_INTENT_DIMENSION = 3
+_INTENT_DIMENSION: Dimension = 3
 
 
 def encode_intent(intent: SemanticAction) -> Tensor:
     index = tuple(SemanticAction).index(intent)
-    return torch.nn.functional.one_hot(torch.tensor(index), num_classes=_INTENT_DIMENSION).float()
+    return torch.nn.functional.one_hot(torch.tensor(index), num_classes=_INTENT_DIMENSION).to(
+        dtype=torch.float32
+    )
 
 
 class ConditionalInteractionFlow(nn.Module):
-    def __init__(self, target_dimension: int, coupling_blocks: int, hidden_units: int) -> None:
+    def __init__(
+        self,
+        target_dimension: Dimension,
+        coupling_blocks: BlockCount,
+        hidden_units: UnitCount,
+    ) -> None:
         super().__init__()
         if target_dimension < 1:
             raise ValueError("conditional flow target dimension must be positive")
@@ -53,9 +61,9 @@ def build_conditional_interaction_flow() -> ConditionalInteractionFlow:
     if configuration.context_dimension != _INTENT_DIMENSION:
         raise ValueError("active conditional flow requires a 3-dimensional intent context")
     return ConditionalInteractionFlow(
-        target_dimension=int(configuration.interaction_dimension),
-        coupling_blocks=int(configuration.coupling_blocks),
-        hidden_units=int(configuration.hidden_units_per_layer),
+        target_dimension=configuration.interaction_dimension,
+        coupling_blocks=configuration.coupling_blocks,
+        hidden_units=configuration.hidden_units_per_layer,
     )
 
 
@@ -64,14 +72,14 @@ class _AffineCouplingBlock(nn.Module):
 
     def __init__(
         self,
-        target_dimension: int,
-        context_dimension: int,
-        hidden_units: int,
+        target_dimension: Dimension,
+        context_dimension: Dimension,
+        hidden_units: UnitCount,
         invert_mask: bool,
     ) -> None:
         super().__init__()
         base_mask = torch.tensor(
-            [float(index % 2) for index in range(target_dimension)], dtype=torch.float32
+            [index % 2 for index in range(target_dimension)], dtype=torch.float32
         )
         self.register_buffer("_mask", 1.0 - base_mask if invert_mask else base_mask)
         self.conditioner = nn.Sequential(
