@@ -653,6 +653,8 @@ TU Wien Philips Hue is a single-device-family replication source and cannot esta
 
 Mon(IoT)r / IMC 2019 has separate Android companion-app ON/OFF experiment PCAPs, individually auditable capture groups and a complete attributable capture representation. Its release lacks a per-capture command instant and independently reconstructable matched NO_ACTION captures; it is approved only for the active ON/OFF interaction-contract tier after passing the representation-confound gate. It does not support strict B/I/E, universal NO_ACTION, replay/late-execution, or strong uncommanded-execution claims.
 
+The pre-experiment primary freeze contains 9,986 eligible non-empty ON/OFF captures from 37 physical-device clients and 9,986 non-overlapping individual source groups. LAN/WAN and VPN remain source contexts rather than clients; US and UK instances remain distinct physical clients. The frozen 19-feature representation, source-group split manifests, normalization rule, holdout definition, interfaces, seeds, statistical procedure, and source-gated unavailable families must be re-audited if source filtering, feature definition, client identity, capture selection, or network-condition treatment changes.
+
 ---
 
 # 14. Public-Dataset Main-Study Eligibility
