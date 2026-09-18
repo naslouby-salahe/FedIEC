@@ -12,7 +12,9 @@ from fediec.types import (
     ConfigText,
     DomainRecord,
     GitCommit,
+    PublicSourceInteraction,
     RepositoryPath,
+    SampleCount,
 )
 
 
@@ -20,6 +22,11 @@ class ArtifactProvenance(DomainRecord):
     config_hash: ConfigHash
     git_commit: GitCommit
     created_at: datetime
+
+
+class PreprocessProvenance(ArtifactProvenance):
+    source_capture_count: SampleCount
+    selected_input_digest: ArtifactChecksum
 
 
 def compute_file_checksum(path: RepositoryPath) -> ArtifactChecksum:
@@ -49,6 +56,25 @@ def build_current_provenance(config_text: ConfigText) -> ArtifactProvenance:
         config_hash=compute_config_hash(config_text),
         git_commit=resolve_git_commit(),
         created_at=datetime.now(UTC),
+    )
+
+
+def build_preprocess_provenance(
+    config_text: ConfigText,
+    interactions: tuple[PublicSourceInteraction, ...],
+) -> PreprocessProvenance:
+    digest = hashlib.sha256()
+    for interaction in sorted(interactions, key=lambda item: item.source_capture_id):
+        checksum = compute_file_checksum(interaction.capture_path)
+        digest.update(str(interaction.source_capture_id).encode("utf-8"))
+        digest.update(checksum.encode("utf-8"))
+    current = build_current_provenance(config_text)
+    return PreprocessProvenance(
+        config_hash=current.config_hash,
+        git_commit=current.git_commit,
+        created_at=current.created_at,
+        source_capture_count=len(interactions),
+        selected_input_digest=ArtifactChecksum(digest.hexdigest()),
     )
 
 

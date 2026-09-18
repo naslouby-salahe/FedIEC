@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from fediec.artifacts import build_preprocess_provenance, write_json_manifest
 from fediec.config import load_config
 from fediec.datasets.cic_iot_2022.dataset import enumerate_raw_interactions as cic_interactions
 from fediec.datasets.freeze import build_protocol_freeze
@@ -19,9 +20,9 @@ from fediec.datasets.splits import build_clean_split
 from fediec.datasets.tu_wien_philips_hue.dataset import (
     enumerate_raw_interactions as hue_interactions,
 )
-from fediec.enums import DatasetSource, RepositoryPathSegment
-from fediec.paths import resolve_processed_dataset_directory
-from fediec.types import PublicSourceInteraction, RepositoryPath
+from fediec.enums import DatasetSource, RepositoryPathKey, RepositoryPathSegment
+from fediec.paths import resolve_path, resolve_processed_dataset_directory
+from fediec.types import ConfigText, PublicSourceInteraction, RepositoryPath
 
 
 def _interactions(dataset_source: DatasetSource) -> tuple[PublicSourceInteraction, ...]:
@@ -39,9 +40,10 @@ def _interactions(dataset_source: DatasetSource) -> tuple[PublicSourceInteractio
 def run_preprocess() -> None:
     for dataset_source in DatasetSource:
         split = load_config().split
+        interactions = _interactions(dataset_source)
         manifest = build_clean_split(
             dataset_source,
-            _interactions(dataset_source),
+            interactions,
             (split.training_proportion, split.calibration_proportion, split.test_proportion),
         )
         directory = resolve_processed_dataset_directory(dataset_source)
@@ -51,9 +53,16 @@ def run_preprocess() -> None:
             manifest.model_dump_json(indent=2),
             encoding="utf-8",
         )
+        provenance = build_preprocess_provenance(
+            ConfigText(resolve_path(RepositoryPathKey.CONFIG_FILE).read_text(encoding="utf-8")),
+            interactions,
+        )
+        write_json_manifest(
+            RepositoryPath(Path(directory) / RepositoryPathSegment.PREPROCESS_PROVENANCE_FILE),
+            provenance,
+        )
         if dataset_source is not DatasetSource.MONIOTR_IMC_2019:
             continue
-        interactions = _interactions(dataset_source)
         vectors = tuple(extract_interaction_features(item) for item in interactions)
         audit = audit_representation(interactions, vectors)
         audit_target = Path(directory) / RepositoryPathSegment.REPRESENTATION_CONFOUND_AUDIT_FILE

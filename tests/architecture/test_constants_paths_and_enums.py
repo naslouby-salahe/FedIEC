@@ -32,9 +32,7 @@ _PATH_WORDS = {"outputs", "results", "data", "raw", "processed", "reports", "exp
 
 
 def _source_files() -> list[Path]:
-    return sorted(
-        path for path in SRC_ROOT.rglob("*.py") if path.name not in {"types.py", "config.py"}
-    )
+    return sorted(path for path in SRC_ROOT.rglob("*.py") if path.name != "types.py")
 
 
 def _location(path: Path, line: int) -> str:

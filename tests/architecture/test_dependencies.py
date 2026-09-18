@@ -20,6 +20,7 @@ _ALLOWED_IMPORT_PREFIXES: dict[str, tuple[str, ...]] = {
         "datasets",
         "models",
         "baselines",
+        "artifacts",
         "workflows",
     ),
     "cli": ("enums", "types", "workflows"),

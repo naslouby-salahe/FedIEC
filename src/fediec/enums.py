@@ -362,6 +362,7 @@ class RepositoryPathSegment(StrEnum):
     CLEAN_SPLIT_MANIFEST_FILE = "clean-split-manifest.json"
     INTERACTION_FEATURES_FILE = "interaction-features.json"
     REPRESENTATION_CONFOUND_AUDIT_FILE = "representation-confound-audit.json"
+    PREPROCESS_PROVENANCE_FILE = "preprocess-provenance.json"
     PROTOCOL_FREEZE_MANIFEST_FILE = "protocol-freeze-manifest.json"
 
 

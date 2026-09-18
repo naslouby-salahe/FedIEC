@@ -16,10 +16,11 @@ rules:
     languages: [python]
     message: Only config.py may parse config.yaml.
     severity: ERROR
-    pattern: "yaml.safe_load(...)"
-    paths:
-      exclude:
-        - /src/fediec/config.py
+    patterns:
+      - pattern: "yaml.safe_load(...)"
+      - pattern-not-inside: |
+          def load_config(...):
+              ...
   - id: no-broad-cast
     languages: [python]
     message: Fix the underlying type instead of using typing.cast.
