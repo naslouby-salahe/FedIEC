@@ -973,7 +973,7 @@ This document does not duplicate the full roadmap. The following are architectur
 5. Metadata used for stratification/reporting must remain distinguishable from model inputs.
 6. Do not change locked feature meaning after observing confirmatory results.
 
-The active conditional-flow interface is `target=[batch,20]` and
+The active conditional-flow interface is `target=[batch,19]` and
 `intent_condition=[batch,3]`, encoding `NO_ACTION`, `TURN_ON`, and `TURN_OFF`
 in that fixed order. The former source-capture-start latency feature was removed
 before model execution as `PRE_MODEL_STRUCTURAL_DEGENERACY` after being constant

@@ -114,11 +114,10 @@ def test_required_public_source_enums_are_exact() -> None:
         DatasetEligibility.INELIGIBLE,
     }
     assert set(DatasetRole) == {
-        DatasetRole.PRIMARY,
-        DatasetRole.PRIMARY_CANDIDATE,
-        DatasetRole.SECONDARY_CANDIDATE,
-        DatasetRole.MECHANISM_REPLICATION,
-        DatasetRole.OPTIONAL_ALIGNED_SOURCE,
+        DatasetRole.PRIMARY_INTERACTION_CONTRACT,
+        DatasetRole.SPARSE_REPLICATION_PROTOCOL_MODE_CONTRAST,
+        DatasetRole.SINGLE_DEVICE_FAMILY_REPLICATION,
+        DatasetRole.PROVENANCE_DIAGNOSTIC,
     }
     assert set(IntentProvenanceGrade) == {
         IntentProvenanceGrade.VERIFIED_DIRECT,

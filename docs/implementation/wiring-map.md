@@ -11,9 +11,8 @@
 | `status` | `workflows.status.resolve_status` | artifact status | implemented |
 | `report` | `workflows.report.run_report` | future structured results | intentionally unimplemented |
 
-There is no `collect` route or physical-acquisition dependency. Fresh
-Graphify figures are regenerated during each alignment verification; its direct CLI
-file-to-command paths include `doctor`, `preprocess`, and `run_command`.
-The architecture suite separately verifies every command delegates to one
-workflow and that no import cycle exists. Graphify output is ignored rather
-than committed.
+There is no `collect` route or physical-acquisition dependency. Fresh Graphify
+AST extraction on the reconciled tree reports 798 nodes and 1,967 links. The
+architecture suite verifies every command delegates to one workflow and that no
+import cycle, active strict-B/E route, or physical-collection route exists.
+Graphify output is ignored rather than committed.

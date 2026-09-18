@@ -6,7 +6,7 @@
 | Pyright | pass: 0 errors, 0 warnings |
 | Pytest | pass: 55 checks, including capture-level interface, intent encoding, source identity, and confound-gate coverage |
 | Semgrep | pass through committed `.semgrep.yml` and `tests/architecture/test_static_analysis.py` |
-| Graphify | fresh AST extraction after primary-freeze and smoke wiring: 246 nodes and 5,688 edges |
+| Graphify | fresh AST extraction on the reconciled tree: 798 nodes and 1,967 links; all eight CLI commands retain their mapped workflow route, with no physical-collection or active strict-B/E route |
 | Engineering smoke | pass: frozen primary manifest, raw eligible-capture count, and synthetic 19-D/3-D conditional-flow shape validated; no scientific score was inspected. |
 | `doctor` | pass: configuration and all three public sources present and valid |
 | Adapter enumeration | pass: PingPong 2,000; CIC 264; TU Wien 10,000; Mon(IoT)r 9,986 non-empty Android ON/OFF typed interactions |

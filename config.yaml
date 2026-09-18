@@ -8,19 +8,19 @@ project:
 
 public_sources:
   pingpong:
-    role: optional_aligned_source
+    role: provenance_diagnostic
     eligibility: ineligible
     intent_provenance: verified_protocol
   cic_iot_2022:
-    role: secondary_candidate
+    role: sparse_replication_protocol_mode_contrast
     eligibility: action_contract_only
     intent_provenance: partial
   tu_wien_philips_hue:
-    role: mechanism_replication
+    role: single_device_family_replication
     eligibility: replication_only
     intent_provenance: verified_direct
   moniotr_imc_2019:
-    role: primary
+    role: primary_interaction_contract
     eligibility: action_contract_only
     intent_provenance: verified_protocol
 

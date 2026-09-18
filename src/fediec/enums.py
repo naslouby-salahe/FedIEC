@@ -127,11 +127,10 @@ class DatasetEligibility(StrEnum):
 
 
 class DatasetRole(StrEnum):
-    PRIMARY = "primary"
-    PRIMARY_CANDIDATE = "primary_candidate"
-    SECONDARY_CANDIDATE = "secondary_candidate"
-    MECHANISM_REPLICATION = "mechanism_replication"
-    OPTIONAL_ALIGNED_SOURCE = "optional_aligned_source"
+    PRIMARY_INTERACTION_CONTRACT = "primary_interaction_contract"
+    SPARSE_REPLICATION_PROTOCOL_MODE_CONTRAST = "sparse_replication_protocol_mode_contrast"
+    SINGLE_DEVICE_FAMILY_REPLICATION = "single_device_family_replication"
+    PROVENANCE_DIAGNOSTIC = "provenance_diagnostic"
 
 
 class IntentProvenanceGrade(StrEnum):

@@ -59,3 +59,16 @@
    near-constant checks. Source/site/network-condition and collection-order
    metadata remain audit/reporting strata rather than model inputs; no raw
    identity enters the active representation.
+
+## Source-of-truth cleanup still required
+
+The roadmap remains scientifically authoritative, but it contains residual
+superseded wording that must not be implemented: Section 36 calls the active
+representation “20 network features” while enumerating 19 and then explicitly
+locks 19; Section 40 repeats “20 source-defined interaction-capture features”;
+Section 55 uses the obsolete `s(E,B,I)` notation; Sections 25.2, 57, 84, 86,
+87, and 101 retain B-context/caliper, B/E extraction, timing-jitter, logging-
+delay, or `W_d` language without consistently marking it future-secondary.
+The active code path remains `(X_interaction, I)` with 19 features; no B/E,
+`W_d`, command timestamp, or `NO_ACTION` dependency is activated by these
+residual passages.
