@@ -20,6 +20,8 @@ from fediec.enums import (
 )
 from fediec.paths import resolve_path
 from fediec.types import (
+    AdamBeta,
+    AdamEpsilon,
     ArtifactDetectabilityBound,
     BatchSize,
     BlockCount,
@@ -96,6 +98,9 @@ class TrainingSection(DomainRecord):
     batch_size: BatchSize
     weight_decay: WeightDecay
     gradient_norm_clip: GradientNormClip
+    adam_beta1: AdamBeta
+    adam_beta2: AdamBeta
+    adam_epsilon: AdamEpsilon
     dtype: TensorDType
     seeds: tuple[Seed, ...]
     local_epochs_full_data: EpochCount
@@ -120,6 +125,13 @@ class StatisticsSection(DomainRecord):
     bootstrap_replicates: ReplicateCount
 
 
+class SmokeSection(DomainRecord):
+    seed: Seed
+    samples_per_device_action: SampleCount
+    training_epochs: EpochCount
+    federated_rounds: RoundCount
+
+
 class FediecConfig(DomainRecord):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -133,6 +145,7 @@ class FediecConfig(DomainRecord):
     federated: FederatedSection
     calibration: CalibrationSection
     statistics: StatisticsSection
+    smoke: SmokeSection
 
 
 @lru_cache(maxsize=1)

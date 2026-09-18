@@ -73,6 +73,8 @@ LearningRate = OpenUnitInterval
 SignificanceLevel = OpenUnitInterval
 WeightDecay = NonNegativeFloat
 GradientNormClip = NonNegativeFloat
+AdamBeta = UnitInterval
+AdamEpsilon = PositiveFloat
 PcapTimestampScale = PositiveFloat
 
 MonotonicTimestamp = FiniteFloat
@@ -102,9 +104,15 @@ NetworkFeatureName = NewType("NetworkFeatureName", str)
 RepositoryPath = NewType("RepositoryPath", Path)
 
 FeatureVectors = tuple["InteractionFeatureVector", ...]
+InteractionIndex = NewType("InteractionIndex", int)
+ModelParameterCount = NonNegativeInt
+SerializedByteCount = NonNegativeInt
+MemoryByteCount = NonNegativeInt
+TrainingStepCount = NonNegativeInt
 
 ZERO_PACKET_COUNT: PacketCount = 0
 ZERO_BYTE_COUNT: ByteCount = 0
+ZERO_SAMPLE_COUNT: SampleCount = 0
 ZERO_FEATURE_VALUE: FeatureValue = 0.0
 ONE_FEATURE_VALUE: FeatureValue = 1.0
 MEDIAN_QUANTILE: Quantile = 0.5
@@ -113,6 +121,7 @@ NEAR_CONSTANT_VARIANCE_THRESHOLD: FeatureVariance = 1e-12
 TOTAL_PACKET_COUNT_FEATURE_INDEX: FeatureIndex = 0
 TOTAL_BYTE_COUNT_FEATURE_INDEX: FeatureIndex = 3
 FIRST_PACKET_INDEX: FeatureIndex = 0
+SAMPLE_AXIS_INDEX: FeatureIndex = 0
 LAST_PACKET_INDEX: SignedInt = -1
 
 

@@ -67,6 +67,15 @@
    near-constant checks. Source/site/network-condition and collection-order
    metadata remain audit/reporting strata rather than model inputs; no raw
    identity enters the active representation.
+9. Prompt 3 requires a source-feasible counterfactual and artifact-audit smoke,
+   but the frozen primary manifest records no source-feasible family: omission
+   and uncommanded execution require independently matched `NO_ACTION`,
+   substitution requires independently documented transition compatibility,
+   EXCESS requires verified natural concurrency and composition controls, and
+   replay/late execution is unobservable without a verified boundary. Generating
+   one to satisfy a smoke criterion would violate the active protocol. The
+   counterfactual smoke requirement is therefore blocked by public
+   data/provenance rather than implemented with a synthetic substitute.
 
 ## Source-of-truth cleanup still required
 
